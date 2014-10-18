@@ -16,7 +16,7 @@
               type="log4net.Appender.RollingFileAppender" >
 
       <!-- 作成するログファイル -->
-      <param name="File" value="${APPDATA}\\SSMCOM_WebSocket" />
+      <param name="File" value="${APPDATA}\\FUELTripLogger_WebSocket" />
 
       <!-- 追加で書き込む -->
       <param name="AppendToFile" value="true" />

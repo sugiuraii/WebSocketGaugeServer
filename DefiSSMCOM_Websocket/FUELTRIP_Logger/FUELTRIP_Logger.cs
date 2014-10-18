@@ -109,23 +109,25 @@ namespace FUELTRIP_Logger
 		private double _current_speed;
 		private double _current_injpulse_width;
 
+        private string _deficom_WS_URL;
+        private string _ssmcom_WS_URL;
+
 		public int WebsocketServer_ListenPortNo { get; set; }
 
 		public FUELTRIP_Logger(string deficom_WS_URL, string ssmcom_WS_URL)
 		{
+            this.WebsocketServer_ListenPortNo = 2014;
+
 			_nenpi_trip_calc = new Nenpi_Trip_Calculator ();
 
 			//Websocket server setup
 			_appServer = new WebSocketServer ();
-			this.WebsocketServer_ListenPortNo = 2014;
-			if (!_appServer.Setup(this.WebsocketServer_ListenPortNo)) //Setup with listening port
-			{
-                Console.WriteLine("Failed to setup!");
-                logger.Fatal("Failed to setup websocket server.");
-            }
 			_appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(_appServer_NewMessageReceived);
 			_appServer.NewSessionConnected += new SessionHandler<WebSocketSession> (_appServer_NewSessionConnected);
 			_appServer.SessionClosed += new SessionHandler<WebSocketSession, CloseReason> (_appServer_SessionClosed);
+
+            _deficom_WS_URL = deficom_WS_URL;
+            _ssmcom_WS_URL = ssmcom_WS_URL;
 
 			//deficom ws
 			_deficom_ws_client = new WebSocket (deficom_WS_URL);
@@ -150,14 +152,22 @@ namespace FUELTRIP_Logger
 			_nenpi_trip_calc.load_trip_gas ();
 			_deficom_ws_client.Open ();
 			_ssmcom_ws_client.Open ();
+
+            //Start Websocket server
+            if (!_appServer.Setup(this.WebsocketServer_ListenPortNo)) //Setup with listening port
+            {
+                Console.WriteLine("Failed to setup!");
+                logger.Fatal("Failed to setup websocket server.");
+            }
             if (!_appServer.Start())
             {
                 Console.WriteLine("Failed to start!");
                 logger.Fatal("Failed to start websocket server.");
                 return;
             }
-            logger.Info("Websocket server is started.");
-		}
+            Console.WriteLine("Websocket server is started. DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
+            logger.Info("Websocket server is started. DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
+        }
 
 		public void stop ()
 		{
@@ -261,7 +271,7 @@ namespace FUELTRIP_Logger
 		private void response_msg(string message)
 		{
             Console.WriteLine("Response message " + " : " + message);
-            logger.Error("Send Response message " + " : " + message);
+            logger.Info("Send Response message " + " : " + message);
             ResponseJSONFormat resmsg_json = new ResponseJSONFormat();
 			resmsg_json.msg = message;
 
@@ -368,7 +378,7 @@ namespace FUELTRIP_Logger
                 {
                     ResponseJSONFormat res_json = JsonConvert.DeserializeObject<ResponseJSONFormat>(jsonmsg);
                     res_json.Validate();
-                    error_msg("Response from " + ssm_defi_mode.ToString() + ":" + res_json.msg);
+                    response_msg("Response from " + ssm_defi_mode.ToString() + ":" + res_json.msg);
                 }
 			}
 			catch(JSONFormatsException ex) {

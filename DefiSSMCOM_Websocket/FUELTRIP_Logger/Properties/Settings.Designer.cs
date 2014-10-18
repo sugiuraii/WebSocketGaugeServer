@@ -25,7 +25,7 @@ namespace FUELTRIP_Logger.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ws://localhost:2013/")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ws://localhost:2012/")]
         public string DefiCOM_Websocket_URL {
             get {
                 return ((string)(this["DefiCOM_Websocket_URL"]));
@@ -37,7 +37,7 @@ namespace FUELTRIP_Logger.Properties {
         
         [global::System.Configuration.UserScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.DefaultSettingValueAttribute("ws://localhost:2012/")]
+        [global::System.Configuration.DefaultSettingValueAttribute("ws://localhost:2013/")]
         public string SSMCOM_WebSocket_URL {
             get {
                 return ((string)(this["SSMCOM_WebSocket_URL"]));

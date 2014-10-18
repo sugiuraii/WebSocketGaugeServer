@@ -56,11 +56,7 @@ namespace DefiSSMCOM.WebSocket
 
 			// Create Websocket server
 			appServer = new WebSocketServer();
-			if (!appServer.Setup(this.Websocket_PortNo)) //Setup with listening port
-			{
-                Console.WriteLine("Failed to setup!");
-                logger.Fatal("Failed to setup websocket server.");
-            }
+
 			appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(appServer_NewMessageReceived);
 			appServer.NewSessionConnected += new SessionHandler<WebSocketSession> (appServer_NewSessionConnected);
 			appServer.SessionClosed += new SessionHandler<WebSocketSession, CloseReason> (appServer_SessionClosed);
@@ -70,13 +66,19 @@ namespace DefiSSMCOM.WebSocket
 		{
 			ssmcom1.communicate_start();
 			//Try to start the appServer
+            if (!appServer.Setup(this.Websocket_PortNo)) //Setup with listening port
+            {
+                Console.WriteLine("Failed to setup!");
+                logger.Fatal("Failed to setup websocket server.");
+            }
 			if (!appServer.Start())
 			{
                 Console.WriteLine("Failed to start!");
                 logger.Fatal("Failed to start websocket server.");
                 return;
 			}
-            logger.Info("Websocket server is started.");
+            Console.WriteLine("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " SSMCOMPort: " + this.SSMCOM_PortName);
+            logger.Info("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " SSMCOMPort: " + this.SSMCOM_PortName);
 
 			this.running_state = true;
 		}
@@ -182,6 +184,7 @@ namespace DefiSSMCOM.WebSocket
 				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
 				return;
 			}
+
 
 		}
 

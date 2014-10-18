@@ -3,10 +3,10 @@
   <Profiles />
   <Settings>
     <Setting Name="DefiCOM_Websocket_URL" Type="System.String" Scope="User">
-      <Value Profile="(Default)">ws://localhost:2013/</Value>
+      <Value Profile="(Default)">ws://localhost:2012/</Value>
     </Setting>
     <Setting Name="SSMCOM_WebSocket_URL" Type="System.String" Scope="User">
-      <Value Profile="(Default)">ws://localhost:2012/</Value>
+      <Value Profile="(Default)">ws://localhost:2013/</Value>
     </Setting>
     <Setting Name="Listen_Port" Type="System.Int32" Scope="User">
       <Value Profile="(Default)">2014</Value>

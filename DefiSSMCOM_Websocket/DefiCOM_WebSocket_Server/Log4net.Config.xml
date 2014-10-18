@@ -16,7 +16,7 @@
               type="log4net.Appender.RollingFileAppender" >
 
       <!-- 作成するログファイル -->
-      <param name="File" value="DefiCOMlog.log" />
+      <param name="File" value="${APPDATA}\\DefiCOM_WebSocket" />
 
       <!-- 追加で書き込む -->
       <param name="AppendToFile" value="true" />
