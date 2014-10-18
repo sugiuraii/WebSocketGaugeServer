@@ -41,14 +41,19 @@ namespace DefiSSMCOM_Websocket
 		}
 		public override void Validate ()
 		{
-			if (mode != "VAL") {
-				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
-			}
-			else{
-				foreach (var key in val.Keys) {
-					if (!(Enum.IsDefined (typeof(Defi_Parameter_Code), key)))
-						throw new JSONFormatsException ("Defi_Parameter_Code property of VAL packet is not valid.");
+			try{
+				if (mode != "VAL") {
+					throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
 				}
+				else{
+					foreach (var key in val.Keys) {
+						if (!(Enum.IsDefined (typeof(Defi_Parameter_Code), key)))
+							throw new JSONFormatsException ("Defi_Parameter_Code property of VAL packet is not valid.");
+					}
+				}
+			}
+			catch (ArgumentException ex) {
+				throw new JSONFormatsException ("Invelid argument is used in ValueJSONFormat :" + ex.Message, ex); 
 			}
 		}
 	}
@@ -92,14 +97,20 @@ namespace DefiSSMCOM_Websocket
 
 		public override void Validate()
 		{
-			if (mode != "DEFI_WS_SEND") {
-				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
+			try
+			{
+				if (mode != "DEFI_WS_SEND") {
+					throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
+				}
+				else{
+					if (!(Enum.IsDefined (typeof(Defi_Parameter_Code), code)))
+						throw new JSONFormatsException ("Defi_Parameter_Code property of DEFI_WS_SEND packet is not valid.");
+					if( flag != true && flag != false)
+						throw new JSONFormatsException ("flag of DEFI_WS_SEND packet is not valid.");
+				}
 			}
-			else{
-				if (!(Enum.IsDefined (typeof(Defi_Parameter_Code), code)))
-					throw new JSONFormatsException ("Defi_Parameter_Code property of DEFI_WS_SEND packet is not valid.");
-				if( flag != true && flag != false)
-					throw new JSONFormatsException ("flag of DEFI_WS_SEND packet is not valid.");
+			catch(ArgumentNullException ex) {
+				throw new JSONFormatsException ("Null is found in DEFI_WS_SEND packet.", ex);
 			}
 		}
 	}
@@ -241,8 +252,12 @@ namespace DefiSSMCOM_Websocket
 		{
 
 			DefiCOM_Websocket_sessionparam sessionparam = (DefiCOM_Websocket_sessionparam)session.Items ["Param"];
-			Console.WriteLine (message);
+			//Console.WriteLine (message);
 
+			if (message == "") {
+				send_error_msg (session, "Empty message is received.");
+				return;
+			}
 			string received_JSON_mode;
 			try{
 				var msg_dict = JsonConvert.DeserializeObject<Dictionary<string,string>> (message);
