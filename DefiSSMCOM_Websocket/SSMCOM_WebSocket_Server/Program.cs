@@ -61,8 +61,8 @@ namespace SSMCOM_WebSocket_Server
 
 			while (Console.ReadKey().KeyChar != 'q')
 			{
-				Console.WriteLine();
-				continue;
+                Thread.Sleep(500);
+                continue;
 			}
 
 			ssmcomserver1.stop ();

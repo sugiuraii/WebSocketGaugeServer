@@ -111,15 +111,15 @@ namespace DefiSSMCOM.WebSocket
 		{
             Console.WriteLine("New session connected from : " + session.Host);
             logger.Info("New session connected from : " + session.Host);
-            SSMCOM_Websocket_sessionparam sendparam = new SSMCOM_Websocket_sessionparam();
-			session.Items.Add ("Param", sendparam);
+            //SSMCOM_Websocket_sessionparam sendparam = new SSMCOM_Websocket_sessionparam();
+			//session.Items.Add ("Param", sendparam);
 		}
 			
 
 		private void appServer_NewMessageReceived(WebSocketSession session, string message)
 		{
 
-			SSMCOM_Websocket_sessionparam sessionparam = (SSMCOM_Websocket_sessionparam)session.Items ["Param"];
+			//SSMCOM_Websocket_sessionparam sessionparam = (SSMCOM_Websocket_sessionparam)session.Items ["Param"];
 			//Console.WriteLine (message);
 
 			if (message == "") {
@@ -214,8 +214,12 @@ namespace DefiSSMCOM.WebSocket
 					}
 					msg_data.Validate ();
 				}
-                String msg = JsonConvert.SerializeObject(msg_data);
-                session.Send(msg);
+
+                if (msg_data.val.Count > 0)
+                {
+                    String msg = JsonConvert.SerializeObject(msg_data);
+                    session.Send(msg);
+                }
 			}
 		}
 

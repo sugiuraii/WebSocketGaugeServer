@@ -2,6 +2,7 @@
 using System.Xml;
 using System.IO;
 using log4net;
+using System.Threading;
 
 namespace FUELTRIP_Logger
 {
@@ -58,7 +59,7 @@ namespace FUELTRIP_Logger
 
 			while (Console.ReadKey().KeyChar != 'q')
 			{
-				Console.WriteLine();
+                Thread.Sleep(500);
 				continue;
 			}
 

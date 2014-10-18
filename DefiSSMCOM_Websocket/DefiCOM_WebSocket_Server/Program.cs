@@ -69,7 +69,7 @@ namespace DefiCOM_WebSocket_Server
 
 			while (Console.ReadKey().KeyChar != 'q')
 			{
-				Console.WriteLine();
+                Thread.Sleep(500);
 				continue;
 			}
 

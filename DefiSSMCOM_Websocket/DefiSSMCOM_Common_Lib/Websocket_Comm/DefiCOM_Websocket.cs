@@ -139,8 +139,17 @@ namespace DefiSSMCOM.WebSocket
 		private void appServer_NewMessageReceived(WebSocketSession session, string message)
 		{
 
-			DefiCOM_Websocket_sessionparam sessionparam = (DefiCOM_Websocket_sessionparam)session.Items ["Param"];
-			//Console.WriteLine (message);
+			DefiCOM_Websocket_sessionparam sessionparam;
+            try
+            {
+                sessionparam = (DefiCOM_Websocket_sessionparam)session.Items["Param"];
+                //Console.WriteLine (message);
+            }
+            catch(KeyNotFoundException ex)
+            {
+                logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
+                return;
+            }
 
 			if (message == "") {
 				send_error_msg (session, "Empty message is received.");
@@ -207,8 +216,18 @@ namespace DefiSSMCOM.WebSocket
 			{
 				ValueJSONFormat msg_data = new ValueJSONFormat ();
 
-				DefiCOM_Websocket_sessionparam sendparam = (DefiCOM_Websocket_sessionparam)session.Items["Param"];
-				if (sendparam.SendCount < sendparam.SendInterval)
+                DefiCOM_Websocket_sessionparam sendparam;
+                try
+                {
+                    sendparam = (DefiCOM_Websocket_sessionparam)session.Items["Param"];
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
+                    continue;
+                }
+                
+                if (sendparam.SendCount < sendparam.SendInterval)
 					sendparam.SendCount++;
 				else {
 					foreach (Defi_Parameter_Code deficode in Enum.GetValues(typeof(Defi_Parameter_Code) )) {
@@ -216,9 +235,12 @@ namespace DefiSSMCOM.WebSocket
 							msg_data.val.Add(deficode.ToString(),deficom1.get_value(deficode).ToString());
 						}
 					}
-					String msg = JsonConvert.SerializeObject (msg_data);
 
-					session.Send (msg);
+                    if (msg_data.val.Count > 0)
+                    {
+                        String msg = JsonConvert.SerializeObject(msg_data);
+                        session.Send(msg);
+                    }
 					sendparam.SendCount = 0;
 				}
 			}
