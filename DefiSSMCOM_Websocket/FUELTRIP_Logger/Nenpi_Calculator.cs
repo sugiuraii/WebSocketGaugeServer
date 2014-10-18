@@ -333,6 +333,10 @@ namespace FUELTRIP_Logger
 			else
 				momentary_gas_consumption = 0;
 
+            //燃料消費量が負の場合、燃料消費量は0とする
+            if (momentary_gas_consumption < 0)
+                momentary_gas_consumption = 0;
+
 			return momentary_gas_consumption;
 		}
 
