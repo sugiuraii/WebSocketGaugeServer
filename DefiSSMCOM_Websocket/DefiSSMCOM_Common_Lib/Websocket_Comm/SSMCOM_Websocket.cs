@@ -235,7 +235,7 @@ namespace DefiSSMCOM.WebSocket
             
 			foreach (var session in sessions) 
 			{
-                if (session == null)
+                if (session == null || !session.Connected || session.Connection == "") // Avoid null session bug
                     continue;
 
 				ValueJSONFormat msg_data = new ValueJSONFormat ();
@@ -292,7 +292,7 @@ namespace DefiSSMCOM.WebSocket
 
             foreach (var session in sessions)
             {
-                if (session == null)
+                if (session == null || !session.Connected || session.Connection == "") // Avoid null session bug
                     continue;
 
                 //set again from the session param read parameter list

@@ -211,11 +211,11 @@ namespace FUELTRIP_Logger
 				received_JSON_mode = msg_dict ["mode"];
 			}
 			catch( KeyNotFoundException ex) {
-				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				error_msg (session, ex.GetType().ToString() + " " + ex.Message);
 				return;
 			}
 			catch (JsonException ex) {
-				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				error_msg (session, ex.GetType().ToString() + " " + ex.Message);
 				return;
 			}
 
@@ -227,67 +227,57 @@ namespace FUELTRIP_Logger
 				case ("RESET"):
 					_nenpi_trip_calc.reset_sect_trip_gas();
 					_nenpi_trip_calc.reset_total_trip_gas();
-					response_msg("NenpiCalc AllRESET.");
+					response_msg(session, "NenpiCalc AllRESET.");
 					break;
 				case ("SECTRESET"):
 					_nenpi_trip_calc.reset_sect_trip_gas();
-					response_msg("NenpiCalc SectRESET.");
+					response_msg(session, "NenpiCalc SectRESET.");
 					break;
 				case ("SECT_SPAN"):
 					SectSpan_JSONFormat span_jsonobj = JsonConvert.DeserializeObject<SectSpan_JSONFormat>(message);
 					span_jsonobj.Validate();
 					_nenpi_trip_calc.Sect_Span = span_jsonobj.sect_span*1000;
-					response_msg("NenpiCalc SectSpan Set to : " + span_jsonobj.sect_span.ToString() + "sec");
+					response_msg(session, "NenpiCalc SectSpan Set to : " + span_jsonobj.sect_span.ToString() + "sec");
 					break;
 				case ("SECT_STOREMAX"):
 					SectStoreMax_JSONFormat storemax_jsonobj = JsonConvert.DeserializeObject<SectStoreMax_JSONFormat>(message);
 					storemax_jsonobj.Validate();
 					_nenpi_trip_calc.Sect_Store_Max = storemax_jsonobj.storemax;
-					response_msg("NenpiCalc SectStoreMax Set to : " + storemax_jsonobj.storemax.ToString());
+					response_msg(session, "NenpiCalc SectStoreMax Set to : " + storemax_jsonobj.storemax.ToString());
 					break;
 				default:
 					throw new JSONFormatsException("Unsuppoted mode property.");
 				}
 			}
 			catch(JSONFormatsException ex) {
-				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				error_msg (session, ex.GetType().ToString() + " " + ex.Message);
 				return;
 			}
 			catch(JsonException ex) {
-				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				error_msg (session, ex.GetType().ToString() + " " + ex.Message);
 				return;
 			}
 		}
 
 		// Error message method
-		private void error_msg(string message)
+		private void error_msg(WebSocketSession session,string message)
 		{
             Console.WriteLine("Error message " + " : " + message);
             logger.Error("Send Error message " + " : " + message);
             ErrorJSONFormat errormsg_json = new ErrorJSONFormat();
 			errormsg_json.msg = message;
 
-			var sessions = _appServer.GetAllSessions ();
-
-			foreach (var session in sessions) 
-			{
-				session.Send (errormsg_json.Serialize ());
-			}
+			session.Send (errormsg_json.Serialize ());
 		}
 
-		private void response_msg(string message)
+		private void response_msg(WebSocketSession session, string message)
 		{
             Console.WriteLine("Response message " + " : " + message);
             logger.Info("Send Response message " + " : " + message);
             ResponseJSONFormat resmsg_json = new ResponseJSONFormat();
 			resmsg_json.msg = message;
 
-			var sessions = _appServer.GetAllSessions ();
-
-			foreach (var session in sessions) 
-			{
-				session.Send (resmsg_json.Serialize ());
-			}
+			session.Send (resmsg_json.Serialize ());
 		}
 
 		private void send_momentum_value()
@@ -298,12 +288,8 @@ namespace FUELTRIP_Logger
 			fueltrip_json.total_trip = _nenpi_trip_calc.Total_Trip;
 			fueltrip_json.total_gasmilage = _nenpi_trip_calc.Total_Gas_Milage;
 
-			var sessions = _appServer.GetAllSessions ();
 
-			foreach (var session in sessions) 
-			{
-				session.Send (fueltrip_json.Serialize());
-			}
+            broadcast_websocket_msg(fueltrip_json.Serialize());
 		}
 
 		private void send_section_value_array()
@@ -314,14 +300,23 @@ namespace FUELTRIP_Logger
 			sectfueltrip_json.sect_gasmilage = _nenpi_trip_calc.Sect_gasmilage_array;
 			sectfueltrip_json.sect_span = _nenpi_trip_calc.Sect_Span;
 
-			var sessions = _appServer.GetAllSessions ();
-
-			foreach (var session in sessions) 
-			{
-				session.Send (sectfueltrip_json.Serialize());
-			}
+            broadcast_websocket_msg(sectfueltrip_json.Serialize());
 
 		}
+
+        // Broadcast : Send message to all active sessions
+        private void broadcast_websocket_msg(string message)
+        {
+            var sessions = _appServer.GetAllSessions();
+
+            foreach (var session in sessions)
+            {
+                if (session == null || !session.Connected || session.Connection == "") // Avoid null session bug
+                    continue;
+                session.Send(message);
+            }
+        }
+
 
 		// Parse VAL packet
 		private void parse_val_paket(string jsonmsg, SSM_DEFI_mode ssm_defi_mode)
@@ -332,16 +327,16 @@ namespace FUELTRIP_Logger
 				received_JSON_mode = jobject.Property("mode").Value.ToString();
 			}
 			catch( KeyNotFoundException ex) {
-                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
             catch (JsonReaderException ex)
             {
-                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
                 return;
             }
 			catch (JsonException ex) {
-                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
 
@@ -376,7 +371,7 @@ namespace FUELTRIP_Logger
                         }
                         catch (TimeoutException ex)
                         {
-                            error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                            logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
                             return;
                         }
 					}
@@ -385,29 +380,29 @@ namespace FUELTRIP_Logger
                 {
                     ErrorJSONFormat err_json = JsonConvert.DeserializeObject<ErrorJSONFormat>(jsonmsg);
                     err_json.Validate();
-                    error_msg("Error occured from " + ssm_defi_mode.ToString() + ":" + err_json.msg);
+                    logger.Error("Error occured from " + ssm_defi_mode.ToString() + ":" + err_json.msg);
                 }
                 else if (received_JSON_mode == "RES")
                 {
                     ResponseJSONFormat res_json = JsonConvert.DeserializeObject<ResponseJSONFormat>(jsonmsg);
                     res_json.Validate();
-                    response_msg("Response from " + ssm_defi_mode.ToString() + ":" + res_json.msg);
+                    logger.Error("Response from " + ssm_defi_mode.ToString() + ":" + res_json.msg);
                 }
 			}
 			catch(JSONFormatsException ex) {
-				error_msg (ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
 			catch(JsonException ex) {
-                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
 			catch(KeyNotFoundException ex){
-                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
 			catch(FormatException ex) {
-                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
 		}
@@ -431,15 +426,15 @@ namespace FUELTRIP_Logger
 		}
 		private void _deficom_ws_client_Error(object sender, ErrorEventArgs e)
 		{
-            error_msg("DefiCOM Websocket connection error occurs. Exception : " + e.Exception.ToString() + "\n Message : " + e.Exception.Message);
+            logger.Error("DefiCOM Websocket connection error occurs. Exception : " + e.Exception.ToString() + "\n Message : " + e.Exception.Message);
 		}
 		private void _deficom_ws_client_Closed(object sender, EventArgs e)
 		{
-			error_msg("DefiCOM Websocket connection is Closed. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
+            logger.Info("DefiCOM Websocket connection is Closed. Wait " + connet_retry_sec.ToString() + "sec and reconnect.");
 			Thread.Sleep (connet_retry_sec * 1000);
             while (_deficom_ws_client.State != WebSocketState.Closed)
             {
-                error_msg("DefiCOM Websocket is now closing, not closed completely. Wait more " + connet_retry_sec.ToString() + "sec and reconnect.");
+                logger.Info("DefiCOM Websocket is now closing, not closed completely. Wait more " + connet_retry_sec.ToString() + "sec and reconnect.");
                 Thread.Sleep(connet_retry_sec * 1000);
             }
 			_deficom_ws_client.Open ();
@@ -490,15 +485,15 @@ namespace FUELTRIP_Logger
 		}
 		private void _ssmcom_ws_client_Error(object sender, ErrorEventArgs e)
 		{
-            error_msg("SSMCOM Websocket connection error occurs. Exception : " + e.Exception.ToString() + "\n Message : " + e.Exception.Message);
+            logger.Info("SSMCOM Websocket connection error occurs. Exception : " + e.Exception.ToString() + "\n Message : " + e.Exception.Message);
         }
 		private void _ssmcom_ws_client_Closed(object sender, EventArgs e)
 		{
-			error_msg("SSMCOM Websocket connection is Closed. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
+            logger.Info("SSMCOM Websocket connection is Closed. Wait " + connet_retry_sec.ToString() + "sec and reconnect.");
 			Thread.Sleep (connet_retry_sec * 1000);
 			while(_ssmcom_ws_client.State != WebSocketState.Closed)
             {
-                error_msg("SSMCOM Websocket is now closing, not closed completely. Wait more" + connet_retry_sec.ToString() + "sec and reconnect.");
+                logger.Info("SSMCOM Websocket is now closing, not closed completely. Wait more" + connet_retry_sec.ToString() + "sec and reconnect.");
                 Thread.Sleep(connet_retry_sec * 1000);
             }
             _ssmcom_ws_client.Open ();

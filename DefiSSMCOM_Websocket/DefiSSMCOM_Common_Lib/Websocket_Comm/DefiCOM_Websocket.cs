@@ -86,7 +86,8 @@ namespace DefiSSMCOM.WebSocket
 		public void start()
 		{
             SuperSocket.SocketBase.Config.ServerConfig appserver_config = new SuperSocket.SocketBase.Config.ServerConfig();
-            appserver_config.DisableSessionSnapshot = true;
+            appserver_config.DisableSessionSnapshot = false;
+            appserver_config.SessionSnapshotInterval = 2;
             appserver_config.Port = this.Websocket_PortNo;
 
             //Try to start the appServer
@@ -230,7 +231,7 @@ namespace DefiSSMCOM.WebSocket
 
 			foreach (var session in sessions) 
 			{
-                if (session == null)
+                if (session == null || !session.Connected || session.Connection == "") // Avoid null session bug
                     continue;
 
 				ValueJSONFormat msg_data = new ValueJSONFormat ();
