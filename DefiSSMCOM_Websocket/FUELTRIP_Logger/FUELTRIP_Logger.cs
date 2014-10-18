@@ -135,6 +135,8 @@ namespace FUELTRIP_Logger
 			_ssmcom_ws_client.Closed += new EventHandler(_ssmcom_ws_client_Closed);
 			_ssmcom_ws_client.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_ssmcom_ws_client_MessageReceived);
 			running_state = false;
+
+            _nenpi_trip_calc.SectFUELTRIPUpdated += new EventHandler(_nenpi_trip_calc_SectFUELTRIPUpdated);
 		}
 
 		public void start()
@@ -453,6 +455,11 @@ namespace FUELTRIP_Logger
 			parse_val_paket (message, SSM_DEFI_mode.SSM);
 
 		}
+
+        private void _nenpi_trip_calc_SectFUELTRIPUpdated(object sender, EventArgs e)
+        {
+            send_section_value_array();
+        }
 	}
 }
 

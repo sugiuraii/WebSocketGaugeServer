@@ -224,7 +224,7 @@ namespace FUELTRIP_Logger
 
 			_sect_elapsed = 0;
 			_sect_store_max = 60;
-			_sect_span = 10*1000;
+			_sect_span = 60*1000;
 			_sect_trip_gas_temporary = new Trip_gas_Content ();
 			_sect_trip_gas_queue = new Queue<Trip_gas_Content>();
 			_sect_trip_gas_latest = new Trip_gas_Content();
