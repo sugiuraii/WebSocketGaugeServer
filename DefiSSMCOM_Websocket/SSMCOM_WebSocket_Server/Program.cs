@@ -13,8 +13,8 @@ namespace SSMCOM_WebSocket_Server
 		{
 
 			ssmcomserver1 = new SSMCOM_Websocket ();
-			ssmcomserver1.SSMCOM_PortName = "COM4";
-			ssmcomserver1.Websocket_PortNo = 2012;
+			ssmcomserver1.SSMCOM_PortName = "COM6";
+			ssmcomserver1.Websocket_PortNo = 2013;
 
 			Console.WriteLine("The server started successfully, press key 'q' to stop it!");
 

@@ -6,11 +6,94 @@ using SuperWebSocket;
 using WebSocket4Net;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using DefiSSMCOM.Defi;
+using DefiSSMCOM.SSM;
+using DefiSSMCOM.WebSocket.JSON;
 
 namespace FUELTRIP_Logger
 {
+	public class FUELTRIP_JSONFormat : JSONFormats
+	{
+		public double moment_gasmilage;
+		public double total_gas;
+		public double total_trip;
+		public double total_gasmilage;
+
+		public FUELTRIP_JSONFormat()
+		{
+			mode = "MOMENT_FUELTRIP";
+		}
+
+		public override void Validate()
+		{
+			if (mode != "MOMENT_FUELTRIP") {
+				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
+			}
+		}
+	}
+
+	public class SectFUELTRIP_JSONFormat : JSONFormats
+	{
+		public long sect_span;
+		public double[] sect_trip;
+		public double[] sect_gas;
+		public double[] sect_gasmilage;
+
+		public SectFUELTRIP_JSONFormat()
+		{
+			mode = "SECT_FUELTRIP";
+		}
+
+		public override void Validate()
+		{
+			if (mode != "SECT_FUELTRIP") {
+				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
+			}
+		}
+	}
+
+	public class SectSpan_JSONFormat : JSONFormats
+	{
+		public int sect_span;
+
+		public SectSpan_JSONFormat()
+		{
+			mode = "SECT_SPAN";
+		}
+
+		public override void Validate()
+		{
+			if (mode != "SECT_SPAN") {
+				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
+			}
+		}
+	}
+
+	public class SectStoreMax_JSONFormat : JSONFormats
+	{
+		public int storemax;
+
+		public SectStoreMax_JSONFormat()
+		{
+			mode = "SECT_STOREMAX";
+		}
+
+		public override void Validate()
+		{
+			if (mode != "SECT_STOREMAX") {
+				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
+			}
+		}
+	}
+
 	public class FUELTRIP_Logger
 	{
+		private const int connet_retry_sec = 5;
+		private enum SSM_DEFI_mode{
+			Defi,
+			SSM
+		};
+
 		private Nenpi_Trip_Calculator _nenpi_trip_calc;
 		private WebSocketServer _appServer;
 		private WebSocket _deficom_ws_client;
@@ -50,6 +133,25 @@ namespace FUELTRIP_Logger
 			_ssmcom_ws_client.Error += new EventHandler<ErrorEventArgs>(_deficom_ws_client_Error);
 			_ssmcom_ws_client.Closed += new EventHandler(_deficom_ws_client_Closed);
 			_ssmcom_ws_client.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_deficom_ws_client_MessageReceived);
+			running_state = false;
+		}
+
+		public void start()
+		{
+			running_state = true;
+			_nenpi_trip_calc.load_trip_gas ();
+			_deficom_ws_client.Open ();
+			_ssmcom_ws_client.Open ();
+			_appServer.Start ();
+		}
+
+		public void stop ()
+		{
+			running_state = false;
+			_nenpi_trip_calc.save_trip_gas ();
+			_deficom_ws_client.Close ();
+			_ssmcom_ws_client.Close ();
+			_appServer.Stop ();
 		}
 
 		// Websocket server events
@@ -63,46 +165,246 @@ namespace FUELTRIP_Logger
 		}
 		private void _appServer_NewMessageReceived(WebSocketSession session, string message)
 		{
+			string received_JSON_mode;
+			try{
+				var msg_dict = JsonConvert.DeserializeObject<Dictionary<string,string>> (message);
+				received_JSON_mode = msg_dict ["mode"];
+			}
+			catch( KeyNotFoundException ex) {
+				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+			catch (JsonException ex) {
+				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+
+			try
+			{
+				switch(received_JSON_mode)
+				{
+				//SSM COM all reset
+				case ("RESET"):
+					_nenpi_trip_calc.reset_sect_trip_gas();
+					_nenpi_trip_calc.reset_total_trip_gas();
+					response_msg("NenpiCalc AllRESET. All parameters are disabled.");
+					break;
+				case ("SECTRESET"):
+					_nenpi_trip_calc.reset_sect_trip_gas();
+					response_msg("NenpiCalc SectRESET. All parameters are disabled.");
+					break;
+				case ("SECT_SPAN"):
+					SectSpan_JSONFormat span_jsonobj = JsonConvert.DeserializeObject<SectSpan_JSONFormat>(message);
+					span_jsonobj.Validate();
+					_nenpi_trip_calc.Sect_Span = span_jsonobj.sect_span*1000;
+					response_msg("NenpiCalc SectSpan Set to : " + span_jsonobj.sect_span.ToString() + "sec");
+					break;
+				case ("SECT_STOREMAX"):
+					SectStoreMax_JSONFormat storemax_jsonobj = JsonConvert.DeserializeObject<SectStoreMax_JSONFormat>(message);
+					storemax_jsonobj.Validate();
+					_nenpi_trip_calc.Sect_Store_Max = storemax_jsonobj.storemax;
+					response_msg("NenpiCalc SectStoreMax Set to : " + storemax_jsonobj.storemax.ToString());
+					break;
+				default:
+					throw new JSONFormatsException("Unsuppoted mode property.");
+				}
+			}
+			catch(JSONFormatsException ex) {
+				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+			catch(JsonException ex) {
+				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+		}
+
+		// Error message method
+		private void error_msg(string message)
+		{
+			Console.WriteLine (message);
+			ErrorJSONFormat errormsg_json = new ErrorJSONFormat ();
+			errormsg_json.msg = message;
+
+			var sessions = _appServer.GetAllSessions ();
+
+			foreach (var session in sessions) 
+			{
+				session.Send (errormsg_json.Serialize ());
+			}
+		}
+
+		private void response_msg(string message)
+		{
+			Console.WriteLine (message);
+			ResponseJSONFormat resmsg_json = new ResponseJSONFormat ();
+			resmsg_json.msg = message;
+
+			var sessions = _appServer.GetAllSessions ();
+
+			foreach (var session in sessions) 
+			{
+				session.Send (resmsg_json.Serialize ());
+			}
+		}
+
+		private void send_momentum_value()
+		{
+			FUELTRIP_JSONFormat fueltrip_json = new FUELTRIP_JSONFormat ();
+			fueltrip_json.moment_gasmilage = _nenpi_trip_calc.Momentary_Gas_Milage;
+			fueltrip_json.total_gas = _nenpi_trip_calc.Total_Gas_Consumption;
+			fueltrip_json.total_trip = _nenpi_trip_calc.Total_Trip;
+			fueltrip_json.total_gasmilage = _nenpi_trip_calc.Total_Gas_Milage;
+
+			var sessions = _appServer.GetAllSessions ();
+
+			foreach (var session in sessions) 
+			{
+				session.Send (fueltrip_json.Serialize());
+			}
+		}
+
+		private void send_section_value_array()
+		{
+			SectFUELTRIP_JSONFormat sectfueltrip_json = new SectFUELTRIP_JSONFormat ();
+			sectfueltrip_json.sect_gas = _nenpi_trip_calc.Sect_gas_array;
+			sectfueltrip_json.sect_trip = _nenpi_trip_calc.Sect_trip_array;
+			sectfueltrip_json.sect_gasmilage = _nenpi_trip_calc.Sect_gasmilage_array;
+			sectfueltrip_json.sect_span = _nenpi_trip_calc.Sect_Span;
+
+			var sessions = _appServer.GetAllSessions ();
+
+			foreach (var session in sessions) 
+			{
+				session.Send (sectfueltrip_json.Serialize());
+			}
 
 		}
-			
+
+		// Parse VAL packet
+		private void parse_val_paket(string jsonmsg, SSM_DEFI_mode ssm_defi_mode)
+		{
+			string received_JSON_mode;
+			try{
+				var msg_dict = JsonConvert.DeserializeObject<Dictionary<string,string>> (jsonmsg);
+				received_JSON_mode = msg_dict ["mode"];
+			}
+			catch( KeyNotFoundException ex) {
+				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+			catch (JsonException ex) {
+				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+
+			try
+			{
+				if(received_JSON_mode == "VAL")
+				{
+					ValueJSONFormat val_json = JsonConvert.DeserializeObject<ValueJSONFormat>(jsonmsg);
+					val_json.Validate();
+
+					if(ssm_defi_mode == SSM_DEFI_mode.Defi)
+					{
+						_current_tacho = double.Parse(val_json.val[Defi_Parameter_Code.Tacho.ToString()]);
+					}
+					else if(ssm_defi_mode == SSM_DEFI_mode.SSM)
+					{
+						_current_speed = double.Parse(val_json.val[SSM_Parameter_Code.Vehicle_Speed.ToString()]);
+						_current_injpulse_width = double.Parse(val_json.val[SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString()]);
+					}
+					_nenpi_trip_calc.update(_current_tacho,_current_speed,_current_injpulse_width);
+				}
+			}
+			catch(JSONFormatsException ex) {
+				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+			catch(JsonException ex) {
+				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+			catch(KeyNotFoundException ex){
+				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+			catch(FormatException ex) {
+				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+		}
+
 		// deficom WS client event
 		private void _deficom_ws_client_Opened(object sender, EventArgs e)
 		{
-			_deficom_ws_client.Send("Hello World!");
+			// initialize setting
+			Defi_WS_SendJSONFormat defisendcode = new Defi_WS_SendJSONFormat ();
+			defisendcode.code = Defi_Parameter_Code.Tacho.ToString ();
+			defisendcode.flag = true;
+
+			Defi_WS_IntervalJSONFormat definitervalcode = new Defi_WS_IntervalJSONFormat();
+			definitervalcode.interval=0;
+
+			_deficom_ws_client.Send(defisendcode.Serialize());
+			_deficom_ws_client.Send(definitervalcode.Serialize());
 		}
 		private void _deficom_ws_client_Error(object sender, EventArgs e)
 		{
-			_deficom_ws_client.Send("Hello World!");
+			error_msg("Deficom Websocket connection error. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
+			Thread.Sleep (connet_retry_sec * 1000);
+			_deficom_ws_client.Open ();
 		}
 		private void _deficom_ws_client_Closed(object sender, EventArgs e)
 		{
-			_deficom_ws_client.Send("Hello World!");
+			error_msg("Deficom Websocket connection is Closed. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
+			Thread.Sleep (connet_retry_sec * 1000);
+			_deficom_ws_client.Open ();
 		}
 		private void _deficom_ws_client_MessageReceived(object sender, MessageReceivedEventArgs e)
 		{
-			_deficom_ws_client.Send("Hello World!");
+			string message = e.Message;
+			parse_val_paket (message, SSM_DEFI_mode.Defi);
 		}
 
 
 		// ssmcom WS client event
 		private void _ssmcom_ws_client_Opened(object sender, EventArgs e)
 		{
-			_ssmcom_ws_client.Send("Hello World!");
+			SSM_COM_ReadJSONFormat ssmcom_read_json = new SSM_COM_ReadJSONFormat ();
+			ssmcom_read_json.code = SSM_Parameter_Code.Vehicle_Speed.ToString ();
+			ssmcom_read_json.read_mode = "FAST";
+			ssmcom_read_json.flag = true;
+			_ssmcom_ws_client.Send(ssmcom_read_json.Serialize());
+			ssmcom_read_json.read_mode = "SLOW";
+			_ssmcom_ws_client.Send (ssmcom_read_json.Serialize ());
+
+			ssmcom_read_json.code = SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString();
+			ssmcom_read_json.read_mode = "FAST";
+			ssmcom_read_json.flag = true;
+			_ssmcom_ws_client.Send(ssmcom_read_json.Serialize());
+			ssmcom_read_json.read_mode = "SLOW";
+			_ssmcom_ws_client.Send (ssmcom_read_json.Serialize ());
+
 		}
 		private void _ssmcom_ws_client_Error(object sender, EventArgs e)
 		{
-			_ssmcom_ws_client.Send("Hello World!");
+			error_msg("SSMcom Websocket connection error. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
+			Thread.Sleep (connet_retry_sec * 1000);
+			_deficom_ws_client.Open ();
 		}
 		private void _ssmcom_ws_client_Closed(object sender, EventArgs e)
 		{
-			_ssmcom_ws_client.Send("Hello World!");
+			error_msg("com Websocket connection is Closed. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
+			Thread.Sleep (connet_retry_sec * 1000);
+			_deficom_ws_client.Open ();
 		}
 		private void _ssmcom_ws_client_MessageReceived(object sender, MessageReceivedEventArgs e)
 		{
-			_ssmcom_ws_client.Send("Hello World!");
+			string message = e.Message;
+			parse_val_paket (message, SSM_DEFI_mode.SSM);
+
 		}
 	}
-
 }
 

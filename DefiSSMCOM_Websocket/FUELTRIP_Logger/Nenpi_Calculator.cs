@@ -110,6 +110,59 @@ namespace FUELTRIP_Logger
 				return sect_trip_gas_array;
 			}
 		}
+
+		public double[] Sect_trip_array
+		{
+			get
+			{
+				int i;
+				Trip_gas_Content[] sect_trip_gas_array = _sect_trip_gas_queue.ToArray ();
+
+				double[] trip_array = new double[sect_trip_gas_array.Length];
+
+				for (i = 0; i < sect_trip_gas_array.Length; i++) {
+					trip_array [i] = sect_trip_gas_array [i].trip;
+				}
+
+				return trip_array;
+			}
+		}
+
+		public double[] Sect_gas_array
+		{
+			get
+			{
+				int i;
+				Trip_gas_Content[] sect_trip_gas_array = _sect_trip_gas_queue.ToArray ();
+
+				double[] gas_array = new double[sect_trip_gas_array.Length];
+
+				for (i = 0; i < sect_trip_gas_array.Length; i++) {
+					gas_array [i] = sect_trip_gas_array [i].gas_consumption;
+				}
+
+				return gas_array;
+			}
+		}
+
+		public double[] Sect_gasmilage_array
+		{
+			get
+			{
+				int i;
+				Trip_gas_Content[] sect_trip_gas_array = _sect_trip_gas_queue.ToArray ();
+
+				double[] gasmilage_array = new double[sect_trip_gas_array.Length];
+
+				for (i = 0; i < sect_trip_gas_array.Length; i++) {
+					gasmilage_array [i] = sect_trip_gas_array [i].gas_milage;
+				}
+
+				return gasmilage_array;
+			}
+		}
+
+
 		public double Sect_Trip_Latest
 		{
 			get

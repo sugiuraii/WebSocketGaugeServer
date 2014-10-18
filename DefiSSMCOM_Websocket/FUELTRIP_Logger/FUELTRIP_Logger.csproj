@@ -66,4 +66,14 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DefiSSMCOM_Common_Lib\DefiSSMCOM_Common_Lib.csproj">
+      <Project>{898D1578-B886-48F0-8A17-253548C67B3F}</Project>
+      <Name>DefiSSMCOM_Common_Lib</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DefiCOM_WebSocket_Server\DefiCOM_WebSocket_Server.csproj">
+      <Project>{C9466584-60DF-4E42-A8A4-95CAF8C01550}</Project>
+      <Name>DefiCOM_WebSocket_Server</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>
