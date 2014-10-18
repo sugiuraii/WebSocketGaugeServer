@@ -5,6 +5,7 @@ using SuperSocket.ClientEngine;
 using SuperWebSocket;
 using WebSocket4Net;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using DefiSSMCOM.Defi;
 using DefiSSMCOM.SSM;
@@ -112,7 +113,7 @@ namespace FUELTRIP_Logger
 
 			//Websocket server setup
 			_appServer = new WebSocketServer ();
-			this.WebsocketServer_ListenPortNo = 2012;
+			this.WebsocketServer_ListenPortNo = 2014;
 			if (!_appServer.Setup(this.WebsocketServer_ListenPortNo)) //Setup with listening port
 			{
 				Console.WriteLine("Failed to setup!");
@@ -127,12 +128,12 @@ namespace FUELTRIP_Logger
 			_deficom_ws_client.Error += new EventHandler<ErrorEventArgs>(_deficom_ws_client_Error);
 			_deficom_ws_client.Closed += new EventHandler(_deficom_ws_client_Closed);
 			_deficom_ws_client.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_deficom_ws_client_MessageReceived);
-			_ssmcom_ws_client = new WebSocket (ssmcom_WS_URL);
-			//ssmcom ws
-			_ssmcom_ws_client.Opened += new EventHandler(_deficom_ws_client_Opened);
-			_ssmcom_ws_client.Error += new EventHandler<ErrorEventArgs>(_deficom_ws_client_Error);
-			_ssmcom_ws_client.Closed += new EventHandler(_deficom_ws_client_Closed);
-			_ssmcom_ws_client.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_deficom_ws_client_MessageReceived);
+            //ssmcom ws
+            _ssmcom_ws_client = new WebSocket (ssmcom_WS_URL);
+			_ssmcom_ws_client.Opened += new EventHandler(_ssmcom_ws_client_Opened);
+			_ssmcom_ws_client.Error += new EventHandler<ErrorEventArgs>(_ssmcom_ws_client_Error);
+			_ssmcom_ws_client.Closed += new EventHandler(_ssmcom_ws_client_Closed);
+			_ssmcom_ws_client.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_ssmcom_ws_client_MessageReceived);
 			running_state = false;
 		}
 
@@ -140,7 +141,7 @@ namespace FUELTRIP_Logger
 		{
 			running_state = true;
 			_nenpi_trip_calc.load_trip_gas ();
-			_deficom_ws_client.Open ();
+			//_deficom_ws_client.Open ();
 			_ssmcom_ws_client.Open ();
 			_appServer.Start ();
 		}
@@ -149,7 +150,7 @@ namespace FUELTRIP_Logger
 		{
 			running_state = false;
 			_nenpi_trip_calc.save_trip_gas ();
-			_deficom_ws_client.Close ();
+			//_deficom_ws_client.Close ();
 			_ssmcom_ws_client.Close ();
 			_appServer.Stop ();
 		}
@@ -284,17 +285,24 @@ namespace FUELTRIP_Logger
 		// Parse VAL packet
 		private void parse_val_paket(string jsonmsg, SSM_DEFI_mode ssm_defi_mode)
 		{
+
+
 			string received_JSON_mode;
 			try{
-				var msg_dict = JsonConvert.DeserializeObject<Dictionary<string,string>> (jsonmsg);
-				received_JSON_mode = msg_dict ["mode"];
+                JObject jobject = JObject.Parse(jsonmsg);
+				received_JSON_mode = jobject.Property("mode").Value.ToString();
 			}
 			catch( KeyNotFoundException ex) {
-				error_msg (ex.GetType().ToString() + " " + ex.Message);
+                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
+            catch (JsonReaderException ex)
+            {
+                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                return;
+            }
 			catch (JsonException ex) {
-				error_msg (ex.GetType().ToString() + " " + ex.Message);
+                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
 
@@ -311,26 +319,39 @@ namespace FUELTRIP_Logger
 					}
 					else if(ssm_defi_mode == SSM_DEFI_mode.SSM)
 					{
+                        //Console.WriteLine(jsonmsg);
 						_current_speed = double.Parse(val_json.val[SSM_Parameter_Code.Vehicle_Speed.ToString()]);
 						_current_injpulse_width = double.Parse(val_json.val[SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString()]);
 					}
 					_nenpi_trip_calc.update(_current_tacho,_current_speed,_current_injpulse_width);
 				}
+                else if (received_JSON_mode == "ERR")
+                {
+                    ErrorJSONFormat err_json = JsonConvert.DeserializeObject<ErrorJSONFormat>(jsonmsg);
+                    err_json.Validate();
+                    error_msg("Error occured from " + ssm_defi_mode.ToString() + ":" + err_json.msg);
+                }
+                else if (received_JSON_mode == "RES")
+                {
+                    ResponseJSONFormat res_json = JsonConvert.DeserializeObject<ResponseJSONFormat>(jsonmsg);
+                    res_json.Validate();
+                    error_msg("Response from " + ssm_defi_mode.ToString() + ":" + res_json.msg);
+                }
 			}
 			catch(JSONFormatsException ex) {
-				error_msg (ex.GetType().ToString() + " " + ex.Message);
+				error_msg (ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
 			catch(JsonException ex) {
-				error_msg (ex.GetType().ToString() + " " + ex.Message);
+                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
 			catch(KeyNotFoundException ex){
-				error_msg (ex.GetType().ToString() + " " + ex.Message);
+                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
 			catch(FormatException ex) {
-				error_msg (ex.GetType().ToString() + " " + ex.Message);
+                error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
 				return;
 			}
 		}
@@ -351,9 +372,8 @@ namespace FUELTRIP_Logger
 		}
 		private void _deficom_ws_client_Error(object sender, EventArgs e)
 		{
-			error_msg("Deficom Websocket connection error. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
-			Thread.Sleep (connet_retry_sec * 1000);
-			_deficom_ws_client.Open ();
+			error_msg("Deficom Websocket connection error.");
+            _deficom_ws_client.Close();
 		}
 		private void _deficom_ws_client_Closed(object sender, EventArgs e)
 		{
@@ -371,27 +391,41 @@ namespace FUELTRIP_Logger
 		// ssmcom WS client event
 		private void _ssmcom_ws_client_Opened(object sender, EventArgs e)
 		{
-			SSM_COM_ReadJSONFormat ssmcom_read_json = new SSM_COM_ReadJSONFormat ();
-			ssmcom_read_json.code = SSM_Parameter_Code.Vehicle_Speed.ToString ();
-			ssmcom_read_json.read_mode = "FAST";
-			ssmcom_read_json.flag = true;
-			_ssmcom_ws_client.Send(ssmcom_read_json.Serialize());
-			ssmcom_read_json.read_mode = "SLOW";
-			_ssmcom_ws_client.Send (ssmcom_read_json.Serialize ());
+            SSM_SLOWREAD_IntervalJSONFormat ssmcom_slowread_json = new SSM_SLOWREAD_IntervalJSONFormat();
+            ssmcom_slowread_json.interval = 20;
+            _ssmcom_ws_client.Send(ssmcom_slowread_json.Serialize());
 
-			ssmcom_read_json.code = SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString();
-			ssmcom_read_json.read_mode = "FAST";
-			ssmcom_read_json.flag = true;
-			_ssmcom_ws_client.Send(ssmcom_read_json.Serialize());
-			ssmcom_read_json.read_mode = "SLOW";
-			_ssmcom_ws_client.Send (ssmcom_read_json.Serialize ());
+            SSM_COM_ReadJSONFormat ssmcom_read_json1 = new SSM_COM_ReadJSONFormat();
+            ssmcom_read_json1.code = SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString();
+            ssmcom_read_json1.read_mode = "SLOW";
+            ssmcom_read_json1.flag = true;
+            _ssmcom_ws_client.Send(ssmcom_read_json1.Serialize());
+
+            SSM_COM_ReadJSONFormat ssmcom_read_json2 = new SSM_COM_ReadJSONFormat();
+			ssmcom_read_json2.code = SSM_Parameter_Code.Vehicle_Speed.ToString ();
+			ssmcom_read_json2.read_mode = "FAST";
+			ssmcom_read_json2.flag = true;
+			_ssmcom_ws_client.Send(ssmcom_read_json2.Serialize());
+
+            SSM_COM_ReadJSONFormat ssmcom_read_json3 = new SSM_COM_ReadJSONFormat();
+            ssmcom_read_json3 = new SSM_COM_ReadJSONFormat();
+            ssmcom_read_json3.code = SSM_Parameter_Code.Vehicle_Speed.ToString();
+            ssmcom_read_json3.read_mode = "SLOW";
+            ssmcom_read_json3.flag = true;
+			_ssmcom_ws_client.Send (ssmcom_read_json3.Serialize ());
+
+            SSM_COM_ReadJSONFormat ssmcom_read_json4 = new SSM_COM_ReadJSONFormat();
+            ssmcom_read_json4 = new SSM_COM_ReadJSONFormat();
+            ssmcom_read_json4.code = SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString();
+            ssmcom_read_json4.read_mode = "FAST";
+            ssmcom_read_json4.flag = true;
+            _ssmcom_ws_client.Send(ssmcom_read_json4.Serialize());
 
 		}
 		private void _ssmcom_ws_client_Error(object sender, EventArgs e)
 		{
-			error_msg("SSMcom Websocket connection error. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
-			Thread.Sleep (connet_retry_sec * 1000);
-			_deficom_ws_client.Open ();
+			error_msg("SSMcom Websocket connection error.");
+			_deficom_ws_client.Close ();
 		}
 		private void _ssmcom_ws_client_Closed(object sender, EventArgs e)
 		{

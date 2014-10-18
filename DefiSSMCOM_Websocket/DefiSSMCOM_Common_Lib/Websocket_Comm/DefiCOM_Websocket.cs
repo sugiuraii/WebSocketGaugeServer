@@ -65,7 +65,7 @@ namespace DefiSSMCOM.WebSocket
 		{
 			// Create Deficom
 			deficom1 = new DefiCOM ();
-			this.Websocket_PortNo = 2012;
+			this.Websocket_PortNo = 2013;
 			this.DefiCOM_PortName = "COM1";
 			deficom1.DefiLinkPacketReceived += new EventHandler (deficom1_DefiLinkPacketReceived);
 

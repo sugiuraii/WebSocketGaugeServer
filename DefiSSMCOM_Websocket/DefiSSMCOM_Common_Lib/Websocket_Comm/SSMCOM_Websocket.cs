@@ -200,11 +200,9 @@ namespace DefiSSMCOM.WebSocket
 						msg_data.val.Add(ssmcode.ToString(),ssmcom1.get_value(ssmcode).ToString());
 					}
 					msg_data.Validate ();
-
-					String msg = JsonConvert.SerializeObject (msg_data);
-
-					session.Send (msg);
-				} 
+				}
+                String msg = JsonConvert.SerializeObject(msg_data);
+                session.Send(msg);
 			}
 		}
 

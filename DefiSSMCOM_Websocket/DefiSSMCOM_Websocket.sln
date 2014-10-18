@@ -33,6 +33,6 @@ Global
 		{D3CE60E7-5AFF-4D1A-851E-B886DC7B67E1}.Release|x86.Build.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
-		StartupItem = FUELTRIP_Logger\FUELTRIP_Logger.csproj
+		StartupItem = SSMCOM_WebSocket_Server\SSMCOM_WebSocket_Server.csproj
 	EndGlobalSection
 EndGlobal

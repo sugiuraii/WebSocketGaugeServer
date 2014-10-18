@@ -4,8 +4,8 @@ namespace FUELTRIP_Logger
 {
 	class MainClass
 	{
-		private const string deficom_ws_URL = "ws://localhost:2012/";
-		private const string ssmcom_ws_URL = "ws://localhost:2013/";
+		private const string deficom_ws_URL = "ws://localhost:2013/";
+		private const string ssmcom_ws_URL = "ws://localhost:2012/";
 
 		public static void Main (string[] args)
 		{
