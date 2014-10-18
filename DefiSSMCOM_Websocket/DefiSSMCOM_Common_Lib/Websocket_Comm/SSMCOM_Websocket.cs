@@ -13,12 +13,26 @@ namespace DefiSSMCOM.WebSocket
 {
 	public class SSMCOM_Websocket_sessionparam
 	{
+        public Dictionary<SSM_Parameter_Code, bool> SlowSendlist,FastSendlist;
 		public SSMCOM_Websocket_sessionparam()
 		{
+            this.SlowSendlist = new Dictionary<SSM_Parameter_Code, bool>();
+            this.FastSendlist = new Dictionary<SSM_Parameter_Code, bool>();
+
+            foreach (SSM_Parameter_Code code in Enum.GetValues(typeof(SSM_Parameter_Code)))
+            {
+                this.SlowSendlist.Add(code, false);
+                this.FastSendlist.Add(code, false);
+            }
 		}
 
 		public void reset()
 		{
+            foreach (SSM_Parameter_Code code in Enum.GetValues(typeof(SSM_Parameter_Code)))
+            {
+                this.SlowSendlist[code] = false;
+                this.FastSendlist[code] = false;
+            }
 		}
 	}
 
@@ -109,18 +123,29 @@ namespace DefiSSMCOM.WebSocket
 
 		private void appServer_NewSessionConnected(WebSocketSession session)
 		{
+            SSMCOM_Websocket_sessionparam sendparam = new SSMCOM_Websocket_sessionparam();
+            session.Items.Add("Param", sendparam);
+
             Console.WriteLine("New session connected from : " + session.Host);
             logger.Info("New session connected from : " + session.Host);
-            //SSMCOM_Websocket_sessionparam sendparam = new SSMCOM_Websocket_sessionparam();
-			//session.Items.Add ("Param", sendparam);
 		}
 			
 
 		private void appServer_NewMessageReceived(WebSocketSession session, string message)
 		{
 
-			//SSMCOM_Websocket_sessionparam sessionparam = (SSMCOM_Websocket_sessionparam)session.Items ["Param"];
-			//Console.WriteLine (message);
+            SSMCOM_Websocket_sessionparam sessionparam;
+            try
+            {
+                sessionparam = (SSMCOM_Websocket_sessionparam)session.Items["Param"];
+                //Console.WriteLine (message);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
+                return;
+            }
+
 
 			if (message == "") {
 				send_error_msg (session, "Empty message is received.");
@@ -146,8 +171,9 @@ namespace DefiSSMCOM.WebSocket
 				{
 				//SSM COM all reset
 				case ("RESET"):
-					ssmcom1.set_all_disable();
-					send_response_msg(session, "SSMCOM RESET. All parameters are disabled.");
+                    sessionparam.reset();
+                    update_ssmcom_readflag();
+					send_response_msg(session, "SSMCOM session RESET. All send parameters are disabled.");
 					break;
 				case ("SSM_COM_READ"):
 					SSM_COM_ReadJSONFormat msg_obj_ssmread = JsonConvert.DeserializeObject<SSM_COM_ReadJSONFormat>(message);
@@ -157,13 +183,15 @@ namespace DefiSSMCOM.WebSocket
 					bool flag = msg_obj_ssmread.flag;
 
 					if(msg_obj_ssmread.read_mode == "FAST"){
-						ssmcom1.set_fastread_flag(target_code,flag);
+                        sessionparam.FastSendlist[target_code] = flag;
+                        update_ssmcom_readflag();
 					}
 					else{
-						ssmcom1.set_slowread_flag(target_code,flag);
-					}
+                        sessionparam.SlowSendlist[target_code] = flag;
+                        update_ssmcom_readflag();
+                    }
 						
-					send_response_msg(session, "SSMCOM read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString());
+					send_response_msg(session, "SSMCOM session read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString());
 					break;
 
 				case ("SSM_SLOWREAD_INTERVAL"):
@@ -196,23 +224,37 @@ namespace DefiSSMCOM.WebSocket
 			foreach (var session in sessions) 
 			{
 				ValueJSONFormat msg_data = new ValueJSONFormat ();
-
-				//SSMCOM_Websocket_sessionparam sendparam = (SSMCOM_Websocket_sessionparam)session.Items["Param"];
+                SSMCOM_Websocket_sessionparam sendparam;
+                try
+                {
+                    sendparam = (SSMCOM_Websocket_sessionparam)session.Items["Param"];
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
+                    continue;
+                }
 
 				foreach (SSM_Parameter_Code ssmcode in args.Received_Parameter_Code) 
 				{
-					// Return Switch content
-					if (ssmcode >= SSM_Parameter_Code.Switch_P0x061 && ssmcode <= SSM_Parameter_Code.Switch_P0x121) {
-						List<SSM_Switch_Code> switch_code_list = SSM_Content_Table.get_Switchcodes_from_Parametercode (ssmcode);
-						foreach (SSM_Switch_Code switch_code in switch_code_list) {
-							msg_data.val.Add (switch_code.ToString (), ssmcom1.get_switch (switch_code).ToString ());
-						}
-					}
-					// Return Numeric content
-					else {
-						msg_data.val.Add(ssmcode.ToString(),ssmcom1.get_value(ssmcode).ToString());
-					}
-					msg_data.Validate ();
+                    if (sendparam.FastSendlist[ssmcode] || sendparam.SlowSendlist[ssmcode])
+                    {
+                        // Return Switch content
+                        if (ssmcode >= SSM_Parameter_Code.Switch_P0x061 && ssmcode <= SSM_Parameter_Code.Switch_P0x121)
+                        {
+                            List<SSM_Switch_Code> switch_code_list = SSM_Content_Table.get_Switchcodes_from_Parametercode(ssmcode);
+                            foreach (SSM_Switch_Code switch_code in switch_code_list)
+                            {
+                                msg_data.val.Add(switch_code.ToString(), ssmcom1.get_switch(switch_code).ToString());
+                            }
+                        }
+                        // Return Numeric content
+                        else
+                        {
+                            msg_data.val.Add(ssmcode.ToString(), ssmcom1.get_value(ssmcode).ToString());
+                        }
+                        msg_data.Validate();
+                    }
 				}
 
                 if (msg_data.val.Count > 0)
@@ -222,6 +264,37 @@ namespace DefiSSMCOM.WebSocket
                 }
 			}
 		}
+
+        private void update_ssmcom_readflag()
+        {
+            var sessions = appServer.GetAllSessions ();
+
+            foreach (var session in sessions)
+            {
+                //reset all ssmcom flag
+                ssmcom1.set_all_disable();
+
+                //set again from the session param read parameter list
+                SSMCOM_Websocket_sessionparam sessionparam;
+                try
+                {
+                    sessionparam = (SSMCOM_Websocket_sessionparam)session.Items["Param"];
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
+                    continue;
+                }
+
+                foreach (SSM_Parameter_Code code in Enum.GetValues(typeof(SSM_Parameter_Code)))
+                {
+                    if (sessionparam.FastSendlist[code])
+                        ssmcom1.set_fastread_flag(code, true);
+                    if (sessionparam.SlowSendlist[code])
+                        ssmcom1.set_slowread_flag(code, true);
+                }
+            }
+        }
 
 		private void send_error_msg(WebSocketSession session,string message)
 		{
