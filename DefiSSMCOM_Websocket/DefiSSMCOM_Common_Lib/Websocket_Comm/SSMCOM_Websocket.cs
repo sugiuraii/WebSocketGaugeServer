@@ -47,6 +47,9 @@ namespace DefiSSMCOM.WebSocket
 
 		private bool running_state = false;
 
+        //Websocketセッション作成（消去）が完了するまではフラグ変更等の処理を待つためのlock object
+        private object create_session_busy_lock_obj = new object();
+
 		public int Websocket_PortNo { get; set; }
 		public string SSMCOM_PortName
 		{
@@ -119,99 +122,114 @@ namespace DefiSSMCOM.WebSocket
 		{
             Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
             logger.Info("Session closed from : " + session.Host + " Reason :" + reason.ToString());
-            update_ssmcom_readflag();
+
+            lock (create_session_busy_lock_obj)
+                update_ssmcom_readflag();
         }
 
 		private void appServer_NewSessionConnected(WebSocketSession session)
 		{
-            SSMCOM_Websocket_sessionparam sendparam = new SSMCOM_Websocket_sessionparam();
-            session.Items.Add("Param", sendparam);
-
-            Console.WriteLine("New session connected from : " + session.Host);
-            logger.Info("New session connected from : " + session.Host);
+            lock (create_session_busy_lock_obj)//Websocketセッション作成処理が終わるまで、後続のパケット処理を待つ
+            { 
+                SSMCOM_Websocket_sessionparam sendparam = new SSMCOM_Websocket_sessionparam();
+                session.Items.Add("Param", sendparam);
+                
+                Console.WriteLine("New session connected from : " + session.Host);
+                logger.Info("New session connected from : " + session.Host);
+            }
 		}
 			
 
 		private void appServer_NewMessageReceived(WebSocketSession session, string message)
 		{
-
-            SSMCOM_Websocket_sessionparam sessionparam;
-            try
+            lock (create_session_busy_lock_obj)//Websocketセッション作成処理が終わるまで、後続のパケット処理を待つ
             {
-                sessionparam = (SSMCOM_Websocket_sessionparam)session.Items["Param"];
-                //Console.WriteLine (message);
-            }
-            catch (KeyNotFoundException ex)
-            {
-                logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
-                return;
-            }
+                SSMCOM_Websocket_sessionparam sessionparam;
+                try
+                {
+                    sessionparam = (SSMCOM_Websocket_sessionparam)session.Items["Param"];
+                    //Console.WriteLine (message);
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
+                    return;
+                }
 
 
-			if (message == "") {
-				send_error_msg (session, "Empty message is received.");
-				return;
-			}
-			string received_JSON_mode;
-			try{
-				var msg_dict = JsonConvert.DeserializeObject<Dictionary<string,string>> (message);
-				received_JSON_mode = msg_dict ["mode"];
-			}
-			catch( KeyNotFoundException ex) {
-				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
-				return;
-			}
-			catch (JsonException ex) {
-				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
-				return;
-			}
+                if (message == "")
+                {
+                    send_error_msg(session, "Empty message is received.");
+                    return;
+                }
+                string received_JSON_mode;
+                try
+                {
+                    var msg_dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(message);
+                    received_JSON_mode = msg_dict["mode"];
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
+                    return;
+                }
+                catch (JsonException ex)
+                {
+                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
+                    return;
+                }
 
-			try
-			{
-				switch(received_JSON_mode)
-				{
-				//SSM COM all reset
-				case ("RESET"):
-                    sessionparam.reset();
-                    update_ssmcom_readflag();
-					send_response_msg(session, "SSMCOM session RESET. All send parameters are disabled.");
-					break;
-				case ("SSM_COM_READ"):
-					SSM_COM_ReadJSONFormat msg_obj_ssmread = JsonConvert.DeserializeObject<SSM_COM_ReadJSONFormat>(message);
-					msg_obj_ssmread.Validate();
+                try
+                {
+                    switch (received_JSON_mode)
+                    {
+                        //SSM COM all reset
+                        case ("RESET"):
+                            sessionparam.reset();
+                            update_ssmcom_readflag();
+                            send_response_msg(session, "SSMCOM session RESET. All send parameters are disabled.");
+                            break;
+                        case ("SSM_COM_READ"):
+                            SSM_COM_ReadJSONFormat msg_obj_ssmread = JsonConvert.DeserializeObject<SSM_COM_ReadJSONFormat>(message);
+                            msg_obj_ssmread.Validate();
 
-					SSM_Parameter_Code target_code = (SSM_Parameter_Code)Enum.Parse(typeof(SSM_Parameter_Code),msg_obj_ssmread.code);
-					bool flag = msg_obj_ssmread.flag;
+                            SSM_Parameter_Code target_code = (SSM_Parameter_Code)Enum.Parse(typeof(SSM_Parameter_Code), msg_obj_ssmread.code);
+                            bool flag = msg_obj_ssmread.flag;
 
-					if(msg_obj_ssmread.read_mode == "FAST"){
-                        sessionparam.FastSendlist[target_code] = flag;
-					}
-					else{
-                        sessionparam.SlowSendlist[target_code] = flag;
+                            if (msg_obj_ssmread.read_mode == "FAST")
+                            {
+                                sessionparam.FastSendlist[target_code] = flag;
+                            }
+                            else
+                            {
+                                sessionparam.SlowSendlist[target_code] = flag;
+                            }
+                            send_response_msg(session, "SSMCOM session read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString());
+                            update_ssmcom_readflag();
+                            break;
+
+                        case ("SSM_SLOWREAD_INTERVAL"):
+                            SSM_SLOWREAD_IntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<SSM_SLOWREAD_IntervalJSONFormat>(message);
+                            msg_obj_interval.Validate();
+                            ssmcom1.Slow_Read_Interval = msg_obj_interval.interval;
+
+                            send_response_msg(session, "SSMCOM slowread interval to : " + msg_obj_interval.interval.ToString());
+                            break;
+                        default:
+                            throw new JSONFormatsException("Unsuppoted mode property.");
                     }
-					send_response_msg(session, "SSMCOM session read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString());
-                    update_ssmcom_readflag();
-					break;
-
-				case ("SSM_SLOWREAD_INTERVAL"):
-					SSM_SLOWREAD_IntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<SSM_SLOWREAD_IntervalJSONFormat>(message);
-					msg_obj_interval.Validate();
-					ssmcom1.Slow_Read_Interval = msg_obj_interval.interval;
-
-					send_response_msg(session, "SSMCOM slowread interval to : " + msg_obj_interval.interval.ToString());
-					break;
-				default:
-					throw new JSONFormatsException("Unsuppoted mode property.");
-				}
-			}
-			catch(JSONFormatsException ex) {
-				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
-				return;
-			}
-			catch(JsonException ex) {
-				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
-				return;
-			}
+                }
+                catch (JSONFormatsException ex)
+                {
+                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
+                    return;
+                }
+                catch (JsonException ex)
+                {
+                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
+                    return;
+                }
+            }
 
 
 		}

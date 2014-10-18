@@ -52,6 +52,9 @@ namespace DefiSSMCOM.WebSocket
         //log4net
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        //Websocketセッション作成（消去）が完了するまではフラグ変更等の処理を待つためのlock object
+        private object create_session_busy_lock_obj = new object();
+
 		public int Websocket_PortNo { get; set; }
 		public string DefiCOM_PortName
 		{
@@ -122,90 +125,99 @@ namespace DefiSSMCOM.WebSocket
 
 		private void appServer_SessionClosed(WebSocketSession session, CloseReason reason)
 		{
-			Console.WriteLine ("Session closed from : " + session.Host + " Reason :" + reason.ToString());
+            Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
             logger.Info("Session closed from : " + session.Host + " Reason :" + reason.ToString());
 		}
 
 		private void appServer_NewSessionConnected(WebSocketSession session)
 		{
-            DefiCOM_Websocket_sessionparam sendparam = new DefiCOM_Websocket_sessionparam();
-            session.Items.Add("Param", sendparam);
+            lock (create_session_busy_lock_obj)//Websocketセッション作成処理が終わるまで、後続のパケット処理を待つ
+            {
+                DefiCOM_Websocket_sessionparam sendparam = new DefiCOM_Websocket_sessionparam();
+                session.Items.Add("Param", sendparam);
 
-			Console.WriteLine ("New session connected from : " + session.Host);
-            logger.Info("New session connected from : " + session.Host);
+                Console.WriteLine("New session connected from : " + session.Host);
+                logger.Info("New session connected from : " + session.Host);
+            }
 		}
 			
 
 		private void appServer_NewMessageReceived(WebSocketSession session, string message)
 		{
-
-			DefiCOM_Websocket_sessionparam sessionparam;
-            try
+            lock (create_session_busy_lock_obj)//Websocketセッション作成処理が終わるまで、後続のパケット処理を待つ
             {
-                sessionparam = (DefiCOM_Websocket_sessionparam)session.Items["Param"];
-                //Console.WriteLine (message);
+                DefiCOM_Websocket_sessionparam sessionparam;
+                try
+                {
+                    sessionparam = (DefiCOM_Websocket_sessionparam)session.Items["Param"];
+                    //Console.WriteLine (message);
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
+                    return;
+                }
+
+                if (message == "")
+                {
+                    send_error_msg(session, "Empty message is received.");
+                    return;
+                }
+                string received_JSON_mode;
+                try
+                {
+                    var msg_dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(message);
+                    received_JSON_mode = msg_dict["mode"];
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
+                    return;
+                }
+                catch (JsonException ex)
+                {
+                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
+                    return;
+                }
+
+                try
+                {
+                    switch (received_JSON_mode)
+                    {
+                        case ("RESET"):
+                            sessionparam.reset();
+                            send_response_msg(session, "Defi Websocket all parameter reset.");
+                            break;
+                        case ("DEFI_WS_SEND"):
+                            Defi_WS_SendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<Defi_WS_SendJSONFormat>(message);
+                            msg_obj_wssend.Validate();
+                            sessionparam.Sendlist[(Defi_Parameter_Code)Enum.Parse(typeof(Defi_Parameter_Code), msg_obj_wssend.code)] = msg_obj_wssend.flag;
+
+                            send_response_msg(session, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
+                            break;
+
+                        case ("DEFI_WS_INTERVAL"):
+                            Defi_WS_IntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<Defi_WS_IntervalJSONFormat>(message);
+                            msg_obj_interval.Validate();
+                            sessionparam.SendInterval = msg_obj_interval.interval;
+
+                            send_response_msg(session, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
+                            break;
+                        default:
+                            throw new JSONFormatsException("Unsuppoted mode property.");
+                    }
+                }
+                catch (JSONFormatsException ex)
+                {
+                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
+                    return;
+                }
+                catch (JsonException ex)
+                {
+                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
+                    return;
+                }
             }
-            catch(KeyNotFoundException ex)
-            {
-                logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
-                return;
-            }
-
-			if (message == "") {
-				send_error_msg (session, "Empty message is received.");
-				return;
-			}
-			string received_JSON_mode;
-			try{
-				var msg_dict = JsonConvert.DeserializeObject<Dictionary<string,string>> (message);
-				received_JSON_mode = msg_dict ["mode"];
-			}
-			catch( KeyNotFoundException ex) {
-				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
-				return;
-			}
-			catch (JsonException ex) {
-				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
-				return;
-			}
-
-			try
-			{
-				switch(received_JSON_mode)
-				{
-				case ("RESET"):
-					sessionparam.reset();
-					send_response_msg(session, "Defi Websocket all parameter reset.");
-					break;
-				case ("DEFI_WS_SEND"):
-					Defi_WS_SendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<Defi_WS_SendJSONFormat>(message);
-					msg_obj_wssend.Validate();
-					sessionparam.Sendlist[(Defi_Parameter_Code)Enum.Parse(typeof(Defi_Parameter_Code), msg_obj_wssend.code)]=msg_obj_wssend.flag;
-
-					send_response_msg(session, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
-					break;
-
-				case ("DEFI_WS_INTERVAL"):
-					Defi_WS_IntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<Defi_WS_IntervalJSONFormat>(message);
-					msg_obj_interval.Validate();
-					sessionparam.SendInterval = msg_obj_interval.interval;
-
-					send_response_msg(session, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
-					break;
-				default:
-					throw new JSONFormatsException("Unsuppoted mode property.");
-				}
-			}
-			catch(JSONFormatsException ex) {
-				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
-				return;
-			}
-			catch(JsonException ex) {
-				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
-				return;
-			}
-
-
 		}
 
 		private void deficom1_DefiLinkPacketReceived(object sender,EventArgs args)
