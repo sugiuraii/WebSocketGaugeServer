@@ -242,16 +242,18 @@ namespace DefiSSMCOM_Websocket
 
 			DefiCOM_Websocket_sessionparam sessionparam = (DefiCOM_Websocket_sessionparam)session.Items ["Param"];
 			Console.WriteLine (message);
-			var msg_dict = JsonConvert.DeserializeObject<Dictionary<string,string>> (message);
-
 
 			string received_JSON_mode;
-			try
-			{
+			try{
+				var msg_dict = JsonConvert.DeserializeObject<Dictionary<string,string>> (message);
 				received_JSON_mode = msg_dict ["mode"];
 			}
 			catch( KeyNotFoundException ex) {
-				send_error_msg (session, "mode property is not found in incoming packet. :" + ex.Message);
+				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+			catch (JsonException ex) {
+				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
 				return;
 			}
 
@@ -274,10 +276,17 @@ namespace DefiSSMCOM_Websocket
 
 					send_response_msg(session, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
 					break;
+				default:
+					throw new JSONFormatsException("Unsuppoted mode property.");
+					break;
 				}
 			}
 			catch(JSONFormatsException ex) {
-				send_error_msg (session, ex.Message);
+				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
+				return;
+			}
+			catch(JsonException ex) {
+				send_error_msg (session, ex.GetType().ToString() + " " + ex.Message);
 				return;
 			}
 
