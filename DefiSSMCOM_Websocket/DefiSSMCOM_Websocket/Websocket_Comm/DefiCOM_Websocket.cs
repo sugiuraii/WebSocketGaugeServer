@@ -276,6 +276,10 @@ namespace DefiSSMCOM_Websocket
 			{
 				switch(received_JSON_mode)
 				{
+				case ("RESET"):
+					sessionparam.reset();
+					send_response_msg(session, "Defi Websocket all parameter reset.");
+					break;
 				case ("DEFI_WS_SEND"):
 					Defi_WS_SendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<Defi_WS_SendJSONFormat>(message);
 					msg_obj_wssend.Validate();
