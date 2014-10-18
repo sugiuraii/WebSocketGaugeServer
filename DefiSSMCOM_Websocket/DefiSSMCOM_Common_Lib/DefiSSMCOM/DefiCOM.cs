@@ -33,6 +33,7 @@ namespace DefiSSMCOM
             //リセット時のボーレート設定(communticate_reset()参照)
             const int DEFI_RESET_BAUD_RATE = 14400;
 
+
             //コンストラクタ
             public DefiCOM()
             {
@@ -50,6 +51,7 @@ namespace DefiSSMCOM
 
                 //通信エラー発生時のイベント処理登録
                 serialPort1.ErrorReceived += new SerialErrorReceivedEventHandler(SerialPortErrorReceived);
+
 
             }
 
@@ -157,8 +159,8 @@ namespace DefiSSMCOM
             {
                 int i, c;
                 char[] inbuf = new char[DEFI_PACKET_SIZE];
-
                 //読み込みルーチン
+
                 try
                 {
                     //デリミタ(ReceiverID)を見つけるまで読み進める
@@ -176,69 +178,69 @@ namespace DefiSSMCOM
                         c = serialPort1.ReadByte();
                         inbuf[i] = (char)c;
                     }
-
-                    //バッファの残り分は破棄
-                    serialPort1.DiscardInBuffer();
-
-                    //ReceiverIDを判読し、private変数に格納
-                    int j;
-                    for (j = 0; j < DEFI_PACKET_SIZE; j += 5)
-                    {
-                        try
-                        {
-                            if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Boost].Receiver_id)
-                            {
-                                String boost_str = new String(inbuf, j + 2, 3);
-                                _content_table[Defi_Parameter_Code.Boost].Raw_Value = Int32.Parse(boost_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                            }
-                            else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Tacho].Receiver_id)
-                            {
-                                String tacho_str = new String(inbuf, j + 2, 3);
-                                _content_table[Defi_Parameter_Code.Tacho].Raw_Value = Int32.Parse(tacho_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                            }
-                            else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Oil_Pres].Receiver_id)
-                            {
-                                String oilpres_str = new String(inbuf, j + 2, 3);
-                                _content_table[Defi_Parameter_Code.Oil_Pres].Raw_Value = Int32.Parse(oilpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                            }
-                            else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Fuel_Pres].Receiver_id)
-                            {
-                                String fuelpres_str = new String(inbuf, j + 2, 3);
-                                _content_table[Defi_Parameter_Code.Fuel_Pres].Raw_Value = Int32.Parse(fuelpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                            }
-                            else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Ext_Temp].Receiver_id)
-                            {
-                                String exttemp_str = new String(inbuf, j + 2, 3);
-                                _content_table[Defi_Parameter_Code.Ext_Temp].Raw_Value = Int32.Parse(exttemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                            }
-                            else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Oil_Temp].Receiver_id)
-                            {
-                                String oiltemp_str = new String(inbuf, j + 2, 3);
-                                _content_table[Defi_Parameter_Code.Oil_Temp].Raw_Value = Int32.Parse(oiltemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                            }
-                            else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Water_Temp].Receiver_id)
-                            {
-                                String watertemp_str = new String(inbuf, j + 2, 3);
-                                _content_table[Defi_Parameter_Code.Water_Temp].Raw_Value = Int32.Parse(watertemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                            }
-                        }
-                        catch (FormatException ex)
-                        {
-                            //時々DefiPacketが崩れることがあるが、そのまま進める。
-                            warning_message("Invalid Defi packet. " + ex.GetType().ToString() + " " + ex.Message);
-                        }
-                    }
-
-					// Invoke PacketReceived Event
-					DefiLinkPacketReceived(this, EventArgs.Empty);
                 }
                 catch (TimeoutException ex)
                 {
-                   //読み出しタイムアウト時は200ミリ秒待つ（データ受信しなかったときのCPU占有防止）
+                    //読み出しタイムアウト時は200ミリ秒待つ（データ受信しなかったときのCPU占有防止）
                     warning_message("Defi packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
                     Thread.Sleep(200);
+                    return;
                 }
 
+                //バッファの残り分は破棄
+                serialPort1.DiscardInBuffer();
+                    
+                //ReceiverIDを判読し、private変数に格納
+                int j;
+                for (j = 0; j < DEFI_PACKET_SIZE; j += 5)
+                {
+                    try
+                    {
+                        if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Boost].Receiver_id)
+                        {
+                            String boost_str = new String(inbuf, j + 2, 3);
+                            _content_table[Defi_Parameter_Code.Boost].Raw_Value = Int32.Parse(boost_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        }
+                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Tacho].Receiver_id)
+                        {
+                            String tacho_str = new String(inbuf, j + 2, 3);
+                            _content_table[Defi_Parameter_Code.Tacho].Raw_Value = Int32.Parse(tacho_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        }
+                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Oil_Pres].Receiver_id)
+                        {
+                            String oilpres_str = new String(inbuf, j + 2, 3);
+                            _content_table[Defi_Parameter_Code.Oil_Pres].Raw_Value = Int32.Parse(oilpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        }
+                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Fuel_Pres].Receiver_id)
+                        {
+                            String fuelpres_str = new String(inbuf, j + 2, 3);
+                            _content_table[Defi_Parameter_Code.Fuel_Pres].Raw_Value = Int32.Parse(fuelpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        }
+                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Ext_Temp].Receiver_id)
+                        {
+                            String exttemp_str = new String(inbuf, j + 2, 3);
+                            _content_table[Defi_Parameter_Code.Ext_Temp].Raw_Value = Int32.Parse(exttemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        }
+                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Oil_Temp].Receiver_id)
+                        {
+                            String oiltemp_str = new String(inbuf, j + 2, 3);
+                            _content_table[Defi_Parameter_Code.Oil_Temp].Raw_Value = Int32.Parse(oiltemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        }
+                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Water_Temp].Receiver_id)
+                        {
+                            String watertemp_str = new String(inbuf, j + 2, 3);
+                            _content_table[Defi_Parameter_Code.Water_Temp].Raw_Value = Int32.Parse(watertemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        }
+                    }
+                    catch (FormatException ex)
+                    {
+                        //時々DefiPacketが崩れることがあるが、そのまま進める。
+                        warning_message("Invalid Defi packet. " + ex.GetType().ToString() + " " + ex.Message);
+                    }
+                }
+
+				// Invoke PacketReceived Event
+				DefiLinkPacketReceived(this, EventArgs.Empty);                    
             }
 
             //エラー発生時のイベント処理

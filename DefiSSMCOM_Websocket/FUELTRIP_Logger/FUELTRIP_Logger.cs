@@ -90,7 +90,8 @@ namespace FUELTRIP_Logger
 
 	public class FUELTRIP_Logger
 	{
-		private const int connet_retry_sec = 5;
+		private const int CONNECT_RETRY_SEC = 5;
+        private const int DEFIPACKET_INTERVAL = 2;
 		private enum SSM_DEFI_mode{
 			Defi,
 			SSM
@@ -419,7 +420,7 @@ namespace FUELTRIP_Logger
 			defisendcode.flag = true;
 
 			Defi_WS_IntervalJSONFormat definitervalcode = new Defi_WS_IntervalJSONFormat();
-			definitervalcode.interval=0;
+			definitervalcode.interval=DEFIPACKET_INTERVAL;
 
 			_deficom_ws_client.Send(defisendcode.Serialize());
 			_deficom_ws_client.Send(definitervalcode.Serialize());
@@ -430,12 +431,12 @@ namespace FUELTRIP_Logger
 		}
 		private void _deficom_ws_client_Closed(object sender, EventArgs e)
 		{
-            logger.Info("DefiCOM Websocket connection is Closed. Wait " + connet_retry_sec.ToString() + "sec and reconnect.");
-			Thread.Sleep (connet_retry_sec * 1000);
+            logger.Info("DefiCOM Websocket connection is Closed. Wait " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
+			Thread.Sleep (CONNECT_RETRY_SEC * 1000);
             while (_deficom_ws_client.State != WebSocketState.Closed)
             {
-                logger.Info("DefiCOM Websocket is now closing, not closed completely. Wait more " + connet_retry_sec.ToString() + "sec and reconnect.");
-                Thread.Sleep(connet_retry_sec * 1000);
+                logger.Info("DefiCOM Websocket is now closing, not closed completely. Wait more " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
+                Thread.Sleep(CONNECT_RETRY_SEC * 1000);
             }
 			_deficom_ws_client.Open ();
 		}
@@ -489,12 +490,12 @@ namespace FUELTRIP_Logger
         }
 		private void _ssmcom_ws_client_Closed(object sender, EventArgs e)
 		{
-            logger.Info("SSMCOM Websocket connection is Closed. Wait " + connet_retry_sec.ToString() + "sec and reconnect.");
-			Thread.Sleep (connet_retry_sec * 1000);
+            logger.Info("SSMCOM Websocket connection is Closed. Wait " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
+			Thread.Sleep (CONNECT_RETRY_SEC * 1000);
 			while(_ssmcom_ws_client.State != WebSocketState.Closed)
             {
-                logger.Info("SSMCOM Websocket is now closing, not closed completely. Wait more" + connet_retry_sec.ToString() + "sec and reconnect.");
-                Thread.Sleep(connet_retry_sec * 1000);
+                logger.Info("SSMCOM Websocket is now closing, not closed completely. Wait more" + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
+                Thread.Sleep(CONNECT_RETRY_SEC * 1000);
             }
             _ssmcom_ws_client.Open ();
 		}
