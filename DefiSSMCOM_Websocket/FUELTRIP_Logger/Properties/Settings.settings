@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="FUELTRIP_Logger.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="DefiCOM_Websocket_URL" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ws://localhost:2013/</Value>
+    </Setting>
+    <Setting Name="SSMCOM_WebSocket_URL" Type="System.String" Scope="User">
+      <Value Profile="(Default)">ws://localhost:2012/</Value>
+    </Setting>
+    <Setting Name="Listen_Port" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">2014</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>

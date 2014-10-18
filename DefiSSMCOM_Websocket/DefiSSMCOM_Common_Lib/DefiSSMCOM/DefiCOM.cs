@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.IO.Ports;
+using log4net;
 
 namespace DefiSSMCOM
 {
@@ -22,6 +23,8 @@ namespace DefiSSMCOM
 
 			// Defilink received Event
 			public event EventHandler DefiLinkPacketReceived;
+            //Log4net logger
+            private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
             //DefiLinkパケットサイズ
             const int DEFI_PACKET_SIZE = 35;
@@ -65,7 +68,7 @@ namespace DefiSSMCOM
                     }
                     catch (System.InvalidOperationException ex1)
                     {
-						DefiSSMCOM.Alert.message(ex1.Message, "DefiCOMのエラー");
+						error_message("Port name set error : " + ex1.GetType().ToString() + " " + ex1.Message);
                     }
                 }
             }
@@ -76,6 +79,7 @@ namespace DefiSSMCOM
                 _communicate_realtime_start = true;
                 _communicate_realtime_error = false;
                 communicate_realtime_thread1.Start();
+                info_message("DefiCom communication Started.");
             }
 
             public void communicate_realtime_stop()
@@ -85,6 +89,7 @@ namespace DefiSSMCOM
 
                 //通信スレッド終了まで待つ
                 communicate_realtime_thread1.Join();
+                info_message("DefiCom communication Stopped.");
             }
 
             //読み込みスレッド実装（communicate_realtime_start()からスレッドを作って呼び出すこと）
@@ -108,15 +113,15 @@ namespace DefiSSMCOM
                 }
                 catch (System.IO.IOException ex)
                 {
-					DefiSSMCOM.Alert.message(ex.Message,"DefiCOMポートが開けません");
+					error_message(ex.GetType().ToString() + " " +  ex.Message);
                 }
                 catch (System.InvalidOperationException ex)
                 {
-					DefiSSMCOM.Alert.message(ex.Message,"DefiCOMポートはすでに開かれています。");
+                    error_message(ex.GetType().ToString() + " " + ex.Message);
                 }
                 catch (System.UnauthorizedAccessException ex)
                 {
-					DefiSSMCOM.Alert.message(ex.Message,"DefiCOMポートへのアクセスを拒否されました。");
+                    error_message(ex.GetType().ToString() + " " + ex.Message);
                 }
                 finally
                 {
@@ -130,6 +135,7 @@ namespace DefiSSMCOM
             //　通信リセット
             private void communticate_reset()
             {
+                info_message("Deficom communication reset.");
                 serialPort1.Close();
 
                 //フレームをずらすために、一旦別ボーレートで通信させる
@@ -218,8 +224,8 @@ namespace DefiSSMCOM
                         }
                         catch (FormatException ex)
                         {
-                            // 時々パケットに文字化け？　うまく変換できないことがあるが、
-                            // Stringからうまく変換できなかったとしても、処理は続行する
+                            //時々DefiPacketが崩れることがあるが、そのまま進める。
+                            warning_message("Invalid Defi packet. " + ex.GetType().ToString() + " " + ex.Message);
                         }
                     }
 
@@ -229,6 +235,7 @@ namespace DefiSSMCOM
                 catch (TimeoutException ex)
                 {
                    //読み出しタイムアウト時は200ミリ秒待つ（データ受信しなかったときのCPU占有防止）
+                    warning_message("Defi packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
                     Thread.Sleep(200);
                 }
 
@@ -239,6 +246,7 @@ namespace DefiSSMCOM
             {
 				SerialPort port = (SerialPort)sender;
                 _communicate_realtime_error = true;
+                error_message("SerialPortError Event is invoked.");
             }
 
             public double get_value(Defi_Parameter_Code code)
@@ -254,6 +262,24 @@ namespace DefiSSMCOM
             public string get_unit(Defi_Parameter_Code code)
             {
                 return _content_table[code].Unit;
+            }
+
+            private void error_message(string message)
+            {
+                string send_message = "DefiCOM Error : " + message;
+                logger.Error(message);
+            }
+
+            private void info_message(string message)
+            {
+                string send_message = "DefiCOM Info : " + message;
+                logger.Info(message);
+            }
+
+            private void warning_message(string message)
+            {
+                string send_message = "DefiCOM Warning : " + message;
+                logger.Warn(message);
             }
         }
     }

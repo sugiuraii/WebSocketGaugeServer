@@ -7,6 +7,7 @@ using SuperWebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Reflection;
+using log4net;
 
 namespace DefiSSMCOM.WebSocket
 {
@@ -26,6 +27,9 @@ namespace DefiSSMCOM.WebSocket
 	{
 		private SSMCOM ssmcom1;
 		private WebSocketServer appServer;
+
+        //log4net
+        private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		private bool running_state = false;
 
@@ -48,14 +52,15 @@ namespace DefiSSMCOM.WebSocket
 			ssmcom1 = new SSMCOM ();
 			this.Websocket_PortNo = 2012;
 			this.SSMCOM_PortName = "COM1";
-			ssmcom1.SSMDataReceived += new SSMCOMDataReceivedEventHandler (ssmcom1_SSMDataReceived);
+			ssmcom1.SSMDataReceived += new EventHandler<SSMCOMDataReceivedEventArgs> (ssmcom1_SSMDataReceived);
 
 			// Create Websocket server
 			appServer = new WebSocketServer();
 			if (!appServer.Setup(this.Websocket_PortNo)) //Setup with listening port
 			{
-				Console.WriteLine("Failed to setup!");
-			}
+                Console.WriteLine("Failed to setup!");
+                logger.Fatal("Failed to setup websocket server.");
+            }
 			appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(appServer_NewMessageReceived);
 			appServer.NewSessionConnected += new SessionHandler<WebSocketSession> (appServer_NewSessionConnected);
 			appServer.SessionClosed += new SessionHandler<WebSocketSession, CloseReason> (appServer_SessionClosed);
@@ -67,10 +72,11 @@ namespace DefiSSMCOM.WebSocket
 			//Try to start the appServer
 			if (!appServer.Start())
 			{
-				Console.WriteLine("Failed to start!");
-				Console.ReadKey();
-				return;
+                Console.WriteLine("Failed to start!");
+                logger.Fatal("Failed to start websocket server.");
+                return;
 			}
+            logger.Info("Websocket server is started.");
 
 			this.running_state = true;
 		}
@@ -78,28 +84,31 @@ namespace DefiSSMCOM.WebSocket
 		public void stop ()
 		{
 			if (!this.running_state) {
-				Console.WriteLine ("Websocket server is not running");
-				return;
+                Console.WriteLine("Websocket server is not running");
+                logger.Error("Websocket stop is called. But the websocket server is not running.");
+                return;
 			}
 			//Stop the appServer
 			appServer.Stop();
 
 			Console.WriteLine();
-			Console.WriteLine("The server was stopped!");
-			Console.ReadKey();
+            Console.WriteLine("The server was stopped!");
+            logger.Info("Websocket server is stopped");
 
 			ssmcom1.communicate_stop ();
 		}
 
 		private void appServer_SessionClosed(WebSocketSession session, CloseReason reason)
 		{
-			Console.WriteLine ("Session closed from : " + session.Host + " Reason :" + reason.ToString());
-		}
+            Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
+            logger.Info("Session closed from : " + session.Host + " Reason :" + reason.ToString());
+        }
 
 		private void appServer_NewSessionConnected(WebSocketSession session)
 		{
-			Console.WriteLine ("New session connected from : " + session.Host);
-			SSMCOM_Websocket_sessionparam sendparam = new SSMCOM_Websocket_sessionparam ();
+            Console.WriteLine("New session connected from : " + session.Host);
+            logger.Info("New session connected from : " + session.Host);
+            SSMCOM_Websocket_sessionparam sendparam = new SSMCOM_Websocket_sessionparam();
 			session.Items.Add ("Param", sendparam);
 		}
 			
@@ -212,8 +221,9 @@ namespace DefiSSMCOM.WebSocket
 			json_error_msg.msg = message;
 
 			session.Send (json_error_msg.Serialize());
-			Console.WriteLine ("Error:"+message);
-		}
+            Console.WriteLine("Send Error message to " + session.Host + " : " + message);
+            logger.Error("Send Error message to " + session.Host + " : " + message);
+        }
 
 		private void send_response_msg(WebSocketSession session,string message)
 		{
@@ -221,8 +231,9 @@ namespace DefiSSMCOM.WebSocket
 			json_response_msg.msg = message;
 			session.Send (json_response_msg.Serialize());
 
-			Console.WriteLine ("Response:"+message);
-		}
+            Console.WriteLine("Send Response message to " + session.Host + " : " + message);
+            logger.Info("Send Response message to " + session.Host + " : " + message);
+        }
 
 	}
 }

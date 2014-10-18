@@ -1,16 +1,18 @@
 ﻿using System;
+using log4net;
 
 namespace FUELTRIP_Logger
 {
 	class MainClass
 	{
-		private const string deficom_ws_URL = "ws://localhost:2013/";
-		private const string ssmcom_ws_URL = "ws://localhost:2012/";
+
+        //log4net
+        private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
 		public static void Main (string[] args)
 		{
-			FUELTRIP_Logger fueltriplogger1 = new FUELTRIP_Logger (deficom_ws_URL,ssmcom_ws_URL);
-			fueltriplogger1.WebsocketServer_ListenPortNo = 2014;
+			FUELTRIP_Logger fueltriplogger1 = new FUELTRIP_Logger (Properties.Settings.Default.DefiCOM_Websocket_URL,Properties.Settings.Default.SSMCOM_WebSocket_URL);
+            fueltriplogger1.WebsocketServer_ListenPortNo = Properties.Settings.Default.Listen_Port;
 
 			Console.WriteLine("The server started successfully, press key 'q' to stop it!");
 

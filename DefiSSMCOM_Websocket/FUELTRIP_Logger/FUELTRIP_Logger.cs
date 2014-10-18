@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using DefiSSMCOM.Defi;
 using DefiSSMCOM.SSM;
 using DefiSSMCOM.WebSocket.JSON;
+using log4net;
 
 namespace FUELTRIP_Logger
 {
@@ -95,6 +96,9 @@ namespace FUELTRIP_Logger
 			SSM
 		};
 
+        //log4net
+        private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+
 		private Nenpi_Trip_Calculator _nenpi_trip_calc;
 		private WebSocketServer _appServer;
 		private WebSocket _deficom_ws_client;
@@ -116,8 +120,9 @@ namespace FUELTRIP_Logger
 			this.WebsocketServer_ListenPortNo = 2014;
 			if (!_appServer.Setup(this.WebsocketServer_ListenPortNo)) //Setup with listening port
 			{
-				Console.WriteLine("Failed to setup!");
-			}
+                Console.WriteLine("Failed to setup!");
+                logger.Fatal("Failed to setup websocket server.");
+            }
 			_appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(_appServer_NewMessageReceived);
 			_appServer.NewSessionConnected += new SessionHandler<WebSocketSession> (_appServer_NewSessionConnected);
 			_appServer.SessionClosed += new SessionHandler<WebSocketSession, CloseReason> (_appServer_SessionClosed);
@@ -145,7 +150,13 @@ namespace FUELTRIP_Logger
 			_nenpi_trip_calc.load_trip_gas ();
 			_deficom_ws_client.Open ();
 			_ssmcom_ws_client.Open ();
-			_appServer.Start ();
+            if (!_appServer.Start())
+            {
+                Console.WriteLine("Failed to start!");
+                logger.Fatal("Failed to start websocket server.");
+                return;
+            }
+            logger.Info("Websocket server is started.");
 		}
 
 		public void stop ()
@@ -158,17 +169,23 @@ namespace FUELTRIP_Logger
     			_ssmcom_ws_client.Close ();
             if(_appServer.State == ServerState.Running)
                 _appServer.Stop ();
+
+            Console.WriteLine("The server was stopped!");
+            logger.Info("Websocket server is stopped");
+
 		}
 
 		// Websocket server events
 		private void _appServer_SessionClosed(WebSocketSession session, CloseReason reason)
 		{
-			Console.WriteLine ("Session closed from : " + session.Host + " Reason :" + reason.ToString());
-		}
+            Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
+            logger.Info("Session closed from : " + session.Host + " Reason :" + reason.ToString());
+        }
 		private void _appServer_NewSessionConnected(WebSocketSession session)
 		{
-			Console.WriteLine ("New session connected from : " + session.Host);
-		}
+            Console.WriteLine("New session connected from : " + session.Host);
+            logger.Info("New session connected from : " + session.Host);
+        }
 		private void _appServer_NewMessageReceived(WebSocketSession session, string message)
 		{
 			string received_JSON_mode;
@@ -193,11 +210,11 @@ namespace FUELTRIP_Logger
 				case ("RESET"):
 					_nenpi_trip_calc.reset_sect_trip_gas();
 					_nenpi_trip_calc.reset_total_trip_gas();
-					response_msg("NenpiCalc AllRESET. All parameters are disabled.");
+					response_msg("NenpiCalc AllRESET.");
 					break;
 				case ("SECTRESET"):
 					_nenpi_trip_calc.reset_sect_trip_gas();
-					response_msg("NenpiCalc SectRESET. All parameters are disabled.");
+					response_msg("NenpiCalc SectRESET.");
 					break;
 				case ("SECT_SPAN"):
 					SectSpan_JSONFormat span_jsonobj = JsonConvert.DeserializeObject<SectSpan_JSONFormat>(message);
@@ -228,8 +245,9 @@ namespace FUELTRIP_Logger
 		// Error message method
 		private void error_msg(string message)
 		{
-			Console.WriteLine (message);
-			ErrorJSONFormat errormsg_json = new ErrorJSONFormat ();
+            Console.WriteLine("Error message " + " : " + message);
+            logger.Error("Send Error message " + " : " + message);
+            ErrorJSONFormat errormsg_json = new ErrorJSONFormat();
 			errormsg_json.msg = message;
 
 			var sessions = _appServer.GetAllSessions ();
@@ -242,8 +260,9 @@ namespace FUELTRIP_Logger
 
 		private void response_msg(string message)
 		{
-			Console.WriteLine (message);
-			ResponseJSONFormat resmsg_json = new ResponseJSONFormat ();
+            Console.WriteLine("Response message " + " : " + message);
+            logger.Error("Send Response message " + " : " + message);
+            ResponseJSONFormat resmsg_json = new ResponseJSONFormat();
 			resmsg_json.msg = message;
 
 			var sessions = _appServer.GetAllSessions ();

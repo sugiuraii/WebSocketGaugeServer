@@ -4,18 +4,12 @@ using System.Collections;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using log4net;
 
 namespace DefiSSMCOM
 {
     namespace SSM
     {
-		public delegate void SSMCOMDataReceivedEventHandler(object sender, SSMCOMDataReceivedEventArgs arguments);
-		public class SSMCOMDataReceivedEventArgs
-		{
-			public bool Slow_read_flag { get; set; }
-			public List<SSM_Parameter_Code> Received_Parameter_Code { get; set; }
-		}
-
         public class SSMCOM
         {
             private System.IO.Ports.SerialPort serialPort1;
@@ -27,7 +21,10 @@ namespace DefiSSMCOM
             private SSM_Content_Table _content_table;
 
 			//SSMCOM data received event
-			public event SSMCOMDataReceivedEventHandler SSMDataReceived;
+			public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
+
+            //Log4net logger
+            static private readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
             //コンストラクタ
             public SSMCOM()
@@ -59,7 +56,7 @@ namespace DefiSSMCOM
                     }
                     catch (System.InvalidOperationException ex1)
                     {
-						DefiSSMCOM.Alert.message(ex1.Message, "SSMCOMのエラー");
+                        error_message("PortName error : " + ex1.GetType().ToString() + " " + ex1.Message);
                     }
                 }
             }
@@ -96,25 +93,19 @@ namespace DefiSSMCOM
 
 			public void set_slowread_flag(SSM_Parameter_Code code, bool flag)
             {
-				//if (!_communicate_realtime_state1)
+                info_message("Slowread flag of " + code.ToString() + "is enabled.");
 				_content_table[code].Slow_Read_Enable = flag;
-				//else
-				//throw new InvalidOperationException("通信中にSSM データ取得フラグが変更されました");
             }
 			public void set_fastread_flag(SSM_Parameter_Code code, bool flag)
             {
-				//if (!_communicate_realtime_state1)
+                info_message("Fastread flag of " + code.ToString() + "is enabled.");
 				_content_table[code].Fast_Read_Enable = flag;
-				//else
-				//throw new InvalidOperationException("通信中にSSM データ取得フラグが変更されました");
             }
 
             public void set_all_disable()
             {
-				//if (!_communicate_realtime_state1)
-                    _content_table.set_all_disable();
-				//else
-				//throw new InvalidOperationException("通信中にSSM データ取得フラグが変更されました");
+                info_message("All flag reset.");
+                _content_table.set_all_disable();
             }
 
             public int Slow_Read_Interval
@@ -125,6 +116,7 @@ namespace DefiSSMCOM
                 }
                 set
                 {
+                    info_message("Set slowread interval to " + value.ToString());
                     _slowread_interval = value;
                 }
             }
@@ -134,6 +126,7 @@ namespace DefiSSMCOM
                 communicate_realtime_thread1 = new Thread(new ThreadStart(communicate_realtime));
                 _communicate_realtime_state1 = true;
                 communicate_realtime_thread1.Start();
+                info_message("SSMCom communication Started.");
             }
 
             public void communicate_stop()
@@ -143,6 +136,8 @@ namespace DefiSSMCOM
 
                 //通信スレッド終了まで待つ
                 communicate_realtime_thread1.Join();
+
+                info_message("SSMCom communication Stopped.");
             }
 
             //無限ループ使用版の読み込み無限ループスレッド実装（communicate_realtime_start()からスレッドを作って呼び出すこと）
@@ -152,6 +147,7 @@ namespace DefiSSMCOM
                 try
                 {
                     serialPort1.Open();
+                    info_message("SSMCOM COMPort open.");
 
                     int i = 0;
                     //スレッドがアボートされるまで続ける（無限ループ）
@@ -171,20 +167,21 @@ namespace DefiSSMCOM
                 }
                 catch (System.IO.IOException ex)
                 {
-					DefiSSMCOM.Alert.message(ex.Message,"SSMCOMポートが開けません");
+                    error_message(ex.GetType().ToString() + " " + ex.Message);
                 }
                 catch (System.InvalidOperationException ex)
                 {
-					DefiSSMCOM.Alert.message(ex.Message,"SSMCOMポートはすでに開かれています。");
+                    error_message(ex.GetType().ToString() + " " + ex.Message);
                 }
                 catch (System.UnauthorizedAccessException ex)
                 {
-					DefiSSMCOM.Alert.message(ex.Message,"SSMCOMポートへのアクセスを拒否されました。");
+                    error_message(ex.GetType().ToString() + " " + ex.Message);
                 }
                 finally
                 {
                     //ポートクローズ
                     serialPort1.Close();
+                    info_message("SSMCOM COMPort closed.");
                     _communicate_realtime_state1 = false;
                 }
             }
@@ -235,6 +232,7 @@ namespace DefiSSMCOM
                 }
                 catch (TimeoutException ex)
                 {
+                    warning_message("SSMCOM timeout. " + ex.GetType().ToString() + " " + ex.Message);
 					Thread.Sleep (500);
                 }
             }
@@ -319,6 +317,32 @@ namespace DefiSSMCOM
                     get_offset += read_byte_length;
                 }
             }
+
+            static private void error_message(string message)
+            {
+                string send_message = "SSMCOM Error : " + message;
+                logger.Error(message);
+            }
+
+            static private void info_message(string message)
+            {
+                string send_message = "SSMCOM Info : " + message;
+                logger.Info(message);
+            }
+
+            static private void warning_message(string message)
+            {
+                string send_message = "SSMCOM Warning : " + message;
+                logger.Warn(message);
+            }
+
         }
+
+    	public class SSMCOMDataReceivedEventArgs : EventArgs
+    	{
+	    	public bool Slow_read_flag { get; set; }
+	    	public List<SSM_Parameter_Code> Received_Parameter_Code { get; set; }
+	    }
+
     }
 }
