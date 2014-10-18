@@ -17,6 +17,8 @@ namespace DefiSSMCOM_Websocket
 		{
 			return JsonConvert.SerializeObject(this);
 		}
+		public abstract void Validate ();
+
 	}
 
 	public class JSONFormatsException : Exception
@@ -37,12 +39,30 @@ namespace DefiSSMCOM_Websocket
 			mode = "VAL";
 			val = new Dictionary<string, double> ();
 		}
+		public override void Validate ()
+		{
+			if (mode != "VAL") {
+				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
+			}
+			else{
+				foreach (var key in val.Keys) {
+					if (!(Enum.IsDefined (typeof(Defi_Parameter_Code), key)))
+						throw new JSONFormatsException ("Defi_Parameter_Code property of VAL packet is not valid.");
+				}
+			}
+		}
 	}
 	public class ErrorJSONFormat : JSONFormats
 	{
 		public ErrorJSONFormat()
 		{
 			mode = "ERR";
+		}
+		public override void Validate()
+		{
+			if (mode != "ERR") {
+				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
+			}
 		}
 		public string msg;
 	}
@@ -52,6 +72,13 @@ namespace DefiSSMCOM_Websocket
 		{
 			mode = "RES";
 		}
+		public override void Validate()
+		{
+			if (mode != "RES") {
+				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
+			}
+		}
+
 		public string msg;
 	}
 	public class Defi_WS_SendJSONFormat : JSONFormats
@@ -60,9 +87,41 @@ namespace DefiSSMCOM_Websocket
 		{
 			mode = "DEFI_WS_SEND";
 		}
-		[JsonConverter(typeof(StringEnumConverter))]
-		public Defi_Parameter_Code code;
+		public string code;
 		public bool flag;
+
+		public override void Validate()
+		{
+			if (mode != "DEFI_WS_SEND") {
+				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
+			}
+			else{
+				if (!(Enum.IsDefined (typeof(Defi_Parameter_Code), code)))
+					throw new JSONFormatsException ("Defi_Parameter_Code property of DEFI_WS_SEND packet is not valid.");
+				if( flag != true && flag != false)
+					throw new JSONFormatsException ("flag of DEFI_WS_SEND packet is not valid.");
+			}
+		}
+	}
+
+	public class Defi_WS_IntervalJSONFormat : JSONFormats
+	{
+		public int interval;
+		public Defi_WS_IntervalJSONFormat()
+		{
+			mode = "DEFI_WS_INTERVAL";
+		}
+
+		public override void Validate()
+		{
+			if (mode != "DEFI_WS_INTERVAL") {
+				throw new JSONFormatsException ("mode property is not valid.");
+			}
+			else{
+				if(interval < 0)
+					throw new JSONFormatsException ("interval property of DEFI_WS_SEND packet is less than 0.");
+			}
+		}
 	}
 
 	public class DefiCOM_Websocket_sessionparam
@@ -176,27 +235,52 @@ namespace DefiSSMCOM_Websocket
 			DefiCOM_Websocket_sessionparam sendparam = new DefiCOM_Websocket_sessionparam ();
 			session.Items.Add ("Param", sendparam);
 		}
+			
 
 		private void appServer_NewMessageReceived(WebSocketSession session, string message)
 		{
-			/*
+
 			DefiCOM_Websocket_sessionparam sessionparam = (DefiCOM_Websocket_sessionparam)session.Items ["Param"];
-
 			Console.WriteLine (message);
+			var msg_dict = JsonConvert.DeserializeObject<Dictionary<string,string>> (message);
 
-			var msg_obj = JsonConvert.DeserializeObject<CommandJSONFormat> (message);
 
-			if (msg_obj.mode == "CMD") {
-				if (msg_obj.command == "WSReset") {
-					sessionparam.reset ();
-				} else if (msg_obj.command == "WSEnable") {
-				} else if (msg_obj.command == "WSDisable") {
-				} else if (msg_obj.command == "WSInverval") {
-				} else {
+			string received_JSON_mode;
+			try
+			{
+				received_JSON_mode = msg_dict ["mode"];
+			}
+			catch( KeyNotFoundException ex) {
+				send_error_msg (session, "mode property is not found in incoming packet. :" + ex.Message);
+				return;
+			}
+
+			try
+			{
+				switch(received_JSON_mode)
+				{
+				case ("DEFI_WS_SEND"):
+					Defi_WS_SendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<Defi_WS_SendJSONFormat>(message);
+					msg_obj_wssend.Validate();
+					sessionparam.Sendlist[(Defi_Parameter_Code)Enum.Parse(typeof(Defi_Parameter_Code), msg_obj_wssend.code)]=msg_obj_wssend.flag;
+
+					send_response_msg(session, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
+					break;
+
+				case ("DEFI_WS_INTERVAL"):
+					Defi_WS_IntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<Defi_WS_IntervalJSONFormat>(message);
+					msg_obj_interval.Validate();
+					sessionparam.SendInterval = msg_obj_interval.interval;
+
+					send_response_msg(session, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
+					break;
 				}
 			}
-			//Send the received message back
-			*/
+			catch(JSONFormatsException ex) {
+				send_error_msg (session, ex.Message);
+				return;
+			}
+
 		}
 
 		private void deficom1_DefiLinkPacketReceived(object sender,EventArgs args)
@@ -223,6 +307,25 @@ namespace DefiSSMCOM_Websocket
 				}
 			}
 		}
+
+		private void send_error_msg(WebSocketSession session,string message)
+		{
+			ErrorJSONFormat json_error_msg = new ErrorJSONFormat ();
+			json_error_msg.msg = message;
+
+			session.Send (json_error_msg.Serialize());
+			Console.WriteLine ("Error:"+message);
+		}
+
+		private void send_response_msg(WebSocketSession session,string message)
+		{
+			ResponseJSONFormat json_response_msg = new ResponseJSONFormat ();
+			json_response_msg.msg = message;
+			session.Send (json_response_msg.Serialize());
+
+			Console.WriteLine ("Response:"+message);
+		}
+
 	}
 }
 
