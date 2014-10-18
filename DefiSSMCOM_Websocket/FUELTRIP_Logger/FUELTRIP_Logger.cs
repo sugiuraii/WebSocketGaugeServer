@@ -412,6 +412,9 @@ namespace FUELTRIP_Logger
 		// deficom WS client event
 		private void _deficom_ws_client_Opened(object sender, EventArgs e)
 		{
+            //Sleep 5sec in order to wait until the session is registered to the SSM WS session snapshot.
+            Thread.Sleep(5000);
+
 			// initialize setting
 			Defi_WS_SendJSONFormat defisendcode = new Defi_WS_SendJSONFormat ();
 			defisendcode.code = Defi_Parameter_Code.Tacho.ToString ();
@@ -448,6 +451,9 @@ namespace FUELTRIP_Logger
 		// ssmcom WS client event
 		private void _ssmcom_ws_client_Opened(object sender, EventArgs e)
 		{
+            //Sleep 5sec in order to wait until the session is registered to the SSM WS session snapshot.
+            Thread.Sleep(5000);
+
             SSM_SLOWREAD_IntervalJSONFormat ssmcom_slowread_json = new SSM_SLOWREAD_IntervalJSONFormat();
             ssmcom_slowread_json.interval = 20;
             _ssmcom_ws_client.Send(ssmcom_slowread_json.Serialize());
