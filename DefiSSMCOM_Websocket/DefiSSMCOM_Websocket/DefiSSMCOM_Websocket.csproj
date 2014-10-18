@@ -60,6 +60,7 @@
     <Compile Include="DefiSSMCOM\Misc.cs" />
     <Compile Include="DefiSSMCOM\DefiCOM.cs" />
     <Compile Include="DefiSSMCOM\Defi_Content.cs" />
+    <Compile Include="Websocket_Comm\DefiCOM_Websocket.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
