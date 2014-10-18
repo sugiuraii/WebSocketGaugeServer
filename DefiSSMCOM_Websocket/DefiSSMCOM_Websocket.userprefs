@@ -4,7 +4,8 @@
     <Files>
       <File FileName="DefiSSMCOM_Common_Lib\Websocket_Comm\DefiCOM_Websocket.cs" Line="8" Column="34" />
       <File FileName="FUELTRIP_Logger\FUELTRIP_Logger.cs" Line="14" Column="1" />
-      <File FileName="FUELTRIP_Logger\Nenpi_Calculator.cs" Line="30" Column="34" />
+      <File FileName="FUELTRIP_Logger\Nenpi_Calculator.cs" Line="179" Column="22" />
+      <File FileName="DefiSSMCOM_Common_Lib\DefiSSMCOM\DefiCOM.cs" Line="24" Column="22" />
     </Files>
     <Pads>
       <Pad Id="ClassPad">
@@ -12,7 +13,7 @@
           <Node name="FUELTRIP_Logger" expanded="True">
             <Node name="FUELTRIP_Logger" expanded="True">
               <Node name="FUELTRIP_Logger.Nenpi_Trip_Calculator" expanded="True">
-                <Node name="Momentary_Gas_Consumption" selected="True" />
+                <Node name="reset_total_gas_consumption" selected="True" />
               </Node>
             </Node>
           </Node>
