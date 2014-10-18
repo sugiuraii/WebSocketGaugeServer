@@ -144,7 +144,7 @@ namespace DefiSSMCOM.WebSocket
 					SSM_Parameter_Code target_code = (SSM_Parameter_Code)Enum.Parse(typeof(SSM_Parameter_Code),msg_obj_ssmread.code);
 					bool flag = msg_obj_ssmread.flag;
 
-					if(msg_obj_ssmread.mode == "FAST"){
+					if(msg_obj_ssmread.read_mode == "FAST"){
 						ssmcom1.set_fastread_flag(target_code,flag);
 					}
 					else{
@@ -184,7 +184,7 @@ namespace DefiSSMCOM.WebSocket
 			{
 				ValueJSONFormat msg_data = new ValueJSONFormat ();
 
-				SSMCOM_Websocket_sessionparam sendparam = (SSMCOM_Websocket_sessionparam)session.Items["Param"];
+				//SSMCOM_Websocket_sessionparam sendparam = (SSMCOM_Websocket_sessionparam)session.Items["Param"];
 
 				foreach (SSM_Parameter_Code ssmcode in args.Received_Parameter_Code) 
 				{

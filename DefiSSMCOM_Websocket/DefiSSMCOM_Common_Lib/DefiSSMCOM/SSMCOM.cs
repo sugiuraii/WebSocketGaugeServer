@@ -235,6 +235,7 @@ namespace DefiSSMCOM
                 }
                 catch (TimeoutException ex)
                 {
+					Thread.Sleep (500);
                 }
             }
 

@@ -3,7 +3,7 @@ using System.Threading;
 using System.Collections;
 using DefiSSMCOM.WebSocket;
 
-namespace DefiSSMCOM.WebSocket.Defi
+namespace DefiSSMCOM_Websocket
 {
 	class MainClass
 	{
