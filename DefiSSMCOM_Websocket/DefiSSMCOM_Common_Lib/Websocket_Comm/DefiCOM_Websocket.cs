@@ -82,8 +82,6 @@ namespace DefiSSMCOM.WebSocket
 
 		public void start()
 		{
-			deficom1.communicate_realtime_start();
-
             //Try to start the appServer
             if (!appServer.Setup(this.Websocket_PortNo)) //Setup with listening por
             {
@@ -99,7 +97,10 @@ namespace DefiSSMCOM.WebSocket
 
             Console.WriteLine("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " DefiCOMPort: " + this.DefiCOM_PortName);
             logger.Info("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " DefiCOMPort: " + this.DefiCOM_PortName );
-			this.running_state = true;
+			
+            deficom1.communicate_realtime_start();
+
+            this.running_state = true;
 		}
 
 		public void stop ()

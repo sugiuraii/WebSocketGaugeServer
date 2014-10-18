@@ -55,9 +55,9 @@ namespace SSMCOM_WebSocket_Server
             ssmcomserver1.SSMCOM_PortName = appsetting.comport;
             ssmcomserver1.Websocket_PortNo = appsetting.websocket_port;
 			
-            Console.WriteLine("The server started successfully, press key 'q' to stop it!");
-
 			ssmcomserver1.start ();
+
+            Console.WriteLine("The server started successfully, press key 'q' to stop it!");
 
 			while (Console.ReadKey().KeyChar != 'q')
 			{

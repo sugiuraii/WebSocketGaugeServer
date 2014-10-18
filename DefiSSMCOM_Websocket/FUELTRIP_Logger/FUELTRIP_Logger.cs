@@ -149,9 +149,6 @@ namespace FUELTRIP_Logger
 		public void start()
 		{
 			running_state = true;
-			_nenpi_trip_calc.load_trip_gas ();
-			_deficom_ws_client.Open ();
-			_ssmcom_ws_client.Open ();
 
             //Start Websocket server
             if (!_appServer.Setup(this.WebsocketServer_ListenPortNo)) //Setup with listening port
@@ -165,6 +162,11 @@ namespace FUELTRIP_Logger
                 logger.Fatal("Failed to start websocket server.");
                 return;
             }
+
+            _nenpi_trip_calc.load_trip_gas();
+            _deficom_ws_client.Open();
+            _ssmcom_ws_client.Open();
+
             Console.WriteLine("Websocket server is started. DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
             logger.Info("Websocket server is started. DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
         }

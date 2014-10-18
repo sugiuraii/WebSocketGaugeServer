@@ -64,7 +64,6 @@ namespace DefiSSMCOM.WebSocket
 
 		public void start()
 		{
-			ssmcom1.communicate_start();
 			//Try to start the appServer
             if (!appServer.Setup(this.Websocket_PortNo)) //Setup with listening port
             {
@@ -79,6 +78,8 @@ namespace DefiSSMCOM.WebSocket
 			}
             Console.WriteLine("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " SSMCOMPort: " + this.SSMCOM_PortName);
             logger.Info("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " SSMCOMPort: " + this.SSMCOM_PortName);
+
+            ssmcom1.communicate_start();
 
 			this.running_state = true;
 		}

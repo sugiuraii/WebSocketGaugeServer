@@ -62,9 +62,10 @@ namespace DefiCOM_WebSocket_Server
             deficomserver1.DefiCOM_PortName = appsetting.comport;
             deficomserver1.Websocket_PortNo = appsetting.websocket_port;
 
+            deficomserver1.start();
+
 			Console.WriteLine("The server started successfully, press key 'q' to stop it!");
 
-			deficomserver1.start ();
 
 			while (Console.ReadKey().KeyChar != 'q')
 			{
