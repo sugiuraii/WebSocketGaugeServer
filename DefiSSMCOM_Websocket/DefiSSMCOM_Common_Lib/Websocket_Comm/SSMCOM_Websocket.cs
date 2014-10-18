@@ -306,9 +306,15 @@ namespace DefiSSMCOM.WebSocket
                 foreach (SSM_Parameter_Code code in Enum.GetValues(typeof(SSM_Parameter_Code)))
                 {
                     if (sessionparam.FastSendlist[code])
-                        ssmcom1.set_fastread_flag(code, true);
+                    {
+                        if (!ssmcom1.get_fastread_flag(code))
+                            ssmcom1.set_fastread_flag(code, true);
+                    }
                     if (sessionparam.SlowSendlist[code])
-                        ssmcom1.set_slowread_flag(code, true);
+                    {
+                        if (!ssmcom1.get_slowread_flag(code))
+                            ssmcom1.set_slowread_flag(code, true);
+                    }
                 }
             }
         }
