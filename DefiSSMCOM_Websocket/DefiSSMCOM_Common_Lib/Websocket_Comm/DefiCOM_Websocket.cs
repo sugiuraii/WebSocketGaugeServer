@@ -1,140 +1,15 @@
 ﻿using System;
 using System.Threading;
-using DefiSSMCOM.Communication.Defi;
+using DefiSSMCOM.Defi;
+using DefiSSMCOM.WebSocket.JSON;
 using SuperSocket.SocketBase;
 using SuperWebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace DefiSSMCOM_Websocket
+namespace DefiSSMCOM.WebSocket
 {
-	public abstract class JSONFormats
-	{
-		public string mode;
-
-		public string Serialize ()
-		{
-			return JsonConvert.SerializeObject(this);
-		}
-		public abstract void Validate ();
-
-	}
-
-	public class JSONFormatsException : Exception
-	{
-		public JSONFormatsException(){
-		}
-		public JSONFormatsException(string message): base(message){
-		}
-		public JSONFormatsException(string message, Exception inner) : base(message) { }
-	}
-
-	public class ValueJSONFormat : JSONFormats
-	{
-		public Dictionary<string,double> val;
-
-		public ValueJSONFormat()
-		{
-			mode = "VAL";
-			val = new Dictionary<string, double> ();
-		}
-		public override void Validate ()
-		{
-			try{
-				if (mode != "VAL") {
-					throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
-				}
-				else{
-					foreach (var key in val.Keys) {
-						if (!(Enum.IsDefined (typeof(Defi_Parameter_Code), key)))
-							throw new JSONFormatsException ("Defi_Parameter_Code property of VAL packet is not valid.");
-					}
-				}
-			}
-			catch (ArgumentException ex) {
-				throw new JSONFormatsException ("Invelid argument is used in ValueJSONFormat :" + ex.Message, ex); 
-			}
-		}
-	}
-	public class ErrorJSONFormat : JSONFormats
-	{
-		public ErrorJSONFormat()
-		{
-			mode = "ERR";
-		}
-		public override void Validate()
-		{
-			if (mode != "ERR") {
-				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
-			}
-		}
-		public string msg;
-	}
-	public class ResponseJSONFormat : JSONFormats
-	{
-		public ResponseJSONFormat()
-		{
-			mode = "RES";
-		}
-		public override void Validate()
-		{
-			if (mode != "RES") {
-				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
-			}
-		}
-
-		public string msg;
-	}
-	public class Defi_WS_SendJSONFormat : JSONFormats
-	{
-		public Defi_WS_SendJSONFormat()
-		{
-			mode = "DEFI_WS_SEND";
-		}
-		public string code;
-		public bool flag;
-
-		public override void Validate()
-		{
-			try
-			{
-				if (mode != "DEFI_WS_SEND") {
-					throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
-				}
-				else{
-					if (!(Enum.IsDefined (typeof(Defi_Parameter_Code), code)))
-						throw new JSONFormatsException ("Defi_Parameter_Code property of DEFI_WS_SEND packet is not valid.");
-					if( flag != true && flag != false)
-						throw new JSONFormatsException ("flag of DEFI_WS_SEND packet is not valid.");
-				}
-			}
-			catch(ArgumentNullException ex) {
-				throw new JSONFormatsException ("Null is found in DEFI_WS_SEND packet.", ex);
-			}
-		}
-	}
-
-	public class Defi_WS_IntervalJSONFormat : JSONFormats
-	{
-		public int interval;
-		public Defi_WS_IntervalJSONFormat()
-		{
-			mode = "DEFI_WS_INTERVAL";
-		}
-
-		public override void Validate()
-		{
-			if (mode != "DEFI_WS_INTERVAL") {
-				throw new JSONFormatsException ("mode property is not valid.");
-			}
-			else{
-				if(interval < 0)
-					throw new JSONFormatsException ("interval property of DEFI_WS_SEND packet is less than 0.");
-			}
-		}
-	}
-
 	public class DefiCOM_Websocket_sessionparam
 	{
 		public Dictionary<Defi_Parameter_Code,bool> Sendlist;
@@ -297,7 +172,6 @@ namespace DefiSSMCOM_Websocket
 					break;
 				default:
 					throw new JSONFormatsException("Unsuppoted mode property.");
-					break;
 				}
 			}
 			catch(JSONFormatsException ex) {
@@ -325,7 +199,7 @@ namespace DefiSSMCOM_Websocket
 				else {
 					foreach (Defi_Parameter_Code deficode in Enum.GetValues(typeof(Defi_Parameter_Code) )) {
 						if (sendparam.Sendlist [deficode]) {
-							msg_data.val.Add(deficode.ToString(),deficom1.get_value(deficode));
+							msg_data.val.Add(deficode.ToString(),deficom1.get_value(deficode).ToString());
 						}
 					}
 					String msg = JsonConvert.SerializeObject (msg_data);

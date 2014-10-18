@@ -1,18 +1,13 @@
 ﻿using System;
 using System.Threading;
-using DefiSSMCOM.Communication.Defi;
-using SuperSocket.SocketBase;
-using SuperWebSocket;
-using Newtonsoft.Json;
 using System.Collections;
+using DefiSSMCOM.WebSocket;
 
-namespace DefiLinkTest1
+namespace DefiSSMCOM.WebSocket.Defi
 {
-
-
 	class MainClass
 	{
-		static private DefiSSMCOM_Websocket.DefiCOM_Websocket deficomserver1;
+		static private DefiSSMCOM.WebSocket.DefiCOM_Websocket deficomserver1;
 
 		MainClass()
 		{
@@ -21,7 +16,7 @@ namespace DefiLinkTest1
 		public static void Main (string[] args)
 		{
 		
-			deficomserver1 = new DefiSSMCOM_Websocket.DefiCOM_Websocket ();
+			deficomserver1 = new DefiSSMCOM.WebSocket.DefiCOM_Websocket ();
 			deficomserver1.DefiCOM_PortName = "COM4";
 			deficomserver1.Websocket_PortNo = 2012;
 
