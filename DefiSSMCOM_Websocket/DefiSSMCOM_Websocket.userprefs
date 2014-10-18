@@ -1,13 +1,6 @@
 ﻿<Properties>
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug|x86" ActiveRuntime="Mono 3.3.0 (master/6cd4ddc)&#xD;&#xA;Copyright)" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="DefiSSMCOM_Common_Lib\Websocket_Comm\SSMCOM_Websocket.cs">
-    <Files>
-      <File FileName="SSMCOM_WebSocket_Server\Program.cs" Line="18" Column="4" />
-      <File FileName="DefiSSMCOM_Common_Lib\DefiSSMCOM\SSMCOM.cs" Line="229" Column="6" />
-      <File FileName="DefiSSMCOM_Common_Lib\Websocket_Comm\SSMCOM_Websocket.cs" Line="41" Column="4" />
-      <File FileName="DefiSSMCOM_Common_Lib\DefiSSMCOM\SSM_Content.cs" Line="1" Column="1" />
-    </Files>
-  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.Workbench />
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore />
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

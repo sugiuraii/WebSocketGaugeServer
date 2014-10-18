@@ -151,7 +151,7 @@ namespace DefiSSMCOM.WebSocket
 						ssmcom1.set_slowread_flag(target_code,flag);
 					}
 						
-					send_response_msg(session, "SSMCOM read flag for : " + target_code.ToString() + " set to : " + flag.ToString());
+					send_response_msg(session, "SSMCOM read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString());
 					break;
 
 				case ("SSM_SLOWREAD_INTERVAL"):
