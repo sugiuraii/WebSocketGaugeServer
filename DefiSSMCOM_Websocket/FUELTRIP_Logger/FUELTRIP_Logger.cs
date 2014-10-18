@@ -167,8 +167,8 @@ namespace FUELTRIP_Logger
             _deficom_ws_client.Open();
             _ssmcom_ws_client.Open();
 
-            Console.WriteLine("Websocket server is started. DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
-            logger.Info("Websocket server is started. DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
+            Console.WriteLine("Websocket server is starting... DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
+            logger.Info("Websocket server is starting... DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
         }
 
 		public void stop ()
@@ -423,17 +423,20 @@ namespace FUELTRIP_Logger
 			_deficom_ws_client.Send(defisendcode.Serialize());
 			_deficom_ws_client.Send(definitervalcode.Serialize());
 		}
-		private void _deficom_ws_client_Error(object sender, EventArgs e)
+		private void _deficom_ws_client_Error(object sender, ErrorEventArgs e)
 		{
-			error_msg("Deficom Websocket connection error. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
-            Thread.Sleep(connet_retry_sec * 1000);
-            _deficom_ws_client.Open();
+            error_msg("DefiCOM Websocket connection error occurs. Exception : " + e.Exception.ToString() + "\n Message : " + e.Exception.Message);
 		}
 		private void _deficom_ws_client_Closed(object sender, EventArgs e)
 		{
-			error_msg("Deficom Websocket connection is Closed. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
+			error_msg("DefiCOM Websocket connection is Closed. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
 			Thread.Sleep (connet_retry_sec * 1000);
-			//_deficom_ws_client.Open ();
+            while (_deficom_ws_client.State != WebSocketState.Closed)
+            {
+                error_msg("DefiCOM Websocket is now closing, not closed completely. Wait more " + connet_retry_sec.ToString() + "sec and reconnect.");
+                Thread.Sleep(connet_retry_sec * 1000);
+            }
+			_deficom_ws_client.Open ();
 		}
 		private void _deficom_ws_client_MessageReceived(object sender, MessageReceivedEventArgs e)
 		{
@@ -476,17 +479,20 @@ namespace FUELTRIP_Logger
             _ssmcom_ws_client.Send(ssmcom_read_json4.Serialize());
 
 		}
-		private void _ssmcom_ws_client_Error(object sender, EventArgs e)
+		private void _ssmcom_ws_client_Error(object sender, ErrorEventArgs e)
 		{
-			error_msg("SSMcom Websocket connection error. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
-            Thread.Sleep(connet_retry_sec * 1000);
-            _ssmcom_ws_client.Open();
+            error_msg("SSMCOM Websocket connection error occurs. Exception : " + e.Exception.ToString() + "\n Message : " + e.Exception.Message);
         }
 		private void _ssmcom_ws_client_Closed(object sender, EventArgs e)
 		{
-			error_msg("com Websocket connection is Closed. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
+			error_msg("SSMCOM Websocket connection is Closed. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
 			Thread.Sleep (connet_retry_sec * 1000);
-			//_deficom_ws_client.Open ();
+			while(_ssmcom_ws_client.State != WebSocketState.Closed)
+            {
+                error_msg("SSMCOM Websocket is now closing, not closed completely. Wait more" + connet_retry_sec.ToString() + "sec and reconnect.");
+                Thread.Sleep(connet_retry_sec * 1000);
+            }
+            _ssmcom_ws_client.Open ();
 		}
 		private void _ssmcom_ws_client_MessageReceived(object sender, MessageReceivedEventArgs e)
 		{
