@@ -356,8 +356,16 @@ namespace FUELTRIP_Logger
 					else if(ssm_defi_mode == SSM_DEFI_mode.SSM)
 					{
                         //Console.WriteLine(jsonmsg);
-						_current_speed = double.Parse(val_json.val[SSM_Parameter_Code.Vehicle_Speed.ToString()]);
-						_current_injpulse_width = double.Parse(val_json.val[SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString()]);
+                        try
+                        {
+                            _current_speed = double.Parse(val_json.val[SSM_Parameter_Code.Vehicle_Speed.ToString()]);
+                            _current_injpulse_width = double.Parse(val_json.val[SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString()]);
+                        }
+                        catch (KeyNotFoundException ex)
+                        {
+                            logger.Error("Vehicle speed or Injpulse in not found in received json message. Exception message : " + ex.Message + " " + ex.StackTrace);
+                            return;
+                        }
                         try
                         {
                             _nenpi_trip_calc.update(_current_tacho, _current_speed, _current_injpulse_width);
