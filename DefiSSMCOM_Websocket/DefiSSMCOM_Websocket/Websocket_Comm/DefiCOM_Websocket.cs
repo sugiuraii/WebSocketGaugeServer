@@ -5,33 +5,64 @@ using SuperSocket.SocketBase;
 using SuperWebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-
+using System.Reflection;
 
 namespace DefiSSMCOM_Websocket
 {
-	public class JSONFormats
+	public abstract class JSONFormats
 	{
-		public class ValueJSONFormat
+		public string mode;
+
+		public string Serialize ()
 		{
-			public string mode = "VAL";
-			public List<string[]> val;
+			return JsonConvert.SerializeObject(this);
 		}
-		public class ErrorJSONFormat
+	}
+
+	public class JSONFormatsException : Exception
+	{
+		public JSONFormatsException(){
+		}
+		public JSONFormatsException(string message): base(message){
+		}
+		public JSONFormatsException(string message, Exception inner) : base(message) { }
+	}
+
+	public class ValueJSONFormat : JSONFormats
+	{
+		public Dictionary<string,double> val;
+
+		public ValueJSONFormat()
 		{
-			public string mode = "ERR";
-			public string msg;
+			mode = "VAL";
+			val = new Dictionary<string, double> ();
 		}
-		public class ResponseJSONFormat
+	}
+	public class ErrorJSONFormat : JSONFormats
+	{
+		public ErrorJSONFormat()
 		{
-			public string mode = "RES";
-			public string msg;
+			mode = "ERR";
 		}
-		public class CommandJSONFormat
+		public string msg;
+	}
+	public class ResponseJSONFormat : JSONFormats
+	{
+		public ResponseJSONFormat()
 		{
-			public string mode = "CMD";
-			public string command;
-			public string argument;
+			mode = "RES";
 		}
+		public string msg;
+	}
+	public class Defi_WS_SendJSONFormat : JSONFormats
+	{
+		public Defi_WS_SendJSONFormat()
+		{
+			mode = "DEFI_WS_SEND";
+		}
+		[JsonConverter(typeof(StringEnumConverter))]
+		public Defi_Parameter_Code code;
+		public bool flag;
 	}
 
 	public class DefiCOM_Websocket_sessionparam
@@ -148,11 +179,13 @@ namespace DefiSSMCOM_Websocket
 
 		private void appServer_NewMessageReceived(WebSocketSession session, string message)
 		{
+			/*
 			DefiCOM_Websocket_sessionparam sessionparam = (DefiCOM_Websocket_sessionparam)session.Items ["Param"];
 
 			Console.WriteLine (message);
 
-			var msg_obj = JsonConvert.DeserializeObject<JSONFormats.CommandJSONFormat> (message);
+			var msg_obj = JsonConvert.DeserializeObject<CommandJSONFormat> (message);
+
 			if (msg_obj.mode == "CMD") {
 				if (msg_obj.command == "WSReset") {
 					sessionparam.reset ();
@@ -163,6 +196,7 @@ namespace DefiSSMCOM_Websocket
 				}
 			}
 			//Send the received message back
+			*/
 		}
 
 		private void deficom1_DefiLinkPacketReceived(object sender,EventArgs args)
@@ -171,8 +205,7 @@ namespace DefiSSMCOM_Websocket
 
 			foreach (var session in sessions) 
 			{
-				JSONFormats.ValueJSONFormat msg_data = new JSONFormats.ValueJSONFormat ();
-				msg_data.val = new List<string[]>();
+				ValueJSONFormat msg_data = new ValueJSONFormat ();
 
 				DefiCOM_Websocket_sessionparam sendparam = (DefiCOM_Websocket_sessionparam)session.Items["Param"];
 				if (sendparam.SendCount < sendparam.SendInterval)
@@ -180,11 +213,7 @@ namespace DefiSSMCOM_Websocket
 				else {
 					foreach (Defi_Parameter_Code deficode in Enum.GetValues(typeof(Defi_Parameter_Code) )) {
 						if (sendparam.Sendlist [deficode]) {
-							string[] val_packet = new string[2];
-		
-							val_packet [0] = deficode.ToString ();
-							val_packet [1] = deficom1.get_value (deficode).ToString ();
-							msg_data.val.Add (val_packet);
+							msg_data.val.Add(deficode.ToString(),deficom1.get_value(deficode));
 						}
 					}
 					String msg = JsonConvert.SerializeObject (msg_data);
