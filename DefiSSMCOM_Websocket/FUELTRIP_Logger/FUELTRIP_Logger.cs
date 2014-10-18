@@ -150,8 +150,13 @@ namespace FUELTRIP_Logger
 		{
 			running_state = true;
 
+            SuperSocket.SocketBase.Config.ServerConfig appserver_config = new SuperSocket.SocketBase.Config.ServerConfig();
+            appserver_config.DisableSessionSnapshot = false;
+            appserver_config.SessionSnapshotInterval = 1;
+            appserver_config.Port = this.WebsocketServer_ListenPortNo;
+
             //Start Websocket server
-            if (!_appServer.Setup(this.WebsocketServer_ListenPortNo)) //Setup with listening port
+            if (!_appServer.Setup(appserver_config)) //Setup with listening port
             {
                 Console.WriteLine("Failed to setup!");
                 logger.Fatal("Failed to setup websocket server.");
@@ -321,8 +326,6 @@ namespace FUELTRIP_Logger
 		// Parse VAL packet
 		private void parse_val_paket(string jsonmsg, SSM_DEFI_mode ssm_defi_mode)
 		{
-
-
 			string received_JSON_mode;
 			try{
                 JObject jobject = JObject.Parse(jsonmsg);
@@ -413,7 +416,7 @@ namespace FUELTRIP_Logger
 		private void _deficom_ws_client_Opened(object sender, EventArgs e)
 		{
             //Sleep 5sec in order to wait until the session is registered to the SSM WS session snapshot.
-            Thread.Sleep(5000);
+            //Thread.Sleep(5000);
 
 			// initialize setting
 			Defi_WS_SendJSONFormat defisendcode = new Defi_WS_SendJSONFormat ();
@@ -452,7 +455,7 @@ namespace FUELTRIP_Logger
 		private void _ssmcom_ws_client_Opened(object sender, EventArgs e)
 		{
             //Sleep 5sec in order to wait until the session is registered to the SSM WS session snapshot.
-            Thread.Sleep(5000);
+            //Thread.Sleep(5000);
 
             SSM_SLOWREAD_IntervalJSONFormat ssmcom_slowread_json = new SSM_SLOWREAD_IntervalJSONFormat();
             ssmcom_slowread_json.interval = 20;

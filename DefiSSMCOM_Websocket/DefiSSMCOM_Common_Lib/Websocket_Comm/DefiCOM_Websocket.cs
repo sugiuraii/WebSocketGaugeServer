@@ -85,8 +85,12 @@ namespace DefiSSMCOM.WebSocket
 
 		public void start()
 		{
+            SuperSocket.SocketBase.Config.ServerConfig appserver_config = new SuperSocket.SocketBase.Config.ServerConfig();
+            appserver_config.DisableSessionSnapshot = true;
+            appserver_config.Port = this.Websocket_PortNo;
+
             //Try to start the appServer
-            if (!appServer.Setup(this.Websocket_PortNo)) //Setup with listening por
+            if (!appServer.Setup(appserver_config)) //Setup with listening por
             {
                 Console.WriteLine("Failed to setup!");
                 logger.Fatal("Failed to setup websocket server.");
@@ -226,6 +230,9 @@ namespace DefiSSMCOM.WebSocket
 
 			foreach (var session in sessions) 
 			{
+                if (session == null)
+                    continue;
+
 				ValueJSONFormat msg_data = new ValueJSONFormat ();
 
                 DefiCOM_Websocket_sessionparam sendparam;

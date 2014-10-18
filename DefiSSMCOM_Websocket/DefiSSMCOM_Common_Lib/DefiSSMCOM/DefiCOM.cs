@@ -281,6 +281,11 @@ namespace DefiSSMCOM
                 string send_message = "DefiCOM Warning : " + message;
                 logger.Warn(message);
             }
+            static private void debug_message(string message)
+            {
+                string send_message = "SSMCOM Debug : " + message;
+                logger.Debug(message);
+            }
         }
     }
 }

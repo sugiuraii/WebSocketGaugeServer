@@ -93,18 +93,18 @@ namespace DefiSSMCOM
 
 			public void set_slowread_flag(SSM_Parameter_Code code, bool flag)
             {
-                info_message("Slowread flag of " + code.ToString() + "is enabled.");
+                debug_message("Slowread flag of " + code.ToString() + "is enabled.");
 				_content_table[code].Slow_Read_Enable = flag;
             }
 			public void set_fastread_flag(SSM_Parameter_Code code, bool flag)
             {
-                info_message("Fastread flag of " + code.ToString() + "is enabled.");
+                debug_message("Fastread flag of " + code.ToString() + "is enabled.");
 				_content_table[code].Fast_Read_Enable = flag;
             }
 
             public void set_all_disable()
             {
-                info_message("All flag reset.");
+                debug_message("All flag reset.");
                 _content_table.set_all_disable();
             }
 
@@ -116,7 +116,7 @@ namespace DefiSSMCOM
                 }
                 set
                 {
-                    info_message("Set slowread interval to " + value.ToString());
+                    debug_message("Set slowread interval to " + value.ToString());
                     _slowread_interval = value;
                 }
             }
@@ -126,7 +126,7 @@ namespace DefiSSMCOM
                 communicate_realtime_thread1 = new Thread(new ThreadStart(communicate_realtime));
                 _communicate_realtime_state1 = true;
                 communicate_realtime_thread1.Start();
-                info_message("SSMCom communication Started.");
+                info_message("SSMCOM communication Started.");
             }
 
             public void communicate_stop()
@@ -137,7 +137,7 @@ namespace DefiSSMCOM
                 //通信スレッド終了まで待つ
                 communicate_realtime_thread1.Join();
 
-                info_message("SSMCom communication Stopped.");
+                info_message("SSMCOM communication Stopped.");
             }
 
             //無限ループ使用版の読み込み無限ループスレッド実装（communicate_realtime_start()からスレッドを作って呼び出すこと）
@@ -334,6 +334,11 @@ namespace DefiSSMCOM
             {
                 string send_message = "SSMCOM Warning : " + message;
                 logger.Warn(message);
+            }
+            static private void debug_message(string message)
+            {
+                string send_message = "SSMCOM Debug : " + message;
+                logger.Debug(message);
             }
 
         }
