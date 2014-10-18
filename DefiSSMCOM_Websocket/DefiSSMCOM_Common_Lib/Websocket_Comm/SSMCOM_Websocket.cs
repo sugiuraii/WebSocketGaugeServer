@@ -119,6 +119,7 @@ namespace DefiSSMCOM.WebSocket
 		{
             Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
             logger.Info("Session closed from : " + session.Host + " Reason :" + reason.ToString());
+            update_ssmcom_readflag();
         }
 
 		private void appServer_NewSessionConnected(WebSocketSession session)
@@ -184,14 +185,12 @@ namespace DefiSSMCOM.WebSocket
 
 					if(msg_obj_ssmread.read_mode == "FAST"){
                         sessionparam.FastSendlist[target_code] = flag;
-                        update_ssmcom_readflag();
 					}
 					else{
                         sessionparam.SlowSendlist[target_code] = flag;
-                        update_ssmcom_readflag();
                     }
-						
 					send_response_msg(session, "SSMCOM session read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString());
+                    update_ssmcom_readflag();
 					break;
 
 				case ("SSM_SLOWREAD_INTERVAL"):
@@ -218,7 +217,7 @@ namespace DefiSSMCOM.WebSocket
 		}
 
 		private void ssmcom1_SSMDataReceived(object sender,SSMCOMDataReceivedEventArgs args)
-		{
+		{   
 			var sessions = appServer.GetAllSessions ();
 
 			foreach (var session in sessions) 
@@ -267,13 +266,13 @@ namespace DefiSSMCOM.WebSocket
 
         private void update_ssmcom_readflag()
         {
+            //reset all ssmcom flag
+            ssmcom1.set_all_disable();
+
             var sessions = appServer.GetAllSessions ();
 
             foreach (var session in sessions)
             {
-                //reset all ssmcom flag
-                ssmcom1.set_all_disable();
-
                 //set again from the session param read parameter list
                 SSMCOM_Websocket_sessionparam sessionparam;
                 try
