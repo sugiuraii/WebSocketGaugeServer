@@ -224,7 +224,7 @@ namespace FUELTRIP_Logger
 
 			_sect_elapsed = 0;
 			_sect_store_max = 60;
-			_sect_span = 300*1000;
+			_sect_span = 10*1000;
 			_sect_trip_gas_temporary = new Trip_gas_Content ();
 			_sect_trip_gas_queue = new Queue<Trip_gas_Content>();
 			_sect_trip_gas_latest = new Trip_gas_Content();
@@ -249,23 +249,29 @@ namespace FUELTRIP_Logger
 
 		public void update(double tacho, double speed, double injpulse_width)
 		{
+            if (!_stopwatch.IsRunning)
+            {
+                _stopwatch.Start();
+                return;
+            }
+                
 			_stopwatch.Stop ();
+
+            //get elasped time
+            long stopwatch_elasped = _stopwatch.ElapsedMilliseconds;
 
 			// Set current value
 			_current_speed = speed;
 			_current_tacho = tacho;
 			_current_injpulse_width = injpulse_width;
 
-			//get elasped time
-			long stopwatch_elasped = _stopwatch.ElapsedMilliseconds;
-			if (stopwatch_elasped <= 0)
-				return;
-
 			// elaspedが長すぎる場合,タイムアウトを発生
 			if (stopwatch_elasped > stopwatch_timeout) {
 				_stopwatch.Reset ();
+                _stopwatch.Start();
 				throw new TimeoutException ("tacho/speed/injpulse update span is too large (Timeout).");
 			}
+            _stopwatch.Reset();
 			_stopwatch.Start ();
 
 			_momentary_trip = get_momentary_trip(stopwatch_elasped);

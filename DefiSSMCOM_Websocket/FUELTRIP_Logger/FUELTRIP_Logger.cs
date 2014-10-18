@@ -141,7 +141,7 @@ namespace FUELTRIP_Logger
 		{
 			running_state = true;
 			_nenpi_trip_calc.load_trip_gas ();
-			//_deficom_ws_client.Open ();
+			_deficom_ws_client.Open ();
 			_ssmcom_ws_client.Open ();
 			_appServer.Start ();
 		}
@@ -150,9 +150,12 @@ namespace FUELTRIP_Logger
 		{
 			running_state = false;
 			_nenpi_trip_calc.save_trip_gas ();
-			//_deficom_ws_client.Close ();
-			_ssmcom_ws_client.Close ();
-			_appServer.Stop ();
+            if(_deficom_ws_client.State == WebSocketState.Open)
+    			_deficom_ws_client.Close ();
+            if(_ssmcom_ws_client.State == WebSocketState.Open)
+    			_ssmcom_ws_client.Close ();
+            if(_appServer.State == ServerState.Running)
+                _appServer.Stop ();
 		}
 
 		// Websocket server events
@@ -322,8 +325,17 @@ namespace FUELTRIP_Logger
                         //Console.WriteLine(jsonmsg);
 						_current_speed = double.Parse(val_json.val[SSM_Parameter_Code.Vehicle_Speed.ToString()]);
 						_current_injpulse_width = double.Parse(val_json.val[SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString()]);
+                        try
+                        {
+                            _nenpi_trip_calc.update(_current_tacho, _current_speed, _current_injpulse_width);
+                            send_momentum_value();
+                        }
+                        catch (TimeoutException ex)
+                        {
+                            error_msg(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                            return;
+                        }
 					}
-					_nenpi_trip_calc.update(_current_tacho,_current_speed,_current_injpulse_width);
 				}
                 else if (received_JSON_mode == "ERR")
                 {
@@ -372,14 +384,15 @@ namespace FUELTRIP_Logger
 		}
 		private void _deficom_ws_client_Error(object sender, EventArgs e)
 		{
-			error_msg("Deficom Websocket connection error.");
-            _deficom_ws_client.Close();
+			error_msg("Deficom Websocket connection error. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
+            Thread.Sleep(connet_retry_sec * 1000);
+            _deficom_ws_client.Open();
 		}
 		private void _deficom_ws_client_Closed(object sender, EventArgs e)
 		{
 			error_msg("Deficom Websocket connection is Closed. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
 			Thread.Sleep (connet_retry_sec * 1000);
-			_deficom_ws_client.Open ();
+			//_deficom_ws_client.Open ();
 		}
 		private void _deficom_ws_client_MessageReceived(object sender, MessageReceivedEventArgs e)
 		{
@@ -424,14 +437,15 @@ namespace FUELTRIP_Logger
 		}
 		private void _ssmcom_ws_client_Error(object sender, EventArgs e)
 		{
-			error_msg("SSMcom Websocket connection error.");
-			_deficom_ws_client.Close ();
-		}
+			error_msg("SSMcom Websocket connection error. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
+            Thread.Sleep(connet_retry_sec * 1000);
+            _ssmcom_ws_client.Open();
+        }
 		private void _ssmcom_ws_client_Closed(object sender, EventArgs e)
 		{
 			error_msg("com Websocket connection is Closed. Wait " + connet_retry_sec.ToString() +"sec and reconnect.");
 			Thread.Sleep (connet_retry_sec * 1000);
-			_deficom_ws_client.Open ();
+			//_deficom_ws_client.Open ();
 		}
 		private void _ssmcom_ws_client_MessageReceived(object sender, MessageReceivedEventArgs e)
 		{
