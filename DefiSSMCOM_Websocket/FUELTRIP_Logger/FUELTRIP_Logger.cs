@@ -159,12 +159,12 @@ namespace FUELTRIP_Logger
             //Start Websocket server
             if (!_appServer.Setup(appserver_config)) //Setup with listening port
             {
-                Console.WriteLine("Failed to setup!");
+                //Console.WriteLine("Failed to setup!");
                 logger.Fatal("Failed to setup websocket server.");
             }
             if (!_appServer.Start())
             {
-                Console.WriteLine("Failed to start!");
+                //Console.WriteLine("Failed to start!");
                 logger.Fatal("Failed to start websocket server.");
                 return;
             }
@@ -173,7 +173,7 @@ namespace FUELTRIP_Logger
             _deficom_ws_client.Open();
             _ssmcom_ws_client.Open();
 
-            Console.WriteLine("Websocket server is starting... DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
+            //Console.WriteLine("Websocket server is starting... DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
             logger.Info("Websocket server is starting... DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
         }
 
@@ -188,7 +188,7 @@ namespace FUELTRIP_Logger
             if(_appServer.State == ServerState.Running)
                 _appServer.Stop ();
 
-            Console.WriteLine("The server was stopped!");
+            //Console.WriteLine("The server was stopped!");
             logger.Info("Websocket server is stopped");
 
 		}
@@ -196,12 +196,12 @@ namespace FUELTRIP_Logger
 		// Websocket server events
 		private void _appServer_SessionClosed(WebSocketSession session, CloseReason reason)
 		{
-            Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
+            //Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
             logger.Info("Session closed from : " + session.Host + " Reason :" + reason.ToString());
         }
 		private void _appServer_NewSessionConnected(WebSocketSession session)
 		{
-            Console.WriteLine("New session connected from : " + session.Host);
+            //Console.WriteLine("New session connected from : " + session.Host);
             logger.Info("New session connected from : " + session.Host);
         }
 		private void _appServer_NewMessageReceived(WebSocketSession session, string message)
@@ -263,7 +263,7 @@ namespace FUELTRIP_Logger
 		// Error message method
 		private void error_msg(WebSocketSession session,string message)
 		{
-            Console.WriteLine("Error message " + " : " + message);
+            //Console.WriteLine("Error message " + " : " + message);
             logger.Error("Send Error message " + " : " + message);
             ErrorJSONFormat errormsg_json = new ErrorJSONFormat();
 			errormsg_json.msg = message;
@@ -273,7 +273,7 @@ namespace FUELTRIP_Logger
 
 		private void response_msg(WebSocketSession session, string message)
 		{
-            Console.WriteLine("Response message " + " : " + message);
+            //Console.WriteLine("Response message " + " : " + message);
             logger.Info("Send Response message " + " : " + message);
             ResponseJSONFormat resmsg_json = new ResponseJSONFormat();
 			resmsg_json.msg = message;

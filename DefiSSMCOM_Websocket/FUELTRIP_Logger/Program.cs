@@ -27,25 +27,25 @@ namespace FUELTRIP_Logger
             }
             catch (XmlException ex)
             {
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return;
             }
             catch (FileNotFoundException ex)
             {
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return;
             }
             catch (DirectoryNotFoundException ex)
             {
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return;
             }
             catch (System.Security.SecurityException ex)
             {
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return;
             }
