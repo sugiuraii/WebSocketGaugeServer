@@ -44,7 +44,7 @@
       <!-- Log pattern layout -->
       <layout type="log4net.Layout.PatternLayout">
         <param name="ConversionPattern"
-                value="%C.%M - [%-5p] %m%n" />
+                value="%d [%t] %C.%M - [%-5p] %m%n" />
       </layout>
     </appender>
     
