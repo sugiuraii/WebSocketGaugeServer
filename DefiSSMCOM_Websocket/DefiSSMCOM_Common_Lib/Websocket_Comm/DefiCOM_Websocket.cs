@@ -93,17 +93,17 @@ namespace DefiSSMCOM.WebSocket
             //Try to start the appServer
             if (!appServer.Setup(appserver_config)) //Setup with listening por
             {
-                Console.WriteLine("Failed to setup!");
+                //Console.WriteLine("Failed to setup!");
                 logger.Fatal("Failed to setup websocket server.");
             }
 			if (!appServer.Start())
 			{
-				Console.WriteLine("Failed to start!");
+				//Console.WriteLine("Failed to start!");
                 logger.Fatal("Failed to start websocket server.");
 				return;
 			}
 
-            Console.WriteLine("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " DefiCOMPort: " + this.DefiCOM_PortName);
+            //Console.WriteLine("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " DefiCOMPort: " + this.DefiCOM_PortName);
             logger.Info("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " DefiCOMPort: " + this.DefiCOM_PortName );
 			
             deficom1.communicate_realtime_start();
@@ -114,7 +114,7 @@ namespace DefiSSMCOM.WebSocket
 		public void stop ()
 		{
 			if (!this.running_state) {
-				Console.WriteLine ("Websocket server is not running");
+				//Console.WriteLine ("Websocket server is not running");
                 logger.Error("Websocket stop is called. But the websocket server is not running.");
 				return;
 			}
@@ -122,7 +122,7 @@ namespace DefiSSMCOM.WebSocket
 			appServer.Stop();
 
 			Console.WriteLine();
-			Console.WriteLine("The server was stopped!");
+			//Console.WriteLine("The server was stopped!");
             logger.Info("Websocket server is stopped");
 
 			deficom1.communicate_realtime_stop ();
@@ -130,7 +130,7 @@ namespace DefiSSMCOM.WebSocket
 
 		private void appServer_SessionClosed(WebSocketSession session, CloseReason reason)
 		{
-            Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
+            //Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
             logger.Info("Session closed from : " + session.Host + " Reason :" + reason.ToString());
 		}
 
@@ -141,7 +141,7 @@ namespace DefiSSMCOM.WebSocket
                 DefiCOM_Websocket_sessionparam sendparam = new DefiCOM_Websocket_sessionparam();
                 session.Items.Add("Param", sendparam);
 
-                Console.WriteLine("New session connected from : " + session.Host);
+                //Console.WriteLine("New session connected from : " + session.Host);
                 logger.Info("New session connected from : " + session.Host);
             }
 		}
@@ -272,7 +272,7 @@ namespace DefiSSMCOM.WebSocket
 			json_error_msg.msg = message;
 
 			session.Send (json_error_msg.Serialize());
-			Console.WriteLine ("Send Error message to " + session.Host + " : "+message);
+			//Console.WriteLine ("Send Error message to " + session.Host + " : "+message);
             logger.Error("Send Error message to " + session.Host + " : " + message);
 		}
 
@@ -282,7 +282,7 @@ namespace DefiSSMCOM.WebSocket
 			json_response_msg.msg = message;
 			session.Send (json_response_msg.Serialize());
 
-            Console.WriteLine("Send Response message to " + session.Host + " : " + message);
+            //Console.WriteLine("Send Response message to " + session.Host + " : " + message);
             logger.Info("Send Response message to " + session.Host + " : " + message);
         }
 

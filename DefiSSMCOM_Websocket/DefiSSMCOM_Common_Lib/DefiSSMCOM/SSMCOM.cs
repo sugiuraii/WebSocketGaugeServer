@@ -199,6 +199,10 @@ namespace DefiSSMCOM
 
                     //送信バッファの作成
                     outbuf = create_outbuf(slow_read, query_SSM_code_list);
+                    
+                    //クエリするSSM_codeがない場合は抜ける
+                    if (query_SSM_code_list.Count <= 0)
+                        return;
 
                     //エコーバックサイズの設定
                     int echoback_length = outbuf.Length;
