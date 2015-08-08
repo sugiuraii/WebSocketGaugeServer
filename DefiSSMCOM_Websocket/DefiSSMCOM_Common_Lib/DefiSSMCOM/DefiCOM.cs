@@ -181,9 +181,9 @@ namespace DefiSSMCOM
                 }
                 catch (TimeoutException ex)
                 {
-                    //読み出しタイムアウト時は200ミリ秒待つ（データ受信しなかったときのCPU占有防止）
+                    //読み出しタイムアウト時はエラーフラグを立て、次のサイクルでリセット処理を入れる
                     warning_message("Defi packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
-                    Thread.Sleep(200);
+                    _communicate_realtime_error = true;
                     return;
                 }
 
@@ -234,8 +234,10 @@ namespace DefiSSMCOM
                     }
                     catch (FormatException ex)
                     {
-                        //時々DefiPacketが崩れることがあるが、そのまま進める。
+                        //DefiPacketが崩れていた場合エラーフラグを立て、次のサイクルでリセット処理を入れる。
                         warning_message("Invalid Defi packet. " + ex.GetType().ToString() + " " + ex.Message);
+                        _communicate_realtime_error = true;
+                        return;
                     }
                 }
 
