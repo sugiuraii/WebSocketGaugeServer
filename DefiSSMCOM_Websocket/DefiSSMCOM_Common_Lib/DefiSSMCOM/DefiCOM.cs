@@ -31,7 +31,8 @@ namespace DefiSSMCOM
             //DefiLinkボーレート設定
             const int DEFI_BAUD_RATE = 19200;
             //リセット時のボーレート設定(communticate_reset()参照)
-            const int DEFI_RESET_BAUD_RATE = 14400;
+            //FT232RLの場合、許容されるボーレートは3000000/n (nは整数または小数点以下が0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)
+            const int DEFI_RESET_BAUD_RATE = 9600;
 
 
             //コンストラクタ
@@ -105,7 +106,7 @@ namespace DefiSSMCOM
                     while (_communicate_realtime_start)
                     {
                         communicate_main();
-                        if (_communicate_realtime_error) // シリアルポートエラー（パリティ、フレーミング)を受信したら、初期化を試みる。
+                        if (_communicate_realtime_error) // シリアルポートエラー（タイムアウト、パリティ、フレーミング)を受信したら、初期化を試みる。
                         {
                             communticate_reset();
                             _communicate_realtime_error = false;
