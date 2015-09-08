@@ -64,9 +64,17 @@ namespace DefiSSMCOM.WebSocket
 			}
 			set
 			{
-				deficom1.PortName = value;
+                deficom1.PortName = value;
 			}
 		}
+
+        public bool IsDefiCOMThreadAlive
+        {
+            get
+            {
+                return deficom1.IsCommunitateThreadAlive;
+            }
+        }
 
 		public DefiCOM_Websocket ()
 		{
