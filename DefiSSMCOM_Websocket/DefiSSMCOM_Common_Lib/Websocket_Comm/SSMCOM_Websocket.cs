@@ -62,6 +62,14 @@ namespace DefiSSMCOM.WebSocket
 			}
 		}
 
+        public bool IsSSMCOMThreadAlive
+        {
+            get
+            {
+                return ssmcom1.IsCommunitateThreadAlive;
+            }
+        }
+
 		public SSMCOM_Websocket ()
 		{
 			// Create Deficom
@@ -283,7 +291,7 @@ namespace DefiSSMCOM.WebSocket
         private void update_ssmcom_readflag(object stateobj)
         {
             //reset all ssmcom flag
-            ssmcom1.set_all_disable();
+            ssmcom1.set_all_disable(true);
             
             if (appServer.SessionCount < 1)
                 return;
@@ -312,12 +320,12 @@ namespace DefiSSMCOM.WebSocket
                     if (sessionparam.FastSendlist[code])
                     {
                         if (!ssmcom1.get_fastread_flag(code))
-                            ssmcom1.set_fastread_flag(code, true);
+                            ssmcom1.set_fastread_flag(code, true, true);
                     }
                     if (sessionparam.SlowSendlist[code])
                     {
                         if (!ssmcom1.get_slowread_flag(code))
-                            ssmcom1.set_slowread_flag(code, true);
+                            ssmcom1.set_slowread_flag(code, true, true);
                     }
                 }
             }

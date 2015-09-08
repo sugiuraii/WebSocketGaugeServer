@@ -57,11 +57,11 @@ namespace SSMCOM_WebSocket_Server
 			
 			ssmcomserver1.start ();
 
-            Console.WriteLine("The server started successfully, press key 'q' to stop it!");
-
-			while (Console.ReadKey().KeyChar != 'q')
+			while (true)
 			{
                 Thread.Sleep(500);
+                if (!ssmcomserver1.IsSSMCOMThreadAlive)
+                    break;
                 continue;
 			}
 

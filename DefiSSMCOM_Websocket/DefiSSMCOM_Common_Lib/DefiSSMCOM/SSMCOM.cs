@@ -61,6 +61,14 @@ namespace DefiSSMCOM
                 }
             }
 
+            public bool IsCommunitateThreadAlive
+            {
+                get
+                {
+                    return communicate_realtime_thread1.IsAlive;
+                }
+            }
+
             public double get_value(SSM_Parameter_Code code)
             {
                 return _content_table[code].Value;
@@ -93,18 +101,35 @@ namespace DefiSSMCOM
 
 			public void set_slowread_flag(SSM_Parameter_Code code, bool flag)
             {
-                debug_message("Slowread flag of " + code.ToString() + "is enabled.");
-				_content_table[code].Slow_Read_Enable = flag;
+                set_slowread_flag(code, flag, false);
             }
+            public void set_slowread_flag(SSM_Parameter_Code code, bool flag, bool quiet)
+            {
+                if(!quiet)
+                    debug_message("Slowread flag of " + code.ToString() + "is enabled.");
+                _content_table[code].Slow_Read_Enable = flag;
+            }
+
 			public void set_fastread_flag(SSM_Parameter_Code code, bool flag)
             {
-                debug_message("Fastread flag of " + code.ToString() + "is enabled.");
-				_content_table[code].Fast_Read_Enable = flag;
+                set_fastread_flag(code, flag, false);
+            }
+            public void set_fastread_flag(SSM_Parameter_Code code, bool flag, bool quiet)
+            {
+                if(!quiet)
+                    debug_message("Fastread flag of " + code.ToString() + "is enabled.");
+                _content_table[code].Fast_Read_Enable = flag;
             }
 
             public void set_all_disable()
             {
-                debug_message("All flag reset.");
+                set_all_disable(false);
+            }
+
+            public void set_all_disable(bool quiet)
+            {
+                if(!quiet)
+                    debug_message("All flag reset.");
                 _content_table.set_all_disable();
             }
 
@@ -202,7 +227,13 @@ namespace DefiSSMCOM
                     
                     //クエリするSSM_codeがない場合は抜ける
                     if (query_SSM_code_list.Count <= 0)
+                    {
+                        //SSM_codeがない場合、すぐに抜けると直後にcommunicate_mainが呼び出されCPUを占有するので、500ms待つ
+                        //SlowReadの場合、この処理はしない
+                        if(!slow_read)
+                            Thread.Sleep(500);
                         return;
+                    }
 
                     //エコーバックサイズの設定
                     int echoback_length = outbuf.Length;

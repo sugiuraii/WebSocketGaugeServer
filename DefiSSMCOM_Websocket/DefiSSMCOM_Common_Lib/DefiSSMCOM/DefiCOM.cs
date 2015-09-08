@@ -76,6 +76,14 @@ namespace DefiSSMCOM
                 }
             }
 
+            public bool IsCommunitateThreadAlive
+            {
+                get
+                {
+                    return communicate_realtime_thread1.IsAlive;
+                }
+            }
+
             public void communicate_realtime_start()
             {
                 communicate_realtime_thread1 = new Thread(new ThreadStart(communicate_realtime));

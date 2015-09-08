@@ -64,12 +64,13 @@ namespace DefiCOM_WebSocket_Server
 
             deficomserver1.start();
 
-			Console.WriteLine("The server started successfully, press key 'q' to stop it!");
-
-
-			while (Console.ReadKey().KeyChar != 'q')
+			while (true)
 			{
                 Thread.Sleep(500);
+                //DefiCOMスレッドが異常終了した場合は、プログラム自体も終了する。
+                if (!deficomserver1.IsDefiCOMThreadAlive)
+                    break;
+
 				continue;
 			}
 
