@@ -7,8 +7,7 @@ using WebSocket4Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
-using DefiSSMCOM.Defi;
-using DefiSSMCOM.SSM;
+using DefiSSMCOM;
 using DefiSSMCOM.WebSocket.JSON;
 using log4net;
 

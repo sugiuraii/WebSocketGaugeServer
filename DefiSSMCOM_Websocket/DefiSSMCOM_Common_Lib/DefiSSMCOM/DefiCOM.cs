@@ -8,313 +8,136 @@ using log4net;
 
 namespace DefiSSMCOM
 {
-    namespace Defi
+    public class DefiCOM : COMCommon
     {
-        public class DefiCOM
+        private Defi_Content_Table content_table;
+
+		// Defilink received Event
+		public event EventHandler PacketReceived;
+
+        //DefiLinkパケットサイズ
+        const int DEFI_PACKET_SIZE = 35;
+
+        //コンストラクタ
+        public DefiCOM()
         {
-            private SerialPort serialPort1;
-            private Defi_Content_Table _content_table;
+            content_table = new Defi_Content_Table();
 
-			private string _portname;
-
-            private Thread communicate_realtime_thread1;
-            private bool _communicate_realtime_start; // 読み込みスレッド継続フラグ(communicate_realtime_stop()でfalseになり、読み込みスレッドは終了)
-            private bool _communicate_realtime_error; // エラー発生時にtrue trueになったらcommunicate_reset()を呼び出して初期化を試みる。
-
-            private int _communicate_reset_count; //何回communicate_reset()が連続でコールされたか？ (COMMUNICATE_RESET_MAXを超えたらプログラムを落とす)
-            const int COMMUNICATE_RESET_MAX = 20; //communicate_reset()コールを連続で許可する回数。
-
-			// Defilink received Event
-			public event EventHandler DefiLinkPacketReceived;
-            //Log4net logger
-            private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-            //DefiLinkパケットサイズ
-            const int DEFI_PACKET_SIZE = 35;
-            //DefiLinkボーレート設定
-            const int DEFI_BAUD_RATE = 19200;
+            //DEFIボーレート設定
+            DefaultBaudRate = 19200;
             //リセット時のボーレート設定(communticate_reset()参照)
             //FT232RLの場合、許容されるボーレートは3000000/n (nは整数または小数点以下が0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)
-            const int DEFI_RESET_BAUD_RATE = 9600;
+            ResetBaudRate = 9600;
 
+            Parity = Parity.Even;
+            ReadTimeout = 500;
+        }
 
-            //コンストラクタ
-            public DefiCOM()
+        //通信部ルーチン実装
+        //この実装ではslowread_flagは無視
+        protected override void communicate_main(bool slowread_flag)
+        {
+            int i, c;
+            char[] inbuf = new char[DEFI_PACKET_SIZE];
+            //読み込みルーチン
+
+            try
             {
-                serialPort1 = new System.IO.Ports.SerialPort();
-				PortName = "COM1";
-
-                _content_table = new Defi_Content_Table();
-
-                //シリアルポート設定
-                serialPort1.BaudRate = DEFI_BAUD_RATE;
-                serialPort1.Parity = Parity.Even;
-                serialPort1.ReadTimeout = 500;
-                _communicate_realtime_start = false;
-                _communicate_realtime_error = false;
-                _communicate_reset_count = 0;
-
-                //通信エラー発生時のイベント処理登録
-                serialPort1.ErrorReceived += new SerialErrorReceivedEventHandler(SerialPortErrorReceived);
-
-
-            }
-
-			public string PortName
-            {
-                get
+                //デリミタ(ReceiverID)を見つけるまで読み進める
+                do
                 {
-                    return _portname;
+                    c = ReadByte();
                 }
-                set
+                while (c < 0x01 || c > 0x0f);
+
+                //Defiパケットサイズ分だけ読み出す。
+                inbuf[0] = (char)c;
+
+                for (i = 1; i < DEFI_PACKET_SIZE; i++)
                 {
-                    try
-                    {
-                        _portname = value;
-                        serialPort1.PortName = _portname;
-                    }
-                    catch (System.InvalidOperationException ex1)
-                    {
-						error_message("Port name set error : " + ex1.GetType().ToString() + " " + ex1.Message);
-                    }
+                    c = ReadByte();
+                    inbuf[i] = (char)c;
                 }
             }
-
-            public bool IsCommunitateThreadAlive
+            catch (TimeoutException ex)
             {
-                get
-                {
-                    return communicate_realtime_thread1.IsAlive;
-                }
+                //読み出しタイムアウト時はエラーフラグを立て、次のサイクルでリセット処理を入れる
+                logger.Warn("Defi packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                communicateRealtimeIsError = true;
+                return;
             }
 
-            public void communicate_realtime_start()
+            //バッファの残り分は破棄
+            DiscardInBuffer();
+                    
+            //ReceiverIDを判読し、private変数に格納
+            int j;
+            for (j = 0; j < DEFI_PACKET_SIZE; j += 5)
             {
-                communicate_realtime_thread1 = new Thread(new ThreadStart(communicate_realtime));
-                _communicate_realtime_start = true;
-                _communicate_realtime_error = false;
-                communicate_realtime_thread1.Start();
-                info_message("DefiCom communication Started.");
-            }
-
-            public void communicate_realtime_stop()
-            {
-                //通信スレッドを終了させる(フラグをfalseに)
-                _communicate_realtime_start = false;
-
-                //通信スレッド終了まで待つ
-                communicate_realtime_thread1.Join();
-                info_message("DefiCom communication Stopped.");
-            }
-
-            //読み込みスレッド実装（communicate_realtime_start()からスレッドを作って呼び出すこと）
-            private void communicate_realtime()
-            {
-                //ポートオープン
                 try
                 {
-                    serialPort1.Open();
-                    //スレッドフラグがfalseにされるまで続ける
-                    while (_communicate_realtime_start)
+                    if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Boost].Receiver_id)
                     {
-                        communicate_main();
-                        if (_communicate_realtime_error) // シリアルポートエラー（タイムアウト、パリティ、フレーミング)を受信したら、初期化を試みる。
-                        {
-                            communticate_reset();
-                            _communicate_reset_count++;
-
-                            if(_communicate_reset_count > COMMUNICATE_RESET_MAX)
-                            {
-                                throw new System.InvalidOperationException("Number of communicate_reset() call exceeds COMMUNICATE_RESET_MAX : " + COMMUNICATE_RESET_MAX.ToString() + ". Terminate communicate_realtime().");
-                            }
-
-                            _communicate_realtime_error = false;
-                        }
-                        else
-                        {
-                            //communicate_mainでエラーなければエラーカウンタリセット。
-                            _communicate_reset_count = 0;
-                        }
-
+                        String boost_str = new String(inbuf, j + 2, 3);
+                        content_table[Defi_Parameter_Code.Boost].Raw_Value = Int32.Parse(boost_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                    }
+                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Tacho].Receiver_id)
+                    {
+                        String tacho_str = new String(inbuf, j + 2, 3);
+                        content_table[Defi_Parameter_Code.Tacho].Raw_Value = Int32.Parse(tacho_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                    }
+                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Oil_Pres].Receiver_id)
+                    {
+                        String oilpres_str = new String(inbuf, j + 2, 3);
+                        content_table[Defi_Parameter_Code.Oil_Pres].Raw_Value = Int32.Parse(oilpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                    }
+                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Fuel_Pres].Receiver_id)
+                    {
+                        String fuelpres_str = new String(inbuf, j + 2, 3);
+                        content_table[Defi_Parameter_Code.Fuel_Pres].Raw_Value = Int32.Parse(fuelpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                    }
+                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Ext_Temp].Receiver_id)
+                    {
+                        String exttemp_str = new String(inbuf, j + 2, 3);
+                        content_table[Defi_Parameter_Code.Ext_Temp].Raw_Value = Int32.Parse(exttemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                    }
+                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Oil_Temp].Receiver_id)
+                    {
+                        String oiltemp_str = new String(inbuf, j + 2, 3);
+                        content_table[Defi_Parameter_Code.Oil_Temp].Raw_Value = Int32.Parse(oiltemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                    }
+                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Water_Temp].Receiver_id)
+                    {
+                        String watertemp_str = new String(inbuf, j + 2, 3);
+                        content_table[Defi_Parameter_Code.Water_Temp].Raw_Value = Int32.Parse(watertemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
                 }
-                catch (System.IO.IOException ex)
+                catch (FormatException ex)
                 {
-					error_message(ex.GetType().ToString() + " " +  ex.Message);
-                }
-                catch (System.InvalidOperationException ex)
-                {
-                    error_message(ex.GetType().ToString() + " " + ex.Message);
-                }
-                catch (System.UnauthorizedAccessException ex)
-                {
-                    error_message(ex.GetType().ToString() + " " + ex.Message);
-                }
-                finally
-                {
-                    _communicate_realtime_start = false;
-
-                    if(serialPort1.IsOpen)
-                        serialPort1.Close();
-                }
-            }
-
-            //　通信リセット
-            private void communticate_reset()
-            {
-                info_message("Deficom communication reset.");
-                serialPort1.Close();
-
-                //フレームをずらすために、一旦別ボーレートで通信させる
-                serialPort1.BaudRate = DEFI_RESET_BAUD_RATE;
-                
-                //1000ms ダミー通信させた後、バッファ破棄
-                serialPort1.Open();
-                Thread.Sleep(1000);
-                serialPort1.DiscardInBuffer();
-                serialPort1.Close();
-
-                //ボーレート戻し、ポート復帰させる
-                serialPort1.BaudRate = DEFI_BAUD_RATE;
-                serialPort1.Open();
-            }
-
-            //通信部ルーチン
-            private void communicate_main()
-            {
-                int i, c;
-                char[] inbuf = new char[DEFI_PACKET_SIZE];
-                //読み込みルーチン
-
-                try
-                {
-                    //デリミタ(ReceiverID)を見つけるまで読み進める
-                    do
-                    {
-                        c = serialPort1.ReadByte();
-                    }
-                    while (c < 0x01 || c > 0x0f);
-
-                    //Defiパケットサイズ分だけ読み出す。
-                    inbuf[0] = (char)c;
-
-                    for (i = 1; i < DEFI_PACKET_SIZE; i++)
-                    {
-                        c = serialPort1.ReadByte();
-                        inbuf[i] = (char)c;
-                    }
-                }
-                catch (TimeoutException ex)
-                {
-                    //読み出しタイムアウト時はエラーフラグを立て、次のサイクルでリセット処理を入れる
-                    warning_message("Defi packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
-                    _communicate_realtime_error = true;
+                    //DefiPacketが崩れていた場合エラーフラグを立て、次のサイクルでリセット処理を入れる。
+                    logger.Warn("Invalid Defi packet. " + ex.GetType().ToString() + " " + ex.Message);
+                    communicateRealtimeIsError = true;
                     return;
                 }
-
-                //バッファの残り分は破棄
-                serialPort1.DiscardInBuffer();
-                    
-                //ReceiverIDを判読し、private変数に格納
-                int j;
-                for (j = 0; j < DEFI_PACKET_SIZE; j += 5)
-                {
-                    try
-                    {
-                        if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Boost].Receiver_id)
-                        {
-                            String boost_str = new String(inbuf, j + 2, 3);
-                            _content_table[Defi_Parameter_Code.Boost].Raw_Value = Int32.Parse(boost_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                        }
-                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Tacho].Receiver_id)
-                        {
-                            String tacho_str = new String(inbuf, j + 2, 3);
-                            _content_table[Defi_Parameter_Code.Tacho].Raw_Value = Int32.Parse(tacho_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                        }
-                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Oil_Pres].Receiver_id)
-                        {
-                            String oilpres_str = new String(inbuf, j + 2, 3);
-                            _content_table[Defi_Parameter_Code.Oil_Pres].Raw_Value = Int32.Parse(oilpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                        }
-                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Fuel_Pres].Receiver_id)
-                        {
-                            String fuelpres_str = new String(inbuf, j + 2, 3);
-                            _content_table[Defi_Parameter_Code.Fuel_Pres].Raw_Value = Int32.Parse(fuelpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                        }
-                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Ext_Temp].Receiver_id)
-                        {
-                            String exttemp_str = new String(inbuf, j + 2, 3);
-                            _content_table[Defi_Parameter_Code.Ext_Temp].Raw_Value = Int32.Parse(exttemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                        }
-                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Oil_Temp].Receiver_id)
-                        {
-                            String oiltemp_str = new String(inbuf, j + 2, 3);
-                            _content_table[Defi_Parameter_Code.Oil_Temp].Raw_Value = Int32.Parse(oiltemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                        }
-                        else if (inbuf[j] == (char)_content_table[Defi_Parameter_Code.Water_Temp].Receiver_id)
-                        {
-                            String watertemp_str = new String(inbuf, j + 2, 3);
-                            _content_table[Defi_Parameter_Code.Water_Temp].Raw_Value = Int32.Parse(watertemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
-                        }
-                    }
-                    catch (FormatException ex)
-                    {
-                        //DefiPacketが崩れていた場合エラーフラグを立て、次のサイクルでリセット処理を入れる。
-                        warning_message("Invalid Defi packet. " + ex.GetType().ToString() + " " + ex.Message);
-                        _communicate_realtime_error = true;
-                        return;
-                    }
-                }
-
-				// Invoke PacketReceived Event
-				DefiLinkPacketReceived(this, EventArgs.Empty);                    
             }
 
-            //エラー発生時のイベント処理
-            private void SerialPortErrorReceived(object sender, SerialErrorReceivedEventArgs e)
-            {
-				SerialPort port = (SerialPort)sender;
-                _communicate_realtime_error = true;
-                error_message("SerialPortError Event is invoked.");
-            }
+			// Invoke PacketReceived Event
+			PacketReceived(this, EventArgs.Empty);                    
+        }
 
-            public double get_value(Defi_Parameter_Code code)
-            {
-                return _content_table[code].Value;
-            }
+        public double get_value(Defi_Parameter_Code code)
+        {
+            return content_table[code].Value;
+        }
 
-            public Int32 get_raw_value(Defi_Parameter_Code code)
-            {
-                return _content_table[code].Raw_Value;
-            }
+        public Int32 get_raw_value(Defi_Parameter_Code code)
+        {
+            return content_table[code].Raw_Value;
+        }
 
-            public string get_unit(Defi_Parameter_Code code)
-            {
-                return _content_table[code].Unit;
-            }
-
-            private void error_message(string message)
-            {
-                string send_message = "DefiCOM Error : " + message;
-                logger.Error(message);
-            }
-
-            private void info_message(string message)
-            {
-                string send_message = "DefiCOM Info : " + message;
-                logger.Info(message);
-            }
-
-            private void warning_message(string message)
-            {
-                string send_message = "DefiCOM Warning : " + message;
-                logger.Warn(message);
-            }
-            static private void debug_message(string message)
-            {
-                string send_message = "SSMCOM Debug : " + message;
-                logger.Debug(message);
-            }
+        public string get_unit(Defi_Parameter_Code code)
+        {
+            return content_table[code].Unit;
         }
     }
 }

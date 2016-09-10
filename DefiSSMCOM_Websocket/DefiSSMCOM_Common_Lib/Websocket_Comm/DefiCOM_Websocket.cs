@@ -1,12 +1,9 @@
 ﻿using System;
-using System.Threading;
-using DefiSSMCOM.Defi;
 using DefiSSMCOM.WebSocket.JSON;
 using SuperSocket.SocketBase;
 using SuperWebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using System.Reflection;
 using log4net;
 
 namespace DefiSSMCOM.WebSocket
@@ -82,7 +79,7 @@ namespace DefiSSMCOM.WebSocket
 			deficom1 = new DefiCOM ();
 			this.Websocket_PortNo = 2013;
 			this.DefiCOM_PortName = "COM1";
-			deficom1.DefiLinkPacketReceived += new EventHandler (deficom1_DefiLinkPacketReceived);
+			deficom1.PacketReceived += new EventHandler (deficom1_DefiLinkPacketReceived);
 
 			// Create Websocket server
 			appServer = new WebSocketServer();
@@ -114,7 +111,7 @@ namespace DefiSSMCOM.WebSocket
             //Console.WriteLine("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " DefiCOMPort: " + this.DefiCOM_PortName);
             logger.Info("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " DefiCOMPort: " + this.DefiCOM_PortName );
 			
-            deficom1.communicate_realtime_start();
+            deficom1.CommunicateRealtimeStart();
 
             this.running_state = true;
 		}
@@ -133,7 +130,7 @@ namespace DefiSSMCOM.WebSocket
 			//Console.WriteLine("The server was stopped!");
             logger.Info("Websocket server is stopped");
 
-			deficom1.communicate_realtime_stop ();
+			deficom1.CommunicateRealtimeStop ();
 		}
 
 		private void appServer_SessionClosed(WebSocketSession session, CloseReason reason)
