@@ -170,6 +170,11 @@ namespace DefiSSMCOM
             return serialPort1.ReadByte();
         }
 
+        public string ReadLine()
+        {
+            return serialPort1.ReadLine();
+        }
+
         public void DiscardInBuffer()
         {
             serialPort1.DiscardInBuffer();
