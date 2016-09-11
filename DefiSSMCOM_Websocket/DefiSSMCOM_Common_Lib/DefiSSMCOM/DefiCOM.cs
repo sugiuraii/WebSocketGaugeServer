@@ -13,7 +13,7 @@ namespace DefiSSMCOM
         private Defi_Content_Table content_table;
 
 		// Defilink received Event
-		public event EventHandler PacketReceived;
+		public event EventHandler DefiPacketReceived;
 
         //DefiLinkパケットサイズ
         const int DEFI_PACKET_SIZE = 35;
@@ -122,7 +122,7 @@ namespace DefiSSMCOM
             }
 
 			// Invoke PacketReceived Event
-			PacketReceived(this, EventArgs.Empty);                    
+			DefiPacketReceived(this, EventArgs.Empty);                    
         }
 
         public double get_value(Defi_Parameter_Code code)

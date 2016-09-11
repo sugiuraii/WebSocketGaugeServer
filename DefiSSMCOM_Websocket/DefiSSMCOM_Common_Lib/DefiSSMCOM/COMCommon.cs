@@ -9,10 +9,13 @@ using log4net;
 
 namespace DefiSSMCOM
 {
-    public abstract class COMCommon : SerialPort
+    public abstract class COMCommon
     {
+        private SerialPort serialPort1;
+
+        private int slowReadInterval;
         private Thread communicate_realtime_thread1;
-        protected bool communicateRealtimeIsRunning; // 読み込みスレッド継続フラグ(communicate_realtime_stop()でfalseになり、読み込みスレッドは終了)
+        private bool communicateRealtimeIsRunning; // 読み込みスレッド継続フラグ(communicate_realtime_stop()でfalseになり、読み込みスレッドは終了)
         protected bool communicateRealtimeIsError; // エラー発生時にtrue trueになったらcommunicate_reset()を呼び出して初期化を試みる。
 
         private int communicateResetCount; //何回communicate_reset()が連続でコールされたか？ (COMMUNICATE_RESET_MAXを超えたらプログラムを落とす)
@@ -23,6 +26,7 @@ namespace DefiSSMCOM
 
         public COMCommon()
         {
+            serialPort1 = new SerialPort();
             DefaultBaudRate = 19200;
             ResetBaudRate = 9600;
             SlowReadInterval = 10;
@@ -32,14 +36,14 @@ namespace DefiSSMCOM
             communicateResetCount = 0;
 
             //通信エラー発生時のイベント処理登録
-            this.ErrorReceived += new SerialErrorReceivedEventHandler(SerialPortErrorReceived);
+            serialPort1.ErrorReceived += new SerialErrorReceivedEventHandler(SerialPortErrorReceived);
 
         }
 
         public void CommunicateRealtimeStart()
         {
-            // Set baudrate to default baud rate
-            BaudRate = DefaultBaudRate;
+            // Set serialport1.BaudRate to default baud rate
+            serialPort1.BaudRate = DefaultBaudRate;
 
             communicate_realtime_thread1 = new Thread(new ThreadStart(communicate_realtime));
             communicateRealtimeIsRunning = true;
@@ -64,7 +68,7 @@ namespace DefiSSMCOM
             try
             {
                 //ポートオープン
-                Open();
+                serialPort1.Open();
                 logger.Info("COMport open.");
 
                 int i = 0;
@@ -121,9 +125,9 @@ namespace DefiSSMCOM
                 communicateRealtimeIsRunning = false;
 
                 //ポートクローズ
-                if (IsOpen)
+                if (serialPort1.IsOpen)
                 {
-                    Close();
+                    serialPort1.Close();
                     logger.Info("COMPort is closed.");
                 }
             }
@@ -137,20 +141,20 @@ namespace DefiSSMCOM
         private void communticate_reset()
         {
             logger.Info("Deficom communication reset.");
-            Close();
+            serialPort1.Close();
 
             //フレームをずらすために、一旦別ボーレートで通信させる
-            BaudRate = ResetBaudRate;
+            serialPort1.BaudRate = ResetBaudRate;
 
             //1000ms ダミー通信させた後、バッファ破棄
-            Open();
+            serialPort1.Open();
             Thread.Sleep(1000);
-            DiscardInBuffer();
-            Close();
+            serialPort1.DiscardInBuffer();
+            serialPort1.Close();
 
             //ボーレート戻し、ポート復帰させる
-            BaudRate = DefaultBaudRate;
-            Open();
+            serialPort1.BaudRate = DefaultBaudRate;
+            serialPort1.Open();
         }
 
         //シリアルポートエラー発生時のイベント処理
@@ -161,6 +165,21 @@ namespace DefiSSMCOM
             logger.Error("SerialPortError Event is invoked.");
         }
 
+        public int ReadByte()
+        {
+            return serialPort1.ReadByte();
+        }
+
+        public void DiscardInBuffer()
+        {
+            serialPort1.DiscardInBuffer();
+        }
+
+        public void Write(byte[] buffer, int offset, int count)
+        {
+            serialPort1.Write(buffer, offset, count);
+        }
+
         public bool IsCommunitateThreadAlive
         {
             get
@@ -169,8 +188,87 @@ namespace DefiSSMCOM
             }
         }
 
-        public int SlowReadInterval { get; set; }
+        public int SlowReadInterval
+        {
+            get
+            {
+                return slowReadInterval;
+            }
+            set
+            {
+                slowReadInterval = value;
+                logger.Debug("Set slowread interval to " + value.ToString());
+            }
+        }
+
         protected int DefaultBaudRate {get; set; }
         protected int ResetBaudRate { get; set; }
+
+        public string PortName
+        {
+            get
+            {
+                return serialPort1.PortName;
+            }
+            set
+            {
+                try
+                {
+                    serialPort1.PortName = value;
+                }
+                catch (System.InvalidOperationException ex1)
+                {
+                    logger.Error("Port name set error : " + ex1.GetType().ToString() + " " + ex1.Message);
+                }
+            }
+        }
+
+        public Parity Parity
+        {
+            get
+            {
+                return serialPort1.Parity;
+            }
+            set
+            {
+                serialPort1.Parity = value;
+            }
+        }
+
+        public int ReadTimeout
+        {
+            get
+            {
+                return serialPort1.ReadTimeout;
+            }
+            set
+            {
+                serialPort1.ReadTimeout = value;
+            }
+        }
+        public int DataBits
+        {
+            get
+            {
+                return serialPort1.DataBits;
+            }
+            set
+            {
+                serialPort1.DataBits = value;
+            }
+        }
+
+        public StopBits StopBits
+        {
+            get
+            {
+                return serialPort1.StopBits;
+            }
+            set
+            {
+                serialPort1.StopBits = value;
+            }
+        }
+
     }
 }

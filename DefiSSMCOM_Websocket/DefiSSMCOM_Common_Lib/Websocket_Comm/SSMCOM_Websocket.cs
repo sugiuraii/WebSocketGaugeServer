@@ -108,7 +108,7 @@ namespace DefiSSMCOM.WebSocket
             //Console.WriteLine("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " SSMCOMPort: " + this.SSMCOM_PortName);
             logger.Info("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " SSMCOMPort: " + this.SSMCOM_PortName);
 
-            ssmcom1.communicate_start();
+            ssmcom1.CommunicateRealtimeStart();
 
             update_ssmflag_timer.Change(0, 2000);
 
@@ -129,7 +129,7 @@ namespace DefiSSMCOM.WebSocket
             //Console.WriteLine("The server was stopped!");
             logger.Info("Websocket server is stopped");
 
-			ssmcom1.communicate_stop ();
+			ssmcom1.CommunicateRealtimeStop();
 		}
 
 		private void appServer_SessionClosed(WebSocketSession session, CloseReason reason)
@@ -215,7 +215,7 @@ namespace DefiSSMCOM.WebSocket
                     case ("SSM_SLOWREAD_INTERVAL"):
                         SSM_SLOWREAD_IntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<SSM_SLOWREAD_IntervalJSONFormat>(message);
                         msg_obj_interval.Validate();
-                        ssmcom1.Slow_Read_Interval = msg_obj_interval.interval;
+                        ssmcom1.SlowReadInterval = msg_obj_interval.interval;
 
                         send_response_msg(session, "SSMCOM slowread interval to : " + msg_obj_interval.interval.ToString());
                         break;
