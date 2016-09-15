@@ -40,28 +40,57 @@ namespace DefiSSMCOM.WebSocket
 	}
 
     public class DefiCOMWebsocket : WebSocketCommon
-	{
-		private DefiCOM deficom1;
+    {
+        private DefiCOM deficom1;
 
-		public DefiCOMWebsocket ()
-		{
-			// Create Deficom
-			deficom1 = new DefiCOM ();
+        public DefiCOMWebsocket()
+        {
+            // Create Deficom
+            deficom1 = new DefiCOM();
             com1 = deficom1;
-			WebsocketPortNo = 2013;
-			COMPortName = "COM1";
-			deficom1.DefiPacketReceived += new EventHandler (deficom1_DefiLinkPacketReceived);
+            WebsocketPortNo = 2013;
+            COMPortName = "COM1";
+            deficom1.DefiPacketReceived += new EventHandler(deficom1_DefiLinkPacketReceived);
 
-			appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(appServer_NewMessageReceived);
-		}
+            appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(appServer_NewMessageReceived);
+        }
 
         protected override WebsocketSessionParam createSessionParam()
         {
             return new DefiCOMWebsocketSessionparam();
         }
 
-		private void appServer_NewMessageReceived(WebSocketSession session, string message)
-		{
+        protected override void processReceivedJSONMessage(string receivedJSONmode, string message, WebSocketSession session)
+        {
+            DefiCOMWebsocketSessionparam sessionparam = (DefiCOMWebsocketSessionparam)session.Items["Param"];
+            switch (receivedJSONmode)
+            {
+                case ("RESET"):
+                    sessionparam.reset();
+                    send_response_msg(session, "Defi Websocket all parameter reset.");
+                    break;
+                case ("DEFI_WS_SEND"):
+                    Defi_WS_SendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<Defi_WS_SendJSONFormat>(message);
+                    msg_obj_wssend.Validate();
+                    sessionparam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
+
+                    send_response_msg(session, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
+                    break;
+
+                case ("DEFI_WS_INTERVAL"):
+                    Defi_WS_IntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<Defi_WS_IntervalJSONFormat>(message);
+                    msg_obj_interval.Validate();
+                    sessionparam.SendInterval = msg_obj_interval.interval;
+
+                    send_response_msg(session, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
+                    break;
+                default:
+                    throw new JSONFormatsException("Unsuppoted mode property.");
+            }
+        }
+
+        private void appServer_NewMessageReceived(WebSocketSession session, string message)
+        {
             lock (create_session_busy_lock_obj)//Websocketセッション作成処理が終わるまで、後続のパケット処理を待つ
             {
                 DefiCOMWebsocketSessionparam sessionparam;
@@ -136,18 +165,18 @@ namespace DefiSSMCOM.WebSocket
                     return;
                 }
             }
-		}
+        }
 
-		private void deficom1_DefiLinkPacketReceived(object sender,EventArgs args)
-		{
-			var sessions = appServer.GetAllSessions ();
+        private void deficom1_DefiLinkPacketReceived(object sender, EventArgs args)
+        {
+            var sessions = appServer.GetAllSessions();
 
-			foreach (var session in sessions) 
-			{
+            foreach (var session in sessions)
+            {
                 if (session == null || !session.Connected || session.Connection == "") // Avoid null session bug
                     continue;
 
-				ValueJSONFormat msg_data = new ValueJSONFormat ();
+                ValueJSONFormat msg_data = new ValueJSONFormat();
 
                 DefiCOMWebsocketSessionparam sendparam;
                 try
@@ -159,25 +188,28 @@ namespace DefiSSMCOM.WebSocket
                     logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
                     continue;
                 }
-                
+
                 if (sendparam.SendCount < sendparam.SendInterval)
-					sendparam.SendCount++;
-				else {
-					foreach (DefiParameterCode deficode in Enum.GetValues(typeof(DefiParameterCode) )) {
-						if (sendparam.Sendlist [deficode]) {
-							msg_data.val.Add(deficode.ToString(),deficom1.get_value(deficode).ToString());
-						}
-					}
+                    sendparam.SendCount++;
+                else
+                {
+                    foreach (DefiParameterCode deficode in Enum.GetValues(typeof(DefiParameterCode)))
+                    {
+                        if (sendparam.Sendlist[deficode])
+                        {
+                            msg_data.val.Add(deficode.ToString(), deficom1.get_value(deficode).ToString());
+                        }
+                    }
 
                     if (msg_data.val.Count > 0)
                     {
                         String msg = JsonConvert.SerializeObject(msg_data);
                         session.Send(msg);
                     }
-					sendparam.SendCount = 0;
-				}
-			}
-		}
-	}
+                    sendparam.SendCount = 0;
+                }
+            }
+        }
+    }
 }
 

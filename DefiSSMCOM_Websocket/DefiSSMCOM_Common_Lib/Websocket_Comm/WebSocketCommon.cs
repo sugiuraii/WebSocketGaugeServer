@@ -53,6 +53,7 @@ namespace DefiSSMCOM.WebSocket
             appServer = new WebSocketServer();
             appServer.SessionClosed += new SessionHandler<WebSocketSession, CloseReason>(appServer_SessionClosed);
             appServer.NewSessionConnected += new SessionHandler<WebSocketSession>(appServer_NewSessionConnected);
+            appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(appServer_NewMessageReceived);
         }
 
         // SessionParam(DefiSessionParam or SSMSessionParamを生成して返すメソッド
@@ -140,6 +141,55 @@ namespace DefiSSMCOM.WebSocket
 
                 //Console.WriteLine("New session connected from : " + session.Host);
                 logger.Info("New session connected from : " + session.Host);
+            }
+        }
+
+        protected abstract void processReceivedJSONMessage(string receivedJSONmode, string message, WebSocketSession session);
+
+        private void appServer_NewMessageReceived(WebSocketSession session, string message)
+        {
+            lock (create_session_busy_lock_obj)//Websocketセッション作成処理が終わるまで、後続のパケット処理を待つ
+            {
+                // Get session parameter
+                WebsocketSessionParam sessionparam;
+                try
+                {
+                    sessionparam = (WebsocketSessionParam)session.Items["Param"];
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
+                    return;
+                }
+
+                // Check if the message is empty
+                if (message == "")
+                {
+                    send_error_msg(session, "Empty message is received.");
+                    return;
+                }
+
+                // Parse JSON message mode
+                string received_JSON_mode;
+                try
+                {
+                    Dictionary<string,string> msg_dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(message);
+                    received_JSON_mode = msg_dict["mode"];
+                    processReceivedJSONMessage(received_JSON_mode, message, session);
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
+                }
+                catch (JsonException ex)
+                {
+                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
+                }
+                catch (JSONFormatsException ex)
+                {
+                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
+                }
+
             }
         }
 

@@ -69,17 +69,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DefiSSMCOM\Arduino\ArduinoCOM.cs" />
+    <Compile Include="DefiSSMCOM\Arduino\Arduino_Content.cs" />
     <Compile Include="DefiSSMCOM\COMCommon.cs" />
-    <Compile Include="DefiSSMCOM\Arduino_Content.cs" />
-    <Compile Include="DefiSSMCOM\ArduinoCOM.cs" />
     <Compile Include="DefiSSMCOM\ContentCommon.cs" />
+    <Compile Include="DefiSSMCOM\Defi\DefiCOM.cs" />
+    <Compile Include="DefiSSMCOM\Defi\Defi_Content.cs" />
+    <Compile Include="DefiSSMCOM\SSM\SSMCOM.cs" />
+    <Compile Include="DefiSSMCOM\SSM\SSM_Content.cs" />
+    <Compile Include="DefiSSMCOM\SSM\SSM_Parameter_list.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Websocket_Comm\DefiCOM_Websocket.cs" />
-    <Compile Include="DefiSSMCOM\SSM_Content.cs" />
-    <Compile Include="DefiSSMCOM\SSM_Parameter_list.cs" />
-    <Compile Include="DefiSSMCOM\SSMCOM.cs" />
-    <Compile Include="DefiSSMCOM\Defi_Content.cs" />
-    <Compile Include="DefiSSMCOM\DefiCOM.cs" />
     <Compile Include="Websocket_Comm\JSONFormat.cs" />
     <Compile Include="Websocket_Comm\SSMCOM_Websocket.cs" />
     <Compile Include="Websocket_Comm\WebSocketCommon.cs" />

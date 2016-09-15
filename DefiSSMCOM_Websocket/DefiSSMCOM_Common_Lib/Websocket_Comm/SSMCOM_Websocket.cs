@@ -50,9 +50,6 @@ namespace DefiSSMCOM.WebSocket
 			COMPortName = "COM1";
 			ssmcom1.SSMDataReceived += new EventHandler<SSMCOMDataReceivedEventArgs> (ssmcom1_SSMDataReceived);
 
-			// Create Websocket server
-			appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(appServer_NewMessageReceived);
-
             update_ssmflag_timer = new Timer(new TimerCallback(update_ssmcom_readflag), null, 0, Timeout.Infinite);
             update_ssmflag_timer.Change(0, 2000);
 		}
@@ -62,95 +59,45 @@ namespace DefiSSMCOM.WebSocket
             return new SSMCOMWebsocketSessionparam();
         }
 
-        private void appServer_NewMessageReceived(WebSocketSession session, string message)
-		{
-            lock (create_session_busy_lock_obj)//Websocketセッション作成処理が終わるまで、後続のパケット処理を待つ
+        protected override void processReceivedJSONMessage(string receivedJSONmode, string message, WebSocketSession session)
+        {
+            var sessionparam = (SSMCOMWebsocketSessionparam)session.Items["Param"];
+            switch (receivedJSONmode)
             {
-                SSMCOMWebsocketSessionparam sessionparam;
-                try
-                {
-                    sessionparam = (SSMCOMWebsocketSessionparam)session.Items["Param"];
-                    //Console.WriteLine (message);
-                }
-                catch (KeyNotFoundException ex)
-                {
-                    logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
-                    return;
-                }
+                //SSM COM all reset
+                case ("RESET"):
+                    sessionparam.reset();
+                    send_response_msg(session, "SSMCOM session RESET. All send parameters are disabled.");
+                    break;
+                case ("SSM_COM_READ"):
+                    SSM_COM_ReadJSONFormat msg_obj_ssmread = JsonConvert.DeserializeObject<SSM_COM_ReadJSONFormat>(message);
+                    msg_obj_ssmread.Validate();
 
+                    SSMParameterCode target_code = (SSMParameterCode)Enum.Parse(typeof(SSMParameterCode), msg_obj_ssmread.code);
+                    bool flag = msg_obj_ssmread.flag;
 
-                if (message == "")
-                {
-                    send_error_msg(session, "Empty message is received.");
-                    return;
-                }
-                string received_JSON_mode;
-                try
-                {
-                    var msg_dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(message);
-                    received_JSON_mode = msg_dict["mode"];
-                }
-                catch (KeyNotFoundException ex)
-                {
-                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
-                    return;
-                }
-                catch (JsonException ex)
-                {
-                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
-                    return;
-                }
-
-                try
-                {
-                    switch (received_JSON_mode)
+                    if (msg_obj_ssmread.read_mode == "FAST")
                     {
-                        //SSM COM all reset
-                        case ("RESET"):
-                            sessionparam.reset();
-                            send_response_msg(session, "SSMCOM session RESET. All send parameters are disabled.");
-                            break;
-                        case ("SSM_COM_READ"):
-                            SSM_COM_ReadJSONFormat msg_obj_ssmread = JsonConvert.DeserializeObject<SSM_COM_ReadJSONFormat>(message);
-                            msg_obj_ssmread.Validate();
-
-                            SSMParameterCode target_code = (SSMParameterCode)Enum.Parse(typeof(SSMParameterCode), msg_obj_ssmread.code);
-                            bool flag = msg_obj_ssmread.flag;
-
-                            if (msg_obj_ssmread.read_mode == "FAST")
-                            {
-                                sessionparam.FastSendlist[target_code] = flag;
-                            }
-                            else
-                            {
-                                sessionparam.SlowSendlist[target_code] = flag;
-                            }
-                            send_response_msg(session, "SSMCOM session read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString());
-                            break;
-
-                        case ("SSM_SLOWREAD_INTERVAL"):
-                            SSM_SLOWREAD_IntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<SSM_SLOWREAD_IntervalJSONFormat>(message);
-                            msg_obj_interval.Validate();
-                            ssmcom1.SlowReadInterval = msg_obj_interval.interval;
-
-                            send_response_msg(session, "SSMCOM slowread interval to : " + msg_obj_interval.interval.ToString());
-                            break;
-                        default:
-                            throw new JSONFormatsException("Unsuppoted mode property.");
+                        sessionparam.FastSendlist[target_code] = flag;
                     }
-                }
-                catch (JSONFormatsException ex)
-                {
-                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
-                    return;
-                }
-                catch (JsonException ex)
-                {
-                    send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
-                    return;
-                }
+                    else
+                    {
+                        sessionparam.SlowSendlist[target_code] = flag;
+                    }
+                    send_response_msg(session, "SSMCOM session read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString());
+                    break;
+
+                case ("SSM_SLOWREAD_INTERVAL"):
+                    SSM_SLOWREAD_IntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<SSM_SLOWREAD_IntervalJSONFormat>(message);
+                    msg_obj_interval.Validate();
+                    ssmcom1.SlowReadInterval = msg_obj_interval.interval;
+
+                    send_response_msg(session, "SSMCOM slowread interval to : " + msg_obj_interval.interval.ToString());
+                    break;
+                default:
+                    throw new JSONFormatsException("Unsuppoted mode property.");
             }
-		}
+        }
 
 		private void ssmcom1_SSMDataReceived(object sender,SSMCOMDataReceivedEventArgs args)
 		{   
@@ -162,20 +109,20 @@ namespace DefiSSMCOM.WebSocket
                     continue;
 
 				ValueJSONFormat msg_data = new ValueJSONFormat ();
-                SSMCOMWebsocketSessionparam sendparam;
+                SSMCOMWebsocketSessionparam sessionparam;
                 try
                 {
-                    sendparam = (SSMCOMWebsocketSessionparam)session.Items["Param"];
+                    sessionparam = (SSMCOMWebsocketSessionparam)session.Items["Param"];
                 }
                 catch (KeyNotFoundException ex)
                 {
-                    logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
+                    logger.Fatal("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
                     continue;
                 }
 
 				foreach (SSMParameterCode ssmcode in args.Received_Parameter_Code) 
 				{
-                    if (sendparam.FastSendlist[ssmcode] || sendparam.SlowSendlist[ssmcode])
+                    if (sessionparam.FastSendlist[ssmcode] || sessionparam.SlowSendlist[ssmcode])
                     {
                         // Return Switch content
                         if (ssmcode >= SSMParameterCode.Switch_P0x061 && ssmcode <= SSMParameterCode.Switch_P0x121)
@@ -249,9 +196,6 @@ namespace DefiSSMCOM.WebSocket
                 }
             }
         }
-
-
-
 	}
 }
 
