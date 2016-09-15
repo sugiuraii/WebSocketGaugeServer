@@ -349,15 +349,15 @@ namespace FUELTRIP_Logger
 
 					if(ssm_defi_mode == SSM_DEFI_mode.Defi)
 					{
-						_current_tacho = double.Parse(val_json.val[Defi_Parameter_Code.Tacho.ToString()]);
+						_current_tacho = double.Parse(val_json.val[DefiParameterCode.Tacho.ToString()]);
 					}
 					else if(ssm_defi_mode == SSM_DEFI_mode.SSM)
 					{
                         //Console.WriteLine(jsonmsg);
                         try
                         {
-                            _current_speed = double.Parse(val_json.val[SSM_Parameter_Code.Vehicle_Speed.ToString()]);
-                            _current_injpulse_width = double.Parse(val_json.val[SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString()]);
+                            _current_speed = double.Parse(val_json.val[SSMParameterCode.Vehicle_Speed.ToString()]);
+                            _current_injpulse_width = double.Parse(val_json.val[SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString()]);
                         }
                         catch (KeyNotFoundException ex)
                         {
@@ -415,7 +415,7 @@ namespace FUELTRIP_Logger
 
 			// initialize setting
 			Defi_WS_SendJSONFormat defisendcode = new Defi_WS_SendJSONFormat ();
-			defisendcode.code = Defi_Parameter_Code.Tacho.ToString ();
+			defisendcode.code = DefiParameterCode.Tacho.ToString ();
 			defisendcode.flag = true;
 
 			Defi_WS_IntervalJSONFormat definitervalcode = new Defi_WS_IntervalJSONFormat();
@@ -457,27 +457,27 @@ namespace FUELTRIP_Logger
             _ssmcom_ws_client.Send(ssmcom_slowread_json.Serialize());
 
             SSM_COM_ReadJSONFormat ssmcom_read_json1 = new SSM_COM_ReadJSONFormat();
-            ssmcom_read_json1.code = SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString();
+            ssmcom_read_json1.code = SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString();
             ssmcom_read_json1.read_mode = "SLOW";
             ssmcom_read_json1.flag = true;
             _ssmcom_ws_client.Send(ssmcom_read_json1.Serialize());
 
             SSM_COM_ReadJSONFormat ssmcom_read_json2 = new SSM_COM_ReadJSONFormat();
-			ssmcom_read_json2.code = SSM_Parameter_Code.Vehicle_Speed.ToString ();
+			ssmcom_read_json2.code = SSMParameterCode.Vehicle_Speed.ToString ();
 			ssmcom_read_json2.read_mode = "FAST";
 			ssmcom_read_json2.flag = true;
 			_ssmcom_ws_client.Send(ssmcom_read_json2.Serialize());
 
             SSM_COM_ReadJSONFormat ssmcom_read_json3 = new SSM_COM_ReadJSONFormat();
             ssmcom_read_json3 = new SSM_COM_ReadJSONFormat();
-            ssmcom_read_json3.code = SSM_Parameter_Code.Vehicle_Speed.ToString();
+            ssmcom_read_json3.code = SSMParameterCode.Vehicle_Speed.ToString();
             ssmcom_read_json3.read_mode = "SLOW";
             ssmcom_read_json3.flag = true;
 			_ssmcom_ws_client.Send (ssmcom_read_json3.Serialize ());
 
             SSM_COM_ReadJSONFormat ssmcom_read_json4 = new SSM_COM_ReadJSONFormat();
             ssmcom_read_json4 = new SSM_COM_ReadJSONFormat();
-            ssmcom_read_json4.code = SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString();
+            ssmcom_read_json4.code = SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString();
             ssmcom_read_json4.read_mode = "FAST";
             ssmcom_read_json4.flag = true;
             _ssmcom_ws_client.Send(ssmcom_read_json4.Serialize());

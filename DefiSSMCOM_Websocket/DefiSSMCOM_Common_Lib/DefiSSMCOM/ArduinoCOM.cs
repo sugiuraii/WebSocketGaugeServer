@@ -10,7 +10,7 @@ namespace DefiSSMCOM
 {
     public class ArduinoCOM : COMCommon
     {
-        private Arduino_Content_Table content_table;
+        private ArduinoContentTable content_table;
 
         // Arduinoから1サイクルで送信されるデータ(行)数(Tacho + Speed + ADC6ch分)
         private const int NUM_ROWS_PER_CYCLE = 8;
@@ -20,7 +20,7 @@ namespace DefiSSMCOM
         //コンストラクタ
         public ArduinoCOM()
         {
-            content_table = new Arduino_Content_Table();
+            content_table = new ArduinoContentTable();
 
             //Arduinoシリアルボーレート設定
             DefaultBaudRate = 19200;
@@ -66,11 +66,11 @@ namespace DefiSSMCOM
                 //Headerコードを読んで、値を格納
                 try
                 {
-                    foreach (Arduino_Parameter_Code paramCode in Enum.GetValues(typeof(Arduino_Parameter_Code)))
+                    foreach (ArduinoParameterCode paramCode in Enum.GetValues(typeof(ArduinoParameterCode)))
                     {
                         if (headerCode == content_table[paramCode].Header_char)
                         {
-                            content_table[paramCode].Raw_Value = int.Parse(readbuf.Remove(0, 1));
+                            content_table[paramCode].RawValue = Int32.Parse(readbuf.Remove(0, 1));
                             continue;
                         }
                     }
@@ -90,17 +90,17 @@ namespace DefiSSMCOM
             ArduinoPacketReceived(this, EventArgs.Empty);
         }
 
-        public double get_value(Arduino_Parameter_Code code)
+        public double get_value(ArduinoParameterCode code)
         {
             return content_table[code].Value;
         }
 
-        public int get_raw_value(Arduino_Parameter_Code code)
+        public int get_raw_value(ArduinoParameterCode code)
         {
-            return content_table[code].Raw_Value;
+            return content_table[code].RawValue;
         }
 
-        public string get_unit(Arduino_Parameter_Code code)
+        public string get_unit(ArduinoParameterCode code)
         {
             return content_table[code].Unit;
         }

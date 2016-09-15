@@ -6,7 +6,7 @@ using System.Threading;
 
 namespace DefiSSMCOM
 {
-    public enum SSM_Parameter_Code
+    public enum SSMParameterCode
     {
         // SSMのパラメーターリスト
         Engine_Load,
@@ -111,7 +111,7 @@ namespace DefiSSMCOM
         Switch_P0x120,
         Switch_P0x121
     };
-    public enum SSM_Switch_Code
+    public enum SSMSwitchCode
     {
         // Switch_P0x061
         AT_Vehicle_ID,

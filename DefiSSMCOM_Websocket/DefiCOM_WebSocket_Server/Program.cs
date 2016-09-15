@@ -16,7 +16,7 @@ namespace DefiCOM_WebSocket_Server
 
 	class MainClass
 	{
-		static private DefiSSMCOM.WebSocket.DefiCOM_Websocket deficomserver1;
+		static private DefiSSMCOM.WebSocket.DefiCOMWebsocket deficomserver1;
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static AppSettings appsetting;
 
@@ -27,7 +27,7 @@ namespace DefiCOM_WebSocket_Server
 		public static void Main (string[] args)
 		{
 		
-			deficomserver1 = new DefiSSMCOM.WebSocket.DefiCOM_Websocket ();
+			deficomserver1 = new DefiSSMCOM.WebSocket.DefiCOMWebsocket ();
 
             try
             {
@@ -59,8 +59,8 @@ namespace DefiCOM_WebSocket_Server
             }
 
             
-            deficomserver1.DefiCOM_PortName = appsetting.comport;
-            deficomserver1.Websocket_PortNo = appsetting.websocket_port;
+            deficomserver1.COMPortName = appsetting.comport;
+            deficomserver1.WebsocketPortNo = appsetting.websocket_port;
 
             deficomserver1.start();
 
@@ -68,7 +68,7 @@ namespace DefiCOM_WebSocket_Server
 			{
                 Thread.Sleep(500);
                 //DefiCOMスレッドが異常終了した場合は、プログラム自体も終了する。
-                if (!deficomserver1.IsDefiCOMThreadAlive)
+                if (!deficomserver1.IsCOMThreadAlive)
                     break;
 
 				continue;

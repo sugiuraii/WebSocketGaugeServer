@@ -140,7 +140,7 @@ namespace DefiSSMCOM
         //　通信リセット
         private void communticate_reset()
         {
-            logger.Info("Deficom communication reset.");
+            logger.Info("COM communication reset.");
             serialPort1.Close();
 
             //フレームをずらすために、一旦別ボーレートで通信させる

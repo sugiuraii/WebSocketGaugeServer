@@ -8,7 +8,7 @@ namespace DefiSSMCOM
 {
     public class SSMCOM : COMCommon
     {
-        private SSM_Content_Table content_table;
+        private SSMContentTable content_table;
 
 		//SSMCOM data received event
 		public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
@@ -21,55 +21,55 @@ namespace DefiSSMCOM
             ResetBaudRate = 4800;
             ReadTimeout = 500;
 
-            content_table = new SSM_Content_Table();
+            content_table = new SSMContentTable();
         }
 
-        public double get_value(SSM_Parameter_Code code)
+        public double get_value(SSMParameterCode code)
         {
             return content_table[code].Value;
         }
 
-        public Int32 get_raw_value(SSM_Parameter_Code code)
+        public Int32 get_raw_value(SSMParameterCode code)
         {
-            return content_table[code].Raw_Value;
+            return content_table[code].RawValue;
         }
 
-        public bool get_switch(SSM_Switch_Code code)
+        public bool get_switch(SSMSwitchCode code)
         {
             return content_table[code].Value;
         }
 
-        public string get_unit(SSM_Parameter_Code code)
+        public string get_unit(SSMParameterCode code)
         {
             return content_table[code].Unit;
         }
 
-		public bool get_slowread_flag(SSM_Parameter_Code code)
+		public bool get_slowread_flag(SSMParameterCode code)
 		{
 			return content_table[code].Slow_Read_Enable;
 		}
 
-		public bool get_fastread_flag(SSM_Parameter_Code code)
+		public bool get_fastread_flag(SSMParameterCode code)
 		{
 			return content_table[code].Fast_Read_Enable;
 		}
 
-		public void set_slowread_flag(SSM_Parameter_Code code, bool flag)
+		public void set_slowread_flag(SSMParameterCode code, bool flag)
         {
             set_slowread_flag(code, flag, false);
         }
-        public void set_slowread_flag(SSM_Parameter_Code code, bool flag, bool quiet)
+        public void set_slowread_flag(SSMParameterCode code, bool flag, bool quiet)
         {
             if(!quiet)
                 logger.Debug("Slowread flag of " + code.ToString() + "is enabled.");
             content_table[code].Slow_Read_Enable = flag;
         }
 
-		public void set_fastread_flag(SSM_Parameter_Code code, bool flag)
+		public void set_fastread_flag(SSMParameterCode code, bool flag)
         {
             set_fastread_flag(code, flag, false);
         }
-        public void set_fastread_flag(SSM_Parameter_Code code, bool flag, bool quiet)
+        public void set_fastread_flag(SSMParameterCode code, bool flag, bool quiet)
         {
             if(!quiet)
                 logger.Debug("Fastread flag of " + code.ToString() + "is enabled.");
@@ -97,7 +97,7 @@ namespace DefiSSMCOM
                 byte[] outbuf;
 
                 //クエリするSSM_codeリストの作成
-				List<SSM_Parameter_Code> query_SSM_code_list = new List<SSM_Parameter_Code>();
+				List<SSMParameterCode> query_SSM_code_list = new List<SSMParameterCode>();
 
                 //送信バッファの作成
                 outbuf = create_outbuf(slow_read, query_SSM_code_list);
@@ -139,7 +139,7 @@ namespace DefiSSMCOM
 				//Invoke SSMDatareceived event
 				SSMCOMDataReceivedEventArgs ssm_received_eventargs = new SSMCOMDataReceivedEventArgs();
 				ssm_received_eventargs.Slow_read_flag = slow_read;
-				ssm_received_eventargs.Received_Parameter_Code = new List<SSM_Parameter_Code>(query_SSM_code_list);
+				ssm_received_eventargs.Received_Parameter_Code = new List<SSMParameterCode>(query_SSM_code_list);
 				SSMDataReceived(this,ssm_received_eventargs);
             }
             catch (TimeoutException ex)
@@ -149,7 +149,7 @@ namespace DefiSSMCOM
             }
         }
 
-		private byte[] create_outbuf(bool slow_read, List<SSM_Parameter_Code> query_code_list)
+		private byte[] create_outbuf(bool slow_read, List<SSMParameterCode> query_code_list)
         {
             int i;
             int outbuf_sum = 0;
@@ -165,7 +165,7 @@ namespace DefiSSMCOM
             byte[] address_bytes = new byte[]{};
 
 
-            foreach (SSM_Parameter_Code code in Enum.GetValues(typeof(SSM_Parameter_Code)))
+            foreach (SSMParameterCode code in Enum.GetValues(typeof(SSMParameterCode)))
             {
                 if (slow_read)
                 {
@@ -209,10 +209,10 @@ namespace DefiSSMCOM
             return outbuf;
         }
 
-		private void read_inbuf(byte[] inbuf, int read_offset, List<SSM_Parameter_Code> query_code_list)
+		private void read_inbuf(byte[] inbuf, int read_offset, List<SSMParameterCode> query_code_list)
         {
             int get_offset = read_offset;
-            foreach (SSM_Parameter_Code code in query_code_list)
+            foreach (SSMParameterCode code in query_code_list)
             {
                 //アドレス3バイトあたりデータ1バイト
                 int read_byte_length = content_table[code].Address_Length / 3;
@@ -224,7 +224,7 @@ namespace DefiSSMCOM
                     temp_buf = (temp_buf << 8) + inbuf[get_offset + i];
                 }
 
-                content_table[code].Raw_Value = temp_buf;
+                content_table[code].RawValue = temp_buf;
 
                 get_offset += read_byte_length;
             }
@@ -234,6 +234,6 @@ namespace DefiSSMCOM
     public class SSMCOMDataReceivedEventArgs : EventArgs
     {
 	    public bool Slow_read_flag { get; set; }
-	    public List<SSM_Parameter_Code> Received_Parameter_Code { get; set; }
+	    public List<SSMParameterCode> Received_Parameter_Code { get; set; }
 	}
 }

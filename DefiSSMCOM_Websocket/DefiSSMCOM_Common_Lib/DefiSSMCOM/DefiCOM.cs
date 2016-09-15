@@ -10,7 +10,7 @@ namespace DefiSSMCOM
 {
     public class DefiCOM : COMCommon
     {
-        private Defi_Content_Table content_table;
+        private DefiContentTable content_table;
 
 		// Defilink received Event
 		public event EventHandler DefiPacketReceived;
@@ -21,7 +21,7 @@ namespace DefiSSMCOM
         //コンストラクタ
         public DefiCOM()
         {
-            content_table = new Defi_Content_Table();
+            content_table = new DefiContentTable();
 
             //DEFIボーレート設定
             DefaultBaudRate = 19200;
@@ -76,40 +76,40 @@ namespace DefiSSMCOM
             {
                 try
                 {
-                    if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Boost].Receiver_id)
+                    if (inbuf[j] == (char)content_table[DefiParameterCode.Boost].Receiver_id)
                     {
                         String boost_str = new String(inbuf, j + 2, 3);
-                        content_table[Defi_Parameter_Code.Boost].Raw_Value = Int32.Parse(boost_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Boost].RawValue = Int32.Parse(boost_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Tacho].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Tacho].Receiver_id)
                     {
                         String tacho_str = new String(inbuf, j + 2, 3);
-                        content_table[Defi_Parameter_Code.Tacho].Raw_Value = Int32.Parse(tacho_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Tacho].RawValue = Int32.Parse(tacho_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Oil_Pres].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Oil_Pres].Receiver_id)
                     {
                         String oilpres_str = new String(inbuf, j + 2, 3);
-                        content_table[Defi_Parameter_Code.Oil_Pres].Raw_Value = Int32.Parse(oilpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Oil_Pres].RawValue = Int32.Parse(oilpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Fuel_Pres].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Fuel_Pres].Receiver_id)
                     {
                         String fuelpres_str = new String(inbuf, j + 2, 3);
-                        content_table[Defi_Parameter_Code.Fuel_Pres].Raw_Value = Int32.Parse(fuelpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Fuel_Pres].RawValue = Int32.Parse(fuelpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Ext_Temp].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Ext_Temp].Receiver_id)
                     {
                         String exttemp_str = new String(inbuf, j + 2, 3);
-                        content_table[Defi_Parameter_Code.Ext_Temp].Raw_Value = Int32.Parse(exttemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Ext_Temp].RawValue = Int32.Parse(exttemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Oil_Temp].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Oil_Temp].Receiver_id)
                     {
                         String oiltemp_str = new String(inbuf, j + 2, 3);
-                        content_table[Defi_Parameter_Code.Oil_Temp].Raw_Value = Int32.Parse(oiltemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Oil_Temp].RawValue = Int32.Parse(oiltemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[Defi_Parameter_Code.Water_Temp].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Water_Temp].Receiver_id)
                     {
                         String watertemp_str = new String(inbuf, j + 2, 3);
-                        content_table[Defi_Parameter_Code.Water_Temp].Raw_Value = Int32.Parse(watertemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Water_Temp].RawValue = Int32.Parse(watertemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
                 }
                 catch (FormatException ex)
@@ -125,17 +125,17 @@ namespace DefiSSMCOM
 			DefiPacketReceived(this, EventArgs.Empty);                    
         }
 
-        public double get_value(Defi_Parameter_Code code)
+        public double get_value(DefiParameterCode code)
         {
             return content_table[code].Value;
         }
 
-        public Int32 get_raw_value(Defi_Parameter_Code code)
+        public Int32 get_raw_value(DefiParameterCode code)
         {
-            return content_table[code].Raw_Value;
+            return content_table[code].RawValue;
         }
 
-        public string get_unit(Defi_Parameter_Code code)
+        public string get_unit(DefiParameterCode code)
         {
             return content_table[code].Unit;
         }

@@ -43,14 +43,14 @@ namespace DefiSSMCOM.WebSocket.JSON
 				else{
 					foreach (var key in val.Keys) {
 						//Numeric case
-						if ((Enum.IsDefined (typeof(Defi_Parameter_Code), key)) || (Enum.IsDefined (typeof(SSM_Parameter_Code), key))){
+						if ((Enum.IsDefined (typeof(DefiParameterCode), key)) || (Enum.IsDefined (typeof(SSMParameterCode), key))){
 							double val_result;
 							if(!double.TryParse(val[key], out val_result))
 								throw new JSONFormatsException("Value of " + key + "is not numeric.");
 							else 
 								return;
 						}
-						else if(Enum.IsDefined(typeof(SSM_Switch_Code),key)){
+						else if(Enum.IsDefined(typeof(SSMSwitchCode),key)){
 							bool val_result;
 							if(!bool.TryParse(val[key],out val_result))
 								throw new JSONFormatsException("Value of " + key + " is not a flag (true or false).");
@@ -114,7 +114,7 @@ namespace DefiSSMCOM.WebSocket.JSON
 					throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
 				}
 				else{
-					if (!(Enum.IsDefined (typeof(Defi_Parameter_Code), code)))
+					if (!(Enum.IsDefined (typeof(DefiParameterCode), code)))
 						throw new JSONFormatsException ("Defi_Parameter_Code property of DEFI_WS_SEND packet is not valid.");
 					if( flag != true && flag != false)
 						throw new JSONFormatsException ("flag of DEFI_WS_SEND packet is not valid.");
@@ -164,7 +164,7 @@ namespace DefiSSMCOM.WebSocket.JSON
 					throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
 				}
 				else{
-					if (!(Enum.IsDefined (typeof(SSM_Parameter_Code), code)))
+					if (!(Enum.IsDefined (typeof(SSMParameterCode), code)))
 						throw new JSONFormatsException ("SSM_Parameter_Code property of SSM_COM_READ packet is not valid.");
 					if( read_mode != "FAST" && read_mode != "SLOW")
 						throw new JSONFormatsException ("read_mode of SSM_COM_READ packet is not valid (Should be SLOW or FAST).");

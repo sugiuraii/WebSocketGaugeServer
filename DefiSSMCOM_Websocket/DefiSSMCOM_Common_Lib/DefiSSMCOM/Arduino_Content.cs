@@ -5,9 +5,9 @@ using System.Text;
 
 namespace DefiSSMCOM
 {
-    public class Arduino_Content_Table
+    public class ArduinoContentTable
     {
-        private Dictionary<Arduino_Parameter_Code, Arduino_Numeric_Content> _arduino_numeric_content_table = new Dictionary<Arduino_Parameter_Code, Arduino_Numeric_Content>();
+        private Dictionary<ArduinoParameterCode, ArduinoNumericContent> _arduino_numeric_content_table = new Dictionary<ArduinoParameterCode, ArduinoNumericContent>();
         public const int ADC_STEP = 4096;
         public const double ADC_REF_VOLTAGE = 5;
 
@@ -18,7 +18,7 @@ namespace DefiSSMCOM
         public const double THERMISTOR_SENSE_R = 5000;
 
         //コンストラクタ
-        public Arduino_Content_Table()
+        public ArduinoContentTable()
         {
             set_numeric_content_table();
             NumPulsePerRev = 2;
@@ -27,7 +27,7 @@ namespace DefiSSMCOM
             OilTempThermistorSerialResistance = 5000;
         }
 
-        public Arduino_Numeric_Content this[Arduino_Parameter_Code code]
+        public ArduinoNumericContent this[ArduinoParameterCode code]
         {
             get
             {
@@ -42,7 +42,7 @@ namespace DefiSSMCOM
 
         private void set_numeric_content_table()
         {
-            _arduino_numeric_content_table.Add(Arduino_Parameter_Code.Tacho, new Arduino_Numeric_Content('T', tpulse => 
+            _arduino_numeric_content_table.Add(ArduinoParameterCode.Tacho, new ArduinoNumericContent('T', tpulse => 
             {
                 if(tpulse > 0)
                     return 60/(NumPulsePerRev*tpulse);
@@ -50,7 +50,7 @@ namespace DefiSSMCOM
                     return 0;
             }, "rpm"));
 
-            _arduino_numeric_content_table.Add(Arduino_Parameter_Code.Speed, new Arduino_Numeric_Content('S', tpulse =>
+            _arduino_numeric_content_table.Add(ArduinoParameterCode.Speed, new ArduinoNumericContent('S', tpulse =>
             {
                 if (tpulse > 0)
                     return 3600 / (637 * tpulse * NumPulsePerRev);
@@ -58,53 +58,42 @@ namespace DefiSSMCOM
                     return 0;
             }, "km/h"));
 
-            _arduino_numeric_content_table.Add(Arduino_Parameter_Code.Boost, new Arduino_Numeric_Content('A', adc_out => 73.47*(adc_out/ADC_STEP*ADC_REF_VOLTAGE - 1.88), "kPa"));
-            _arduino_numeric_content_table.Add(Arduino_Parameter_Code.Water_Temp, new Arduino_Numeric_Content('B', adc_out =>
+            _arduino_numeric_content_table.Add(ArduinoParameterCode.Boost, new ArduinoNumericContent('A', adc_out => 73.47*(adc_out/ADC_STEP*ADC_REF_VOLTAGE - 1.88), "kPa"));
+            _arduino_numeric_content_table.Add(ArduinoParameterCode.Water_Temp, new ArduinoNumericContent('B', adc_out =>
             {
                 double R = adc_out * THERMISTOR_SENSE_R / (ADC_STEP - adc_out);
                 double T = THERMISTOR_B/(Math.Log(R/THERMISTOR_R0)+THERMISTOR_B/298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;
             }, "degC"));
-            _arduino_numeric_content_table.Add(Arduino_Parameter_Code.Oil_Temp, new Arduino_Numeric_Content('C', adc_out =>
+            _arduino_numeric_content_table.Add(ArduinoParameterCode.Oil_Temp, new ArduinoNumericContent('C', adc_out =>
             {
                 double R = adc_out * THERMISTOR_SENSE_R / (ADC_STEP - adc_out);
                 double T = THERMISTOR_B / (Math.Log(R / THERMISTOR_R0) + THERMISTOR_B / 298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;
             }, "degC"));
-            _arduino_numeric_content_table.Add(Arduino_Parameter_Code.Oil_Temp2, new Arduino_Numeric_Content('D', adc_out =>
+            _arduino_numeric_content_table.Add(ArduinoParameterCode.Oil_Temp2, new ArduinoNumericContent('D', adc_out =>
             {
                 double R = adc_out * THERMISTOR_SENSE_R / (ADC_STEP - adc_out);
                 double T = THERMISTOR_B / (Math.Log(R / THERMISTOR_R0) + THERMISTOR_B / 298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;
             }, "degC"));
-            _arduino_numeric_content_table.Add(Arduino_Parameter_Code.Oil_Pres, new Arduino_Numeric_Content('E', adc_out => 250 * (adc_out / ADC_STEP * ADC_REF_VOLTAGE - 0.48), "kPa"));
-            _arduino_numeric_content_table.Add(Arduino_Parameter_Code.Fuel_Pres, new Arduino_Numeric_Content('F', adc_out => 250 * (adc_out / ADC_STEP * ADC_REF_VOLTAGE - 0.48), "kPa"));
+            _arduino_numeric_content_table.Add(ArduinoParameterCode.Oil_Pres, new ArduinoNumericContent('E', adc_out => 250 * (adc_out / ADC_STEP * ADC_REF_VOLTAGE - 0.48), "kPa"));
+            _arduino_numeric_content_table.Add(ArduinoParameterCode.Fuel_Pres, new ArduinoNumericContent('F', adc_out => 250 * (adc_out / ADC_STEP * ADC_REF_VOLTAGE - 0.48), "kPa"));
         }
     }
 
-    public class Arduino_Numeric_Content
+    public class ArduinoNumericContent : NumericContent
     {
         private char _header_char;
-        private Func<int, double> _conversion_function;
-        private int _raw_value;
-        private String _unit;
 
-        public Arduino_Numeric_Content(char header_char, Func <int, double> conversion_function, String unit)
+        public ArduinoNumericContent(char header_char, Func <Int32, double> conversion_function, String unit)
         {
             _header_char = header_char;
             _conversion_function = conversion_function;
             _unit = unit;
-        }
-
-        public double Value
-        {
-            get
-            {
-                return _conversion_function(_raw_value);
-            }
         }
 
         public char Header_char
@@ -114,40 +103,9 @@ namespace DefiSSMCOM
                 return _header_char;
             }
         }
-
-        public int Raw_Value
-        {
-            get
-            {
-                return _raw_value;
-            }
-            set
-            {
-                _raw_value = value;
-            }
-        }
-
-        public Func<int, double> Conversion_Fuction
-        {
-            get
-            {
-                return _conversion_function;
-            }
-        }
-
-        public String Unit
-        {
-            get
-            {
-                return _unit;
-            }
-        }
-
     };
 
-
-
-    public enum Arduino_Parameter_Code
+    public enum ArduinoParameterCode
     {
         Tacho,
         Speed,

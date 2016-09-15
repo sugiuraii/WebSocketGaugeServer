@@ -8,17 +8,17 @@ using log4net;
 
 namespace DefiSSMCOM.WebSocket
 {
-	public class DefiCOM_Websocket_sessionparam
+	public class DefiCOMWebsocketSessionparam : WebsocketSessionParam
 	{
-		public Dictionary<Defi_Parameter_Code,bool> Sendlist;
+		public Dictionary<DefiParameterCode,bool> Sendlist;
 		public int SendInterval;
 		public int SendCount;
 
-		public DefiCOM_Websocket_sessionparam()
+		public DefiCOMWebsocketSessionparam()
 		{
-			this.Sendlist = new Dictionary<Defi_Parameter_Code,bool> ();
+			this.Sendlist = new Dictionary<DefiParameterCode,bool> ();
 
-			foreach (Defi_Parameter_Code code in Enum.GetValues(typeof(Defi_Parameter_Code)))
+			foreach (DefiParameterCode code in Enum.GetValues(typeof(DefiParameterCode)))
 			{
 				this.Sendlist.Add(code, false);
 			}
@@ -27,9 +27,9 @@ namespace DefiSSMCOM.WebSocket
 			this.SendCount = 0;
 		}
 
-		public void reset()
+		public override void reset()
 		{
-			foreach (Defi_Parameter_Code code in Enum.GetValues(typeof(Defi_Parameter_Code)))
+			foreach (DefiParameterCode code in Enum.GetValues(typeof(DefiParameterCode)))
 			{
 				this.Sendlist[code]= false;
 			}
@@ -38,128 +38,36 @@ namespace DefiSSMCOM.WebSocket
 			this.SendCount = 0;
 		}
 	}
-		
-	public class DefiCOM_Websocket
+
+    public class DefiCOMWebsocket : WebSocketCommon
 	{
 		private DefiCOM deficom1;
-		private WebSocketServer appServer;
 
-		private bool running_state = false;
-
-        //log4net
-        private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
-        //Websocketセッション作成（消去）が完了するまではフラグ変更等の処理を待つためのlock object
-        private object create_session_busy_lock_obj = new object();
-
-		public int Websocket_PortNo { get; set; }
-		public string DefiCOM_PortName
-		{
-			get
-			{
-				return deficom1.PortName;
-			}
-			set
-			{
-                deficom1.PortName = value;
-			}
-		}
-
-        public bool IsDefiCOMThreadAlive
-        {
-            get
-            {
-                return deficom1.IsCommunitateThreadAlive;
-            }
-        }
-
-		public DefiCOM_Websocket ()
+		public DefiCOMWebsocket ()
 		{
 			// Create Deficom
 			deficom1 = new DefiCOM ();
-			this.Websocket_PortNo = 2013;
-			this.DefiCOM_PortName = "COM1";
+            com1 = deficom1;
+			WebsocketPortNo = 2013;
+			COMPortName = "COM1";
 			deficom1.DefiPacketReceived += new EventHandler (deficom1_DefiLinkPacketReceived);
 
-			// Create Websocket server
-			appServer = new WebSocketServer();
 			appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(appServer_NewMessageReceived);
-			appServer.NewSessionConnected += new SessionHandler<WebSocketSession> (appServer_NewSessionConnected);
-			appServer.SessionClosed += new SessionHandler<WebSocketSession, CloseReason> (appServer_SessionClosed);
 		}
 
-		public void start()
-		{
-            SuperSocket.SocketBase.Config.ServerConfig appserver_config = new SuperSocket.SocketBase.Config.ServerConfig();
-            appserver_config.DisableSessionSnapshot = false;
-            appserver_config.SessionSnapshotInterval = 2;
-            appserver_config.Port = this.Websocket_PortNo;
-
-            //Try to start the appServer
-            if (!appServer.Setup(appserver_config)) //Setup with listening por
-            {
-                //Console.WriteLine("Failed to setup!");
-                logger.Fatal("Failed to setup websocket server.");
-            }
-			if (!appServer.Start())
-			{
-				//Console.WriteLine("Failed to start!");
-                logger.Fatal("Failed to start websocket server.");
-				return;
-			}
-
-            //Console.WriteLine("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " DefiCOMPort: " + this.DefiCOM_PortName);
-            logger.Info("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " DefiCOMPort: " + this.DefiCOM_PortName );
-			
-            deficom1.CommunicateRealtimeStart();
-
-            this.running_state = true;
-		}
-
-		public void stop ()
-		{
-			if (!this.running_state) {
-				//Console.WriteLine ("Websocket server is not running");
-                logger.Error("Websocket stop is called. But the websocket server is not running.");
-				return;
-			}
-			//Stop the appServer
-			appServer.Stop();
-
-			Console.WriteLine();
-			//Console.WriteLine("The server was stopped!");
-            logger.Info("Websocket server is stopped");
-
-			deficom1.CommunicateRealtimeStop ();
-		}
-
-		private void appServer_SessionClosed(WebSocketSession session, CloseReason reason)
-		{
-            //Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
-            logger.Info("Session closed from : " + session.Host + " Reason :" + reason.ToString());
-		}
-
-		private void appServer_NewSessionConnected(WebSocketSession session)
-		{
-            lock (create_session_busy_lock_obj)//Websocketセッション作成処理が終わるまで、後続のパケット処理を待つ
-            {
-                DefiCOM_Websocket_sessionparam sendparam = new DefiCOM_Websocket_sessionparam();
-                session.Items.Add("Param", sendparam);
-
-                //Console.WriteLine("New session connected from : " + session.Host);
-                logger.Info("New session connected from : " + session.Host);
-            }
-		}
-			
+        protected override WebsocketSessionParam createSessionParam()
+        {
+            return new DefiCOMWebsocketSessionparam();
+        }
 
 		private void appServer_NewMessageReceived(WebSocketSession session, string message)
 		{
             lock (create_session_busy_lock_obj)//Websocketセッション作成処理が終わるまで、後続のパケット処理を待つ
             {
-                DefiCOM_Websocket_sessionparam sessionparam;
+                DefiCOMWebsocketSessionparam sessionparam;
                 try
                 {
-                    sessionparam = (DefiCOM_Websocket_sessionparam)session.Items["Param"];
+                    sessionparam = (DefiCOMWebsocketSessionparam)session.Items["Param"];
                     //Console.WriteLine (message);
                 }
                 catch (KeyNotFoundException ex)
@@ -201,7 +109,7 @@ namespace DefiSSMCOM.WebSocket
                         case ("DEFI_WS_SEND"):
                             Defi_WS_SendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<Defi_WS_SendJSONFormat>(message);
                             msg_obj_wssend.Validate();
-                            sessionparam.Sendlist[(Defi_Parameter_Code)Enum.Parse(typeof(Defi_Parameter_Code), msg_obj_wssend.code)] = msg_obj_wssend.flag;
+                            sessionparam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
                             send_response_msg(session, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
                             break;
@@ -241,10 +149,10 @@ namespace DefiSSMCOM.WebSocket
 
 				ValueJSONFormat msg_data = new ValueJSONFormat ();
 
-                DefiCOM_Websocket_sessionparam sendparam;
+                DefiCOMWebsocketSessionparam sendparam;
                 try
                 {
-                    sendparam = (DefiCOM_Websocket_sessionparam)session.Items["Param"];
+                    sendparam = (DefiCOMWebsocketSessionparam)session.Items["Param"];
                 }
                 catch (KeyNotFoundException ex)
                 {
@@ -255,7 +163,7 @@ namespace DefiSSMCOM.WebSocket
                 if (sendparam.SendCount < sendparam.SendInterval)
 					sendparam.SendCount++;
 				else {
-					foreach (Defi_Parameter_Code deficode in Enum.GetValues(typeof(Defi_Parameter_Code) )) {
+					foreach (DefiParameterCode deficode in Enum.GetValues(typeof(DefiParameterCode) )) {
 						if (sendparam.Sendlist [deficode]) {
 							msg_data.val.Add(deficode.ToString(),deficom1.get_value(deficode).ToString());
 						}
@@ -270,27 +178,6 @@ namespace DefiSSMCOM.WebSocket
 				}
 			}
 		}
-
-		private void send_error_msg(WebSocketSession session,string message)
-		{
-			ErrorJSONFormat json_error_msg = new ErrorJSONFormat ();
-			json_error_msg.msg = message;
-
-			session.Send (json_error_msg.Serialize());
-			//Console.WriteLine ("Send Error message to " + session.Host + " : "+message);
-            logger.Error("Send Error message to " + session.Host + " : " + message);
-		}
-
-		private void send_response_msg(WebSocketSession session,string message)
-		{
-			ResponseJSONFormat json_response_msg = new ResponseJSONFormat ();
-			json_response_msg.msg = message;
-			session.Send (json_response_msg.Serialize());
-
-            //Console.WriteLine("Send Response message to " + session.Host + " : " + message);
-            logger.Info("Send Response message to " + session.Host + " : " + message);
-        }
-
 	}
 }
 

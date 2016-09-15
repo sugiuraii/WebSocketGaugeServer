@@ -5,22 +5,17 @@ using System.Text;
 
 namespace DefiSSMCOM
 {
-    public class Defi_Content_Table
+    public class DefiContentTable
     {
-        private Dictionary<Defi_Parameter_Code, Defi_Numeric_Content> _defi_numeric_content_table = new Dictionary<Defi_Parameter_Code, Defi_Numeric_Content>();
+        private Dictionary<DefiParameterCode, DefiNumericContent> _defi_numeric_content_table = new Dictionary<DefiParameterCode, DefiNumericContent>();
 
         //コンストラクタ
-        public Defi_Content_Table()
+        public DefiContentTable()
         {
             set_numeric_content_table();
         }
 
-        //デストラクタ
-        ~Defi_Content_Table()
-        {
-        }
-
-        public Defi_Numeric_Content this[Defi_Parameter_Code code]
+        public DefiNumericContent this[DefiParameterCode code]
         {
             get
             {
@@ -30,42 +25,25 @@ namespace DefiSSMCOM
 
         private void set_numeric_content_table()
         {
-            _defi_numeric_content_table.Add(Defi_Parameter_Code.Boost, new Defi_Numeric_Content(0x01, 1.27e-3, -1.0, "kgf/cm2"));
-            _defi_numeric_content_table.Add(Defi_Parameter_Code.Tacho, new Defi_Numeric_Content(0x02, 4.77, -121.98, "rpm"));  // 500-9000rpmにて線形回帰 500rpm以下では誤差大（120rpm程度)
-            _defi_numeric_content_table.Add(Defi_Parameter_Code.Oil_Pres, new Defi_Numeric_Content(0x03, 4.23e-3, 0.0, "kgf/cm2")); //以下実物合わせしていないので、変換係数は適当
-            _defi_numeric_content_table.Add(Defi_Parameter_Code.Fuel_Pres, new Defi_Numeric_Content(0x04, 2.54e-3, 0.0, "kgf/cm2"));
-            _defi_numeric_content_table.Add(Defi_Parameter_Code.Ext_Temp, new Defi_Numeric_Content(0x05, 3.81e-1, 200.0, "C"));
-            _defi_numeric_content_table.Add(Defi_Parameter_Code.Oil_Temp, new Defi_Numeric_Content(0x07, 4.23e-2, 50.0, "C"));
-            _defi_numeric_content_table.Add(Defi_Parameter_Code.Water_Temp, new Defi_Numeric_Content(0x0f, 4.23e-2, 20.0, "C"));
+            _defi_numeric_content_table.Add(DefiParameterCode.Boost, new DefiNumericContent(0x01, x=>1.27e-3*x -1.0, "kgf/cm2"));
+            _defi_numeric_content_table.Add(DefiParameterCode.Tacho, new DefiNumericContent(0x02, x=>4.77*x -121.98, "rpm"));  // 500-9000rpmにて線形回帰 500rpm以下では誤差大（120rpm程度)
+            _defi_numeric_content_table.Add(DefiParameterCode.Oil_Pres, new DefiNumericContent(0x03, x=>4.23e-3*x + 0.0, "kgf/cm2")); //以下実物合わせしていないので、変換係数は適当
+            _defi_numeric_content_table.Add(DefiParameterCode.Fuel_Pres, new DefiNumericContent(0x04, x=>2.54e-3*x + 0.0, "kgf/cm2"));
+            _defi_numeric_content_table.Add(DefiParameterCode.Ext_Temp, new DefiNumericContent(0x05, x=>3.81e-1*x + 200.0, "C"));
+            _defi_numeric_content_table.Add(DefiParameterCode.Oil_Temp, new DefiNumericContent(0x07, x=>4.23e-2*x + 50.0, "C"));
+            _defi_numeric_content_table.Add(DefiParameterCode.Water_Temp, new DefiNumericContent(0x0f, x=>4.23e-2*x + 20.0, "C"));
         }
     }
 
-    public class Defi_Numeric_Content
+    public class DefiNumericContent : NumericContent
     {
         private byte _reciever_id;
-        private double _conversion_coefficient;
-        private double _conversion_offset;
-        private Int32 _raw_value;
-        private String _unit;
 
-        public Defi_Numeric_Content(byte receiver_id, double conversion_coefficient, double conversion_offset, String unit)
+        public DefiNumericContent(byte receiver_id, Func<Int32, double> conversion_function, String unit)
         {
             _reciever_id = receiver_id;
-            _conversion_coefficient = conversion_coefficient;
-            _conversion_offset = conversion_offset;
+            _conversion_function = conversion_function;
             _unit = unit;
-        }
-
-        ~Defi_Numeric_Content()
-        {
-        }
-
-        public double Value
-        {
-            get
-            {
-                return _conversion_coefficient * _raw_value + _conversion_offset;
-            }
         }
 
         public byte Receiver_id
@@ -76,44 +54,10 @@ namespace DefiSSMCOM
             }
         }
 
-        public Int32 Raw_Value
-        {
-            get
-            {
-                return _raw_value;
-            }
-            set
-            {
-                _raw_value = value;
-            }
-        }
-
-        public double Conversion_Coefficient
-        {
-            get
-            {
-                return _conversion_coefficient;
-            }
-        }
-
-        public double Conversion_Offset
-        {
-            get
-            {
-                return _conversion_offset;
-            }
-        }
-        public String Unit
-        {
-            get
-            {
-                return _unit;
-            }
-        }
 
     };
 
-    public enum Defi_Parameter_Code
+    public enum DefiParameterCode
     {
         Boost,
         Tacho,

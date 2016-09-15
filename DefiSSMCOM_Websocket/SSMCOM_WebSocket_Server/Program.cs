@@ -15,13 +15,13 @@ namespace SSMCOM_WebSocket_Server
     }
 	class MainClass
 	{
-		static private SSMCOM_Websocket ssmcomserver1;
+		static private SSMCOMWebsocket ssmcomserver1;
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static AppSettings appsetting;
 
 		public static void Main (string[] args)
 		{
-			ssmcomserver1 = new SSMCOM_Websocket ();
+			ssmcomserver1 = new SSMCOMWebsocket ();
 
             try
             {
@@ -52,15 +52,15 @@ namespace SSMCOM_WebSocket_Server
                 return;
             }
 
-            ssmcomserver1.SSMCOM_PortName = appsetting.comport;
-            ssmcomserver1.Websocket_PortNo = appsetting.websocket_port;
+            ssmcomserver1.COMPortName = appsetting.comport;
+            ssmcomserver1.WebsocketPortNo = appsetting.websocket_port;
 			
 			ssmcomserver1.start ();
 
 			while (true)
 			{
                 Thread.Sleep(500);
-                if (!ssmcomserver1.IsSSMCOMThreadAlive)
+                if (!ssmcomserver1.IsCOMThreadAlive)
                     break;
                 continue;
 			}
