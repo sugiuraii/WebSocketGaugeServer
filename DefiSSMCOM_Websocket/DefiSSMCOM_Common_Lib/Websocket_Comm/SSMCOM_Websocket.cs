@@ -9,10 +9,10 @@ using log4net;
 
 namespace DefiSSMCOM.WebSocket
 {
-	public class SSMCOMWebsocketSessionparam : WebsocketSessionParam
+	public class SSMCOMWebsocketSessionParam : WebsocketSessionParam
 	{
         public Dictionary<SSMParameterCode, bool> SlowSendlist,FastSendlist;
-		public SSMCOMWebsocketSessionparam()
+		public SSMCOMWebsocketSessionParam()
 		{
             this.SlowSendlist = new Dictionary<SSMParameterCode, bool>();
             this.FastSendlist = new Dictionary<SSMParameterCode, bool>();
@@ -56,27 +56,27 @@ namespace DefiSSMCOM.WebSocket
 
         protected override WebsocketSessionParam createSessionParam()
         {
-            return new SSMCOMWebsocketSessionparam();
+            return new SSMCOMWebsocketSessionParam();
         }
 
         protected override void processReceivedJSONMessage(string receivedJSONmode, string message, WebSocketSession session)
         {
-            var sessionparam = (SSMCOMWebsocketSessionparam)session.Items["Param"];
+            var sessionparam = (SSMCOMWebsocketSessionParam)session.Items["Param"];
             switch (receivedJSONmode)
             {
                 //SSM COM all reset
-                case ("RESET"):
+                case (ResetJSONFormat.ModeCode):
                     sessionparam.reset();
                     send_response_msg(session, "SSMCOM session RESET. All send parameters are disabled.");
                     break;
-                case ("SSM_COM_READ"):
-                    SSM_COM_ReadJSONFormat msg_obj_ssmread = JsonConvert.DeserializeObject<SSM_COM_ReadJSONFormat>(message);
+                case (SSMCOMReadJSONFormat.ModeCode):
+                    SSMCOMReadJSONFormat msg_obj_ssmread = JsonConvert.DeserializeObject<SSMCOMReadJSONFormat>(message);
                     msg_obj_ssmread.Validate();
 
                     SSMParameterCode target_code = (SSMParameterCode)Enum.Parse(typeof(SSMParameterCode), msg_obj_ssmread.code);
                     bool flag = msg_obj_ssmread.flag;
 
-                    if (msg_obj_ssmread.read_mode == "FAST")
+                    if (msg_obj_ssmread.read_mode == SSMCOMReadJSONFormat.FastReadModeCode)
                     {
                         sessionparam.FastSendlist[target_code] = flag;
                     }
@@ -87,8 +87,8 @@ namespace DefiSSMCOM.WebSocket
                     send_response_msg(session, "SSMCOM session read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString());
                     break;
 
-                case ("SSM_SLOWREAD_INTERVAL"):
-                    SSM_SLOWREAD_IntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<SSM_SLOWREAD_IntervalJSONFormat>(message);
+                case (SSMSLOWREADIntervalJSONFormat.ModeCode):
+                    SSMSLOWREADIntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<SSMSLOWREADIntervalJSONFormat>(message);
                     msg_obj_interval.Validate();
                     ssmcom1.SlowReadInterval = msg_obj_interval.interval;
 
@@ -108,11 +108,10 @@ namespace DefiSSMCOM.WebSocket
                 if (session == null || !session.Connected || session.Connection == "") // Avoid null session bug
                     continue;
 
-				ValueJSONFormat msg_data = new ValueJSONFormat ();
-                SSMCOMWebsocketSessionparam sessionparam;
+                SSMCOMWebsocketSessionParam sessionparam;
                 try
                 {
-                    sessionparam = (SSMCOMWebsocketSessionparam)session.Items["Param"];
+                    sessionparam = (SSMCOMWebsocketSessionParam)session.Items["Param"];
                 }
                 catch (KeyNotFoundException ex)
                 {
@@ -120,6 +119,7 @@ namespace DefiSSMCOM.WebSocket
                     continue;
                 }
 
+                ValueJSONFormat msg_data = new ValueJSONFormat();
 				foreach (SSMParameterCode ssmcode in args.Received_Parameter_Code) 
 				{
                     if (sessionparam.FastSendlist[ssmcode] || sessionparam.SlowSendlist[ssmcode])
@@ -170,10 +170,10 @@ namespace DefiSSMCOM.WebSocket
                     continue;
 
                 //set again from the session param read parameter list
-                SSMCOMWebsocketSessionparam sessionparam;
+                SSMCOMWebsocketSessionParam sessionparam;
                 try
                 {
-                    sessionparam = (SSMCOMWebsocketSessionparam)session.Items["Param"];
+                    sessionparam = (SSMCOMWebsocketSessionParam)session.Items["Param"];
                 }
                 catch (KeyNotFoundException ex)
                 {

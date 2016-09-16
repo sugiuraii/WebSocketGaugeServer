@@ -80,7 +80,9 @@
     <Compile Include="DefiSSMCOM\SSM\SSM_Parameter_list.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Websocket_Comm\DefiCOM_Websocket.cs" />
-    <Compile Include="Websocket_Comm\JSONFormat.cs" />
+    <Compile Include="Websocket_Comm\JSONFormat\DefiJSONFormat.cs" />
+    <Compile Include="Websocket_Comm\JSONFormat\JSONFormat.cs" />
+    <Compile Include="Websocket_Comm\JSONFormat\SSMJSONFormat.cs" />
     <Compile Include="Websocket_Comm\SSMCOM_Websocket.cs" />
     <Compile Include="Websocket_Comm\WebSocketCommon.cs" />
   </ItemGroup>
@@ -88,4 +90,5 @@
   <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup />
 </Project>
