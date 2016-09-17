@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading;
 using System.IO.Ports;
-using log4net;
 
 namespace DefiSSMCOM
 {
@@ -14,7 +9,7 @@ namespace DefiSSMCOM
 
         // Arduinoから1サイクルで送信されるデータ(行)数(Tacho + Speed + ADC6ch分)
         private const int NUM_ROWS_PER_CYCLE = 8;
-        // Defilink received Event
+        // Arduino received Event
         public event EventHandler ArduinoPacketReceived;
 
         //コンストラクタ
@@ -58,7 +53,7 @@ namespace DefiSSMCOM
                 catch (TimeoutException ex)
                 {
                     //読み出しタイムアウト時はエラーフラグを立て、次のサイクルでリセット処理を入れる
-                    logger.Warn("Defi packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                    logger.Warn("Arduino packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
                     communicateRealtimeIsError = true;
                     return;
                 }
@@ -80,7 +75,7 @@ namespace DefiSSMCOM
                 }
                 catch (FormatException ex)
                 {
-                    //DefiPacketが崩れていた場合エラーフラグを立て、次のサイクルでリセット処理を入れる。
+                    //ArduinoPacketが崩れていた場合エラーフラグを立て、次のサイクルでリセット処理を入れる。
                     logger.Warn("Invalid Arduino packet format. " + ex.GetType().ToString() + " " + ex.Message);
                     communicateRealtimeIsError = true;
                     return;

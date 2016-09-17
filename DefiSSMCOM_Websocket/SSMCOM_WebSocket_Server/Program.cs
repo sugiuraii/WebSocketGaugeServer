@@ -1,6 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Collections;
+﻿using System.Threading;
 using DefiSSMCOM.WebSocket;
 using log4net;
 using System.Xml;

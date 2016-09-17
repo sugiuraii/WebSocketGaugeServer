@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Threading;
 using DefiSSMCOM.WebSocket.JSON;
-using SuperSocket.SocketBase;
 using SuperWebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
-using log4net;
 
 namespace DefiSSMCOM.WebSocket
 {

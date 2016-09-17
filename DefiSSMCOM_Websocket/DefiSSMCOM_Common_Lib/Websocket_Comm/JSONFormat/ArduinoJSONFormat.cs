@@ -2,17 +2,14 @@
 
 namespace DefiSSMCOM.WebSocket.JSON
 {
-    public class SSMCOMReadJSONFormat : JSONFormats
+    public class ArduinoWSSendJSONFormat : JSONFormats
     {
-        public const string ModeCode = "SSM_COM_READ";
-        public const string FastReadModeCode = "FAST";
-        public const string SlowReadModeCOde = "SLOW";
-        public SSMCOMReadJSONFormat()
+        public const string ModeCode = "ARDUINO_WS_SEND";
+        public ArduinoWSSendJSONFormat()
         {
             mode = ModeCode;
         }
         public string code;
-        public string read_mode;
         public bool flag;
 
         public override void Validate()
@@ -25,10 +22,8 @@ namespace DefiSSMCOM.WebSocket.JSON
                 }
                 else
                 {
-                    if (!(Enum.IsDefined(typeof(SSMParameterCode), code)))
-                        throw new JSONFormatsException("SSM_Parameter_Code property of " + ModeCode + " packet is not valid.");
-                    if (read_mode != FastReadModeCode && read_mode != SlowReadModeCOde)
-                        throw new JSONFormatsException("read_mode of " + ModeCode +" packet is not valid (Should be SLOW or FAST).");
+                    if (!(Enum.IsDefined(typeof(ArduinoParameterCode), code)))
+                        throw new JSONFormatsException("Arduino_Parameter_Code property of " + ModeCode + " packet is not valid.");
                     if (flag != true && flag != false)
                         throw new JSONFormatsException("flag of "+ ModeCode +" packet is not valid.");
                 }
@@ -40,11 +35,11 @@ namespace DefiSSMCOM.WebSocket.JSON
         }
     }
 
-    public class SSMSLOWREADIntervalJSONFormat : JSONFormats
+    public class ArduinoWSIntervalJSONFormat : JSONFormats
     {
-        public const string ModeCode = "SSM_SLOWREAD_INTERVAL"; 
+        public const string ModeCode = "ARDUINO_WS_INTERVAL";
         public int interval;
-        public SSMSLOWREADIntervalJSONFormat()
+        public ArduinoWSIntervalJSONFormat()
         {
             mode = ModeCode;
         }
@@ -58,7 +53,7 @@ namespace DefiSSMCOM.WebSocket.JSON
             else
             {
                 if (interval < 0)
-                    throw new JSONFormatsException("interval property of "+ ModeCode + " packet is less than 0.");
+                    throw new JSONFormatsException("interval property of " + ModeCode + " packet is less than 0.");
             }
         }
     }

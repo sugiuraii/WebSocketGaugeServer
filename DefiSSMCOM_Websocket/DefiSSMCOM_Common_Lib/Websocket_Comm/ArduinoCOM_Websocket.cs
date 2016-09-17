@@ -6,17 +6,17 @@ using System.Collections.Generic;
 
 namespace DefiSSMCOM.WebSocket
 {
-	public class DefiCOMWebsocketSessionParam : WebsocketSessionParam
+	public class ArduinoCOMWebsocketSessionParam : WebsocketSessionParam
 	{
-		public Dictionary<DefiParameterCode,bool> Sendlist;
+		public Dictionary<ArduinoParameterCode,bool> Sendlist;
 		public int SendInterval;
 		public int SendCount;
 
-		public DefiCOMWebsocketSessionParam()
+		public ArduinoCOMWebsocketSessionParam()
 		{
-			this.Sendlist = new Dictionary<DefiParameterCode,bool> ();
+			this.Sendlist = new Dictionary<ArduinoParameterCode,bool> ();
 
-			foreach (DefiParameterCode code in Enum.GetValues(typeof(DefiParameterCode)))
+			foreach (ArduinoParameterCode code in Enum.GetValues(typeof(ArduinoParameterCode)))
 			{
 				this.Sendlist.Add(code, false);
 			}
@@ -27,7 +27,7 @@ namespace DefiSSMCOM.WebSocket
 
 		public override void reset()
 		{
-			foreach (DefiParameterCode code in Enum.GetValues(typeof(DefiParameterCode)))
+			foreach (ArduinoParameterCode code in Enum.GetValues(typeof(ArduinoParameterCode)))
 			{
 				this.Sendlist[code]= false;
 			}
@@ -37,55 +37,55 @@ namespace DefiSSMCOM.WebSocket
 		}
 	}
 
-    public class DefiCOMWebsocket : WebSocketCommon
+    public class ArduinoCOMWebsocket : WebSocketCommon
     {
-        private DefiCOM deficom1;
+        private ArduinoCOM arduinocom1;
 
-        public DefiCOMWebsocket()
+        public ArduinoCOMWebsocket()
         {
-            // Create Deficom
-            deficom1 = new DefiCOM();
-            com1 = deficom1;
+            // Create Arduinocom
+            arduinocom1 = new ArduinoCOM();
+            com1 = arduinocom1;
             WebsocketPortNo = 2013;
             COMPortName = "COM1";
-            deficom1.DefiPacketReceived += new EventHandler(deficom1_DefiDataReceived);
+            arduinocom1.ArduinoPacketReceived += new EventHandler(arduinocom1_ArduinoDataReceived);
         }
 
         protected override WebsocketSessionParam createSessionParam()
         {
-            return new DefiCOMWebsocketSessionParam();
+            return new ArduinoCOMWebsocketSessionParam();
         }
 
         protected override void processReceivedJSONMessage(string receivedJSONmode, string message, WebSocketSession session)
         {
-            DefiCOMWebsocketSessionParam sessionparam = (DefiCOMWebsocketSessionParam)session.Items["Param"];
+            ArduinoCOMWebsocketSessionParam sessionparam = (ArduinoCOMWebsocketSessionParam)session.Items["Param"];
             switch (receivedJSONmode)
             {
                 case (ResetJSONFormat.ModeCode):
                     sessionparam.reset();
-                    send_response_msg(session, "Defi Websocket all parameter reset.");
+                    send_response_msg(session, "Arduino Websocket all parameter reset.");
                     break;
-                case (DefiWSSendJSONFormat.ModeCode):
-                    DefiWSSendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<DefiWSSendJSONFormat>(message);
+                case (ArduinoWSSendJSONFormat.ModeCode):
+                    ArduinoWSSendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<ArduinoWSSendJSONFormat>(message);
                     msg_obj_wssend.Validate();
-                    sessionparam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
+                    sessionparam.Sendlist[(ArduinoParameterCode)Enum.Parse(typeof(ArduinoParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
-                    send_response_msg(session, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
+                    send_response_msg(session, "Arduino Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
                     break;
 
-                case (DefiWSIntervalJSONFormat.ModeCode):
-                    DefiWSIntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<DefiWSIntervalJSONFormat>(message);
+                case (ArduinoWSIntervalJSONFormat.ModeCode):
+                    ArduinoWSIntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<ArduinoWSIntervalJSONFormat>(message);
                     msg_obj_interval.Validate();
                     sessionparam.SendInterval = msg_obj_interval.interval;
 
-                    send_response_msg(session, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
+                    send_response_msg(session, "Arduino Websocket send_interval to : " + msg_obj_interval.interval.ToString());
                     break;
                 default:
                     throw new JSONFormatsException("Unsuppoted mode property.");
             }
         }
         
-        private void deficom1_DefiDataReceived(object sender, EventArgs args)
+        private void arduinocom1_ArduinoDataReceived(object sender, EventArgs args)
         {
             var sessions = appServer.GetAllSessions();
 
@@ -94,10 +94,10 @@ namespace DefiSSMCOM.WebSocket
                 if (session == null || !session.Connected || session.Connection == "") // Avoid null session bug
                     continue;
 
-                DefiCOMWebsocketSessionParam sessionparam;
+                ArduinoCOMWebsocketSessionParam sessionparam;
                 try
                 {
-                    sessionparam = (DefiCOMWebsocketSessionParam)session.Items["Param"];
+                    sessionparam = (ArduinoCOMWebsocketSessionParam)session.Items["Param"];
                 }
                 catch (KeyNotFoundException ex)
                 {
@@ -110,11 +110,11 @@ namespace DefiSSMCOM.WebSocket
                     sessionparam.SendCount++;
                 else
                 {
-                    foreach (DefiParameterCode deficode in Enum.GetValues(typeof(DefiParameterCode)))
+                    foreach (ArduinoParameterCode Arduinocode in Enum.GetValues(typeof(ArduinoParameterCode)))
                     {
-                        if (sessionparam.Sendlist[deficode])
+                        if (sessionparam.Sendlist[Arduinocode])
                         {
-                            msg_data.val.Add(deficode.ToString(), deficom1.get_value(deficode).ToString());
+                            msg_data.val.Add(Arduinocode.ToString(), arduinocom1.get_value(Arduinocode).ToString());
                         }
                     }
 

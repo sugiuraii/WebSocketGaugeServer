@@ -3,7 +3,7 @@ using System.Xml;
 using System.IO;
 using log4net;
 
-namespace DefiCOM_WebSocket_Server
+namespace ArduinoCOM_WebSocket_Server
 {
     public class AppSettings
     {
@@ -11,24 +11,24 @@ namespace DefiCOM_WebSocket_Server
         public int websocket_port;
     }
 
-	class MainClass
-	{
-		static private DefiSSMCOM.WebSocket.DefiCOMWebsocket deficomserver1;
+    class MainClass
+    {
+        static private DefiSSMCOM.WebSocket.ArduinoCOMWebsocket arduinocomserver1;
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static AppSettings appsetting;
 
-		MainClass()
-		{
-		}
+        MainClass()
+        {
+        }
 
-		public static void Main (string[] args)
-		{
-		
-			deficomserver1 = new DefiSSMCOM.WebSocket.DefiCOMWebsocket ();
+        public static void Main(string[] args)
+        {
+
+            arduinocomserver1 = new DefiSSMCOM.WebSocket.ArduinoCOMWebsocket();
 
             try
             {
-                load_setting_xml("defiserver_settings.xml");
+                load_setting_xml("arduinoserver_settings.xml");
             }
             catch (XmlException ex)
             {
@@ -55,24 +55,24 @@ namespace DefiCOM_WebSocket_Server
                 return;
             }
 
-            
-            deficomserver1.COMPortName = appsetting.comport;
-            deficomserver1.WebsocketPortNo = appsetting.websocket_port;
 
-            deficomserver1.start();
+            arduinocomserver1.COMPortName = appsetting.comport;
+            arduinocomserver1.WebsocketPortNo = appsetting.websocket_port;
 
-			while (true)
-			{
+            arduinocomserver1.start();
+
+            while (true)
+            {
                 Thread.Sleep(500);
                 //DefiCOMスレッドが異常終了した場合は、プログラム自体も終了する。
-                if (!deficomserver1.IsCOMThreadAlive)
+                if (!arduinocomserver1.IsCOMThreadAlive)
                     break;
 
-				continue;
-			}
+                continue;
+            }
 
-			deficomserver1.stop ();
-		}
+            arduinocomserver1.stop();
+        }
 
         private static void load_setting_xml(string filepath)
         {
@@ -101,5 +101,5 @@ namespace DefiCOM_WebSocket_Server
             }
         }
 
-	}
+    }
 }
