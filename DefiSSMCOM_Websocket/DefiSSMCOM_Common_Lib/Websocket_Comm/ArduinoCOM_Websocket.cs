@@ -6,36 +6,10 @@ using System.Collections.Generic;
 
 namespace DefiSSMCOM.WebSocket
 {
-	public class ArduinoCOMWebsocketSessionParam : WebsocketSessionParam
-	{
-		public Dictionary<ArduinoParameterCode,bool> Sendlist;
-		public int SendInterval;
-		public int SendCount;
-
-		public ArduinoCOMWebsocketSessionParam()
-		{
-			this.Sendlist = new Dictionary<ArduinoParameterCode,bool> ();
-
-			foreach (ArduinoParameterCode code in Enum.GetValues(typeof(ArduinoParameterCode)))
-			{
-				this.Sendlist.Add(code, false);
-			}
-
-			this.SendInterval = 0;
-			this.SendCount = 0;
-		}
-
-		public override void reset()
-		{
-			foreach (ArduinoParameterCode code in Enum.GetValues(typeof(ArduinoParameterCode)))
-			{
-				this.Sendlist[code]= false;
-			}
-
-			this.SendInterval = 0;
-			this.SendCount = 0;
-		}
-	}
+    public class ArduinoCOMWebsocketSessionParam : SimpleWebsocketSessionParam<ArduinoParameterCode> 
+    {
+        //主要な機能はDefi/ArduinoWebsocketSessionParamは共通につき、SimpleWebsocketSessionParamに実装
+    }
 
     public class ArduinoCOMWebsocket : WebSocketCommon
     {

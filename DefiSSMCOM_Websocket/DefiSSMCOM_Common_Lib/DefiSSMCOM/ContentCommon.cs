@@ -1,8 +1,33 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace DefiSSMCOM
 {
-    public class NumericContent
+    public abstract class ContentTableCommon <parameterCodeType, numericContentType> 
+        where parameterCodeType:struct 
+        where numericContentType : NumericContent 
+    {
+        protected Dictionary<parameterCodeType, numericContentType> _numeric_content_table;
+
+        public ContentTableCommon()
+        {
+            _numeric_content_table = new Dictionary<parameterCodeType, numericContentType>();
+            set_numeric_content_table();
+        }
+
+        protected abstract void set_numeric_content_table();
+
+
+        public numericContentType this[parameterCodeType code]
+        {
+            get
+            {
+                return _numeric_content_table[code];
+            }
+        }
+    }
+
+    public abstract class NumericContent
     {
         protected Func<Int32, double> _conversion_function;
         protected Int32 _raw_value;

@@ -13,6 +13,38 @@ namespace DefiSSMCOM.WebSocket
         public abstract void reset();
     }
 
+    public class SimpleWebsocketSessionParam<parameterCodeType> : WebsocketSessionParam where parameterCodeType : struct
+    {
+        public Dictionary<parameterCodeType, bool> Sendlist;
+        public int SendInterval { get; set; }
+        public int SendCount { get; set; }
+
+        public SimpleWebsocketSessionParam()
+        {
+            this.Sendlist = new Dictionary<parameterCodeType, bool>();
+
+            foreach (parameterCodeType code in Enum.GetValues(typeof(parameterCodeType)))
+            {
+                this.Sendlist.Add(code, false);
+            }
+
+            this.SendInterval = 0;
+            this.SendCount = 0;
+        }
+
+        public override void reset()
+        {
+            foreach (parameterCodeType code in Enum.GetValues(typeof(parameterCodeType)))
+            {
+                this.Sendlist[code] = false;
+            }
+
+            this.SendInterval = 0;
+            this.SendCount = 0;
+        }
+    }
+
+
     public abstract class WebSocketCommon
     {
         protected WebSocketServer appServer;
