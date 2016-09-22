@@ -61,17 +61,20 @@ namespace DefiSSMCOM
                 //Headerコードを読んで、値を格納
                 try
                 {
+                    bool paramCodeHit = false;
                     foreach (ArduinoParameterCode paramCode in Enum.GetValues(typeof(ArduinoParameterCode)))
                     {
                         if (headerCode == content_table[paramCode].Header_char)
                         {
                             content_table[paramCode].RawValue = Int32.Parse(readbuf.Remove(0, 1));
-                            continue;
+                            paramCodeHit = true;
+                            break;
                         }
                     }
 
                     //どのヘッダコードにも該当しない場合、Warningを出す
-                    logger.Warn("Header code matching is failed. Header code is : " + headerCode);
+                    if(!paramCodeHit)
+                        logger.Warn("Header code matching is failed. Header code is : " + headerCode);
                 }
                 catch (FormatException ex)
                 {
