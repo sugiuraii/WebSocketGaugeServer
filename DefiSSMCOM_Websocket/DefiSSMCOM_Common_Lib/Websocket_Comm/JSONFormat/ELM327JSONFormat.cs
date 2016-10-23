@@ -1,14 +1,14 @@
 ﻿using System;
-using DefiSSMCOM.SSM;
+using DefiSSMCOM.OBDII;
 
 namespace DefiSSMCOM.WebSocket.JSON
 {
-    public class SSMCOMReadJSONFormat : JSONFormats
+    public class ELM327COMReadJSONFormat : JSONFormats
     {
-        public const string ModeCode = "SSM_COM_READ";
+        public const string ModeCode = "ELM327_COM_READ";
         public const string FastReadModeCode = "FAST";
         public const string SlowReadModeCOde = "SLOW";
-        public SSMCOMReadJSONFormat()
+        public ELM327COMReadJSONFormat()
         {
             mode = ModeCode;
         }
@@ -26,12 +26,12 @@ namespace DefiSSMCOM.WebSocket.JSON
                 }
                 else
                 {
-                    if (!(Enum.IsDefined(typeof(SSMParameterCode), code)))
-                        throw new JSONFormatsException("SSM_Parameter_Code property of " + ModeCode + " packet is not valid.");
+                    if (!(Enum.IsDefined(typeof(OBDIIParameterCode), code)))
+                        throw new JSONFormatsException("OBDII_Parameter_Code property of " + ModeCode + " packet is not valid.");
                     if (read_mode != FastReadModeCode && read_mode != SlowReadModeCOde)
-                        throw new JSONFormatsException("read_mode of " + ModeCode +" packet is not valid (Should be SLOW or FAST).");
+                        throw new JSONFormatsException("read_mode of " + ModeCode + " packet is not valid (Should be SLOW or FAST).");
                     if (flag != true && flag != false)
-                        throw new JSONFormatsException("flag of "+ ModeCode +" packet is not valid.");
+                        throw new JSONFormatsException("flag of " + ModeCode + " packet is not valid.");
                 }
             }
             catch (ArgumentNullException ex)
@@ -41,11 +41,11 @@ namespace DefiSSMCOM.WebSocket.JSON
         }
     }
 
-    public class SSMSLOWREADIntervalJSONFormat : JSONFormats
+    public class ELM327SLOWREADIntervalJSONFormat : JSONFormats
     {
-        public const string ModeCode = "SSM_SLOWREAD_INTERVAL"; 
+        public const string ModeCode = "ELM327_SLOWREAD_INTERVAL";
         public int interval;
-        public SSMSLOWREADIntervalJSONFormat()
+        public ELM327SLOWREADIntervalJSONFormat()
         {
             mode = ModeCode;
         }
@@ -59,7 +59,7 @@ namespace DefiSSMCOM.WebSocket.JSON
             else
             {
                 if (interval < 0)
-                    throw new JSONFormatsException("interval property of "+ ModeCode + " packet is less than 0.");
+                    throw new JSONFormatsException("interval property of " + ModeCode + " packet is less than 0.");
             }
         }
     }

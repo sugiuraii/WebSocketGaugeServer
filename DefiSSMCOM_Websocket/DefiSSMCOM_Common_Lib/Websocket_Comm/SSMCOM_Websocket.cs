@@ -4,32 +4,12 @@ using DefiSSMCOM.WebSocket.JSON;
 using SuperWebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using DefiSSMCOM.SSM;
 
 namespace DefiSSMCOM.WebSocket
 {
-	public class SSMCOMWebsocketSessionParam : WebsocketSessionParam
+	public class SSMCOMWebsocketSessionParam : SlowFastWebsocketSessionParam<SSMParameterCode>
 	{
-        public Dictionary<SSMParameterCode, bool> SlowSendlist,FastSendlist;
-		public SSMCOMWebsocketSessionParam()
-		{
-            this.SlowSendlist = new Dictionary<SSMParameterCode, bool>();
-            this.FastSendlist = new Dictionary<SSMParameterCode, bool>();
-
-            foreach (SSMParameterCode code in Enum.GetValues(typeof(SSMParameterCode)))
-            {
-                this.SlowSendlist.Add(code, false);
-                this.FastSendlist.Add(code, false);
-            }
-		}
-
-		public override void reset()
-		{
-            foreach (SSMParameterCode code in Enum.GetValues(typeof(SSMParameterCode)))
-            {
-                this.SlowSendlist[code] = false;
-                this.FastSendlist[code] = false;
-            }
-		}
 	}
 
 
@@ -125,7 +105,7 @@ namespace DefiSSMCOM.WebSocket
                         // Return Switch content
                         if (ssmcode >= SSMParameterCode.Switch_P0x061 && ssmcode <= SSMParameterCode.Switch_P0x121)
                         {
-                            List<SSMSwitchCode> switch_code_list = SSMContentTable.get_Switchcodes_from_Parametercode(ssmcode);
+                            List<SSMSwitchCode> switch_code_list = SSMContentTable.getSwitchcodesFromParametercode(ssmcode);
                             foreach (SSMSwitchCode switch_code in switch_code_list)
                             {
                                 msg_data.val.Add(switch_code.ToString(), ssmcom1.get_switch(switch_code).ToString());

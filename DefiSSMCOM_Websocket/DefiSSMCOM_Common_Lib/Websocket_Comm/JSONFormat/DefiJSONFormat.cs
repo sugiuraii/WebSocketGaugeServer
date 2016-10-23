@@ -1,4 +1,5 @@
 ﻿using System;
+using DefiSSMCOM.Defi;
 
 namespace DefiSSMCOM.WebSocket.JSON
 {

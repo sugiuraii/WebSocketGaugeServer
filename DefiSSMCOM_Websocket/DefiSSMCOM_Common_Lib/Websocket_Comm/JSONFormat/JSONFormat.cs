@@ -1,6 +1,10 @@
 ﻿using System;
 using Newtonsoft.Json;
 using System.Collections.Generic;
+using DefiSSMCOM.Defi;
+using DefiSSMCOM.SSM;
+using DefiSSMCOM.Arduino;
+using DefiSSMCOM.OBDII;
 
 namespace DefiSSMCOM.WebSocket.JSON
 {
@@ -60,7 +64,8 @@ namespace DefiSSMCOM.WebSocket.JSON
 				else{
 					foreach (var key in val.Keys) {
 						//Numeric case
-						if ((Enum.IsDefined (typeof(DefiParameterCode), key)) || (Enum.IsDefined (typeof(SSMParameterCode), key))){
+						if (Enum.IsDefined (typeof(DefiParameterCode), key) || Enum.IsDefined (typeof(SSMParameterCode), key)
+                                            || Enum.IsDefined(typeof(ArduinoParameterCode), key) || Enum.IsDefined (typeof(OBDIIParameterCode), key)){
 							double val_result;
 							if(!double.TryParse(val[key], out val_result))
 								throw new JSONFormatsException("Value of " + key + "is not numeric.");

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DefiSSMCOM
+namespace DefiSSMCOM.Arduino
 {
     public class ArduinoContentTable : ContentTableCommon<ArduinoParameterCode, ArduinoNumericContent>
     {
@@ -28,7 +28,7 @@ namespace DefiSSMCOM
         public double WaterTempThermistorSerialResistance { get; set; }
         public double OilTempThermistorSerialResistance { get; set; }
 
-        protected override void set_numeric_content_table()
+        protected override void setNumericContentTable()
         {
             _numeric_content_table.Add(ArduinoParameterCode.Tacho, new ArduinoNumericContent('T', tpulse => 
             {
@@ -77,7 +77,7 @@ namespace DefiSSMCOM
     {
         private char _header_char;
 
-        public ArduinoNumericContent(char header_char, Func <Int32, double> conversion_function, String unit)
+        public ArduinoNumericContent(char header_char, Func <double, double> conversion_function, String unit)
         {
             _header_char = header_char;
             _conversion_function = conversion_function;

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DefiSSMCOM
+namespace DefiSSMCOM.SSM
 {
     public class SSMContentTable : ContentTableCommon<SSMParameterCode,SSMNumericContent>
     {
@@ -10,8 +10,7 @@ namespace DefiSSMCOM
         //コンストラクタ
         public SSMContentTable()
         {
-            //set_numeric_content_table();
-            set_swicth_content_table();
+            setSwicthContentTable();
         }
 
         public SSMSwitchContent this[SSMSwitchCode code]
@@ -22,15 +21,15 @@ namespace DefiSSMCOM
             }
         }
 
-        public void set_all_disable()
+        public void setAllDisable()
         {
             foreach (KeyValuePair<SSMParameterCode,SSMNumericContent> pair in _numeric_content_table)
             {
-                pair.Value.Slow_Read_Enable = false;
-                pair.Value.Fast_Read_Enable = false;
+                pair.Value.SlowReadEnable = false;
+                pair.Value.FastReadEnable = false;
             }
         }
-		public static List<SSMSwitchCode> get_Switchcodes_from_Parametercode(SSMParameterCode code)
+		public static List<SSMSwitchCode> getSwitchcodesFromParametercode(SSMParameterCode code)
 		{
 			List<SSMSwitchCode> return_code_list = new List<SSMSwitchCode> ();
 
@@ -143,7 +142,7 @@ namespace DefiSSMCOM
 			return return_code_list;
 		}
 
-		public static SSMParameterCode get_master_ParameterCode_from_SwitchCode(SSMSwitchCode code)
+		public static SSMParameterCode getMasterParameterCodeFromSwitchCode(SSMSwitchCode code)
 		{
 			switch (code) {
 			case SSMSwitchCode.AT_Vehicle_ID:
@@ -241,7 +240,7 @@ namespace DefiSSMCOM
 			}
 		}
 
-        protected override void set_numeric_content_table()
+        protected override void setNumericContentTable()
         {
             _numeric_content_table.Add(SSMParameterCode.Engine_Load, new SSMNumericContent(new byte[] { 0x00, 0x00, 0x07 }, x => 100.0 / 255.0 * x + 0, "%"));
             _numeric_content_table.Add(SSMParameterCode.Coolant_Temperature, new SSMNumericContent(new byte[] { 0x00, 0x00, 0x08 }, x => 1.0 * x - 40.0, "C"));
@@ -346,7 +345,7 @@ namespace DefiSSMCOM
             _numeric_content_table.Add(SSMParameterCode.Switch_P0x121, new SSMNumericContent(new byte[] { 0x00, 0x01, 0x21 }, x => 1.0 * x + 0.0, ""));
         }
 
-        private void set_swicth_content_table()
+        private void setSwicthContentTable()
         {
             SSMNumericContent master_content;
 
@@ -450,18 +449,18 @@ namespace DefiSSMCOM
         private bool _slow_read_enable;
         private bool _fast_read_enable;
 
-        public SSMNumericContent(byte[] address, Func<Int32, double> conversion_function, String unit)
+        public SSMNumericContent(byte[] address, Func<double, double> conversion_function, String unit)
         {
             _read_address = address;
             _conversion_function = conversion_function;
             _unit = unit;
 
             //デフォルトでは無効。明示的にEnableされない限り通信をしない設定とする。
-            _slow_read_enable = false;
-            _fast_read_enable = false;
+            SlowReadEnable = false;
+            FastReadEnable = false;
         }
 
-        public Int32 Address_Length
+        public Int32 AddressLength
         {
             get
             {
@@ -469,7 +468,7 @@ namespace DefiSSMCOM
             }
         }
 
-        public byte[] Read_Address
+        public byte[] ReadAddress
         {
             get
             {
@@ -477,29 +476,8 @@ namespace DefiSSMCOM
             }
         }
 
-        public bool Slow_Read_Enable
-        {
-            get
-            {
-                return _slow_read_enable;
-            }
-            set
-            {
-                _slow_read_enable = value;
-            }
-        }
-        public bool Fast_Read_Enable
-        {
-            get
-            {
-                return _fast_read_enable;
-            }
-            set
-            {
-                _fast_read_enable = value;
-            }
-        }
-
+        public bool SlowReadEnable { get; set; }
+        public bool FastReadEnable { get; set; }
     }
 
     public class SSMSwitchContent

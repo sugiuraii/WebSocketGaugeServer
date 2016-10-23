@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace DefiSSMCOM
+namespace DefiSSMCOM.SSM
 {
     public class SSMCOM : COMCommon
     {
@@ -45,12 +45,12 @@ namespace DefiSSMCOM
 
 		public bool get_slowread_flag(SSMParameterCode code)
 		{
-			return content_table[code].Slow_Read_Enable;
+			return content_table[code].SlowReadEnable;
 		}
 
 		public bool get_fastread_flag(SSMParameterCode code)
 		{
-			return content_table[code].Fast_Read_Enable;
+			return content_table[code].FastReadEnable;
 		}
 
 		public void set_slowread_flag(SSMParameterCode code, bool flag)
@@ -61,7 +61,7 @@ namespace DefiSSMCOM
         {
             if(!quiet)
                 logger.Debug("Slowread flag of " + code.ToString() + "is enabled.");
-            content_table[code].Slow_Read_Enable = flag;
+            content_table[code].SlowReadEnable = flag;
         }
 
 		public void set_fastread_flag(SSMParameterCode code, bool flag)
@@ -72,7 +72,7 @@ namespace DefiSSMCOM
         {
             if(!quiet)
                 logger.Debug("Fastread flag of " + code.ToString() + "is enabled.");
-            content_table[code].Fast_Read_Enable = flag;
+            content_table[code].FastReadEnable = flag;
         }
 
         public void set_all_disable()
@@ -84,7 +84,7 @@ namespace DefiSSMCOM
         {
             if(!quiet)
                 logger.Debug("All flag reset.");
-            content_table.set_all_disable();
+            content_table.setAllDisable();
         }
 
         protected override void communicate_main(bool slow_read)
@@ -168,17 +168,17 @@ namespace DefiSSMCOM
             {
                 if (slow_read)
                 {
-                    if (content_table[code].Slow_Read_Enable)
+                    if (content_table[code].SlowReadEnable)
                     {
-                        address_bytes = address_bytes.Concat(content_table[code].Read_Address).ToArray();
+                        address_bytes = address_bytes.Concat(content_table[code].ReadAddress).ToArray();
                         query_code_list.Add(code);
                     }
                 }
                 else
                 {
-                    if (content_table[code].Fast_Read_Enable)
+                    if (content_table[code].FastReadEnable)
                     {
-                        address_bytes = address_bytes.Concat(content_table[code].Read_Address).ToArray();
+                        address_bytes = address_bytes.Concat(content_table[code].ReadAddress).ToArray();
                         query_code_list.Add(code);
                     }
                 }
@@ -214,7 +214,7 @@ namespace DefiSSMCOM
             foreach (SSMParameterCode code in query_code_list)
             {
                 //アドレス3バイトあたりデータ1バイト
-                int read_byte_length = content_table[code].Address_Length / 3;
+                int read_byte_length = content_table[code].AddressLength / 3;
 
                 int i;
                 int temp_buf = inbuf[get_offset];

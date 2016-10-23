@@ -44,6 +44,32 @@ namespace DefiSSMCOM.WebSocket
         }
     }
 
+    public class SlowFastWebsocketSessionParam<parameterCodeType> : WebsocketSessionParam where parameterCodeType : struct
+    {
+        public Dictionary<parameterCodeType, bool> SlowSendlist, FastSendlist;
+
+        public SlowFastWebsocketSessionParam()
+		{
+            this.SlowSendlist = new Dictionary<parameterCodeType, bool>();
+            this.FastSendlist = new Dictionary<parameterCodeType, bool>();
+
+            foreach (parameterCodeType code in Enum.GetValues(typeof(parameterCodeType)))
+            {
+                this.SlowSendlist.Add(code, false);
+                this.FastSendlist.Add(code, false);
+            }
+		}
+
+		public override void reset()
+		{
+            foreach (parameterCodeType code in Enum.GetValues(typeof(parameterCodeType)))
+            {
+                this.SlowSendlist[code] = false;
+                this.FastSendlist[code] = false;
+            }
+		}
+
+    }
 
     public abstract class WebSocketCommon
     {

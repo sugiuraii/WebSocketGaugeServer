@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO.Ports;
 
-namespace DefiSSMCOM
+namespace DefiSSMCOM.Arduino
 {
     public class ArduinoCOM : COMCommon
     {

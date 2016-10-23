@@ -1,4 +1,4 @@
-﻿namespace DefiSSMCOM
+﻿namespace DefiSSMCOM.SSM
 {
     public enum SSMParameterCode
     {

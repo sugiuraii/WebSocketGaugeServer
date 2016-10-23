@@ -8,6 +8,8 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
 using DefiSSMCOM;
+using DefiSSMCOM.Defi;
+using DefiSSMCOM.SSM;
 using DefiSSMCOM.WebSocket.JSON;
 using log4net;
 

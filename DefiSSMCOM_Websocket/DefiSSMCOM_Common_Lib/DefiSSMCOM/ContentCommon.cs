@@ -12,10 +12,10 @@ namespace DefiSSMCOM
         public ContentTableCommon()
         {
             _numeric_content_table = new Dictionary<parameterCodeType, numericContentType>();
-            set_numeric_content_table();
+            setNumericContentTable();
         }
 
-        protected abstract void set_numeric_content_table();
+        protected abstract void setNumericContentTable();
 
 
         public numericContentType this[parameterCodeType code]
@@ -29,7 +29,7 @@ namespace DefiSSMCOM
 
     public abstract class NumericContent
     {
-        protected Func<Int32, double> _conversion_function;
+        protected Func<double, double> _conversion_function;
         protected Int32 _raw_value;
         protected String _unit;
 
@@ -53,7 +53,7 @@ namespace DefiSSMCOM
             }
         }
 
-        public Func<Int32, double> ConversionFunction
+        public Func<double, double> ConversionFunction
         {
             get
             {

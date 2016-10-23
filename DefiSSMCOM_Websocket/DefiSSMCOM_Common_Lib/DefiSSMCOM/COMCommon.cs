@@ -6,7 +6,7 @@ namespace DefiSSMCOM
 {
     public abstract class COMCommon
     {
-        private SerialPort serialPort1;
+        private SerialPort serialPort;
 
         private int slowReadInterval;
         private Thread communicate_realtime_thread1;
@@ -21,7 +21,7 @@ namespace DefiSSMCOM
 
         public COMCommon()
         {
-            serialPort1 = new SerialPort();
+            serialPort = new SerialPort();
             DefaultBaudRate = 19200;
             ResetBaudRate = 9600;
             SlowReadInterval = 10;
@@ -31,14 +31,14 @@ namespace DefiSSMCOM
             communicateResetCount = 0;
 
             //通信エラー発生時のイベント処理登録
-            serialPort1.ErrorReceived += new SerialErrorReceivedEventHandler(SerialPortErrorReceived);
+            serialPort.ErrorReceived += new SerialErrorReceivedEventHandler(SerialPortErrorReceived);
 
         }
 
         public void CommunicateRealtimeStart()
         {
             // Set serialport1.BaudRate to default baud rate
-            serialPort1.BaudRate = DefaultBaudRate;
+            serialPort.BaudRate = DefaultBaudRate;
 
             communicate_realtime_thread1 = new Thread(new ThreadStart(communicate_realtime));
             communicateRealtimeIsRunning = true;
@@ -63,8 +63,10 @@ namespace DefiSSMCOM
             try
             {
                 //ポートオープン
-                serialPort1.Open();
                 logger.Info("COMport open.");
+                logger.Info("Call initialization routine");
+                serialPort.Open();
+                communicate_initialize();
 
                 int i = 0;
                 while (communicateRealtimeIsRunning)
@@ -120,9 +122,9 @@ namespace DefiSSMCOM
                 communicateRealtimeIsRunning = false;
 
                 //ポートクローズ
-                if (serialPort1.IsOpen)
+                if (serialPort.IsOpen)
                 {
-                    serialPort1.Close();
+                    serialPort.Close();
                     logger.Info("COMPort is closed.");
                 }
             }
@@ -132,24 +134,31 @@ namespace DefiSSMCOM
         //　継承先のクラスにて実装すること
         protected abstract void communicate_main(bool slowread_flag);
 
+        //　通信初期の初期化処理
+        //　初期化処理がある場合は継承先のクラスにてoverrideすること
+        protected virtual void communicate_initialize(){}
+
         //　通信リセット
         private void communticate_reset()
         {
             logger.Info("COM communication reset.");
-            serialPort1.Close();
+            serialPort.Close();
 
             //フレームをずらすために、一旦別ボーレートで通信させる
-            serialPort1.BaudRate = ResetBaudRate;
+            SetBaduRateToResetBaudRate();
 
             //1000ms ダミー通信させた後、バッファ破棄
-            serialPort1.Open();
+            serialPort.Open();
             Thread.Sleep(1000);
-            serialPort1.DiscardInBuffer();
-            serialPort1.Close();
+            serialPort.DiscardInBuffer();
+            serialPort.Close();
 
             //ボーレート戻し、ポート復帰させる
-            serialPort1.BaudRate = DefaultBaudRate;
-            serialPort1.Open();
+            SetBaudRateToDefaultBaudRate();
+            logger.Info("COMport open.");
+            serialPort.Open();
+            logger.Info("Call initialization routine");
+            communicate_initialize();
         }
 
         //シリアルポートエラー発生時のイベント処理
@@ -162,22 +171,55 @@ namespace DefiSSMCOM
 
         public int ReadByte()
         {
-            return serialPort1.ReadByte();
+            return serialPort.ReadByte();
+        }
+
+        public int ReadChar()
+        {
+            return serialPort.ReadChar();
+        }
+
+        public string ReadTo(string str)
+        {
+            return serialPort.ReadTo(str);
         }
 
         public string ReadLine()
         {
-            return serialPort1.ReadLine();
+            return serialPort.ReadLine();
         }
 
         public void DiscardInBuffer()
         {
-            serialPort1.DiscardInBuffer();
+            serialPort.DiscardInBuffer();
         }
 
         public void Write(byte[] buffer, int offset, int count)
         {
-            serialPort1.Write(buffer, offset, count);
+            serialPort.Write(buffer, offset, count);
+        }
+
+        public void Write(string buffer)
+        {
+            serialPort.Write(buffer);
+        }
+
+        public void SetBaudRateToTemporaryBaudRate(int baudrate)
+        {
+            serialPort.BaudRate = baudrate;
+            logger.Info("Set baud rate to temporary badurate of : " + baudrate.ToString());
+        }
+
+        public void SetBaduRateToResetBaudRate()
+        {
+            serialPort.BaudRate = ResetBaudRate;
+            logger.Info("Set baud rate to reset badurate of : " + ResetBaudRate.ToString());
+        }
+
+        public void SetBaudRateToDefaultBaudRate()
+        {
+            serialPort.BaudRate = DefaultBaudRate;
+            logger.Info("Recover to default baudrate of : " + DefaultBaudRate.ToString());
         }
 
         public bool IsCommunitateThreadAlive
@@ -208,13 +250,13 @@ namespace DefiSSMCOM
         {
             get
             {
-                return serialPort1.PortName;
+                return serialPort.PortName;
             }
             set
             {
                 try
                 {
-                    serialPort1.PortName = value;
+                    serialPort.PortName = value;
                 }
                 catch (System.InvalidOperationException ex1)
                 {
@@ -227,11 +269,11 @@ namespace DefiSSMCOM
         {
             get
             {
-                return serialPort1.Parity;
+                return serialPort.Parity;
             }
             set
             {
-                serialPort1.Parity = value;
+                serialPort.Parity = value;
             }
         }
 
@@ -239,22 +281,22 @@ namespace DefiSSMCOM
         {
             get
             {
-                return serialPort1.ReadTimeout;
+                return serialPort.ReadTimeout;
             }
             set
             {
-                serialPort1.ReadTimeout = value;
+                serialPort.ReadTimeout = value;
             }
         }
         public int DataBits
         {
             get
             {
-                return serialPort1.DataBits;
+                return serialPort.DataBits;
             }
             set
             {
-                serialPort1.DataBits = value;
+                serialPort.DataBits = value;
             }
         }
 
@@ -262,11 +304,11 @@ namespace DefiSSMCOM
         {
             get
             {
-                return serialPort1.StopBits;
+                return serialPort.StopBits;
             }
             set
             {
-                serialPort1.StopBits = value;
+                serialPort.StopBits = value;
             }
         }
 

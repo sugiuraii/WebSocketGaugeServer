@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DefiSSMCOM
+namespace DefiSSMCOM.Defi
 {
     public class DefiContentTable : ContentTableCommon<DefiParameterCode, DefiNumericContent>
     {
@@ -10,7 +10,7 @@ namespace DefiSSMCOM
         {
         }
 
-        protected override void set_numeric_content_table()
+        protected override void setNumericContentTable()
         {
             _numeric_content_table.Add(DefiParameterCode.Boost, new DefiNumericContent(0x01, x=>1.27e-3*x -1.0, "kgf/cm2"));
             _numeric_content_table.Add(DefiParameterCode.Tacho, new DefiNumericContent(0x02, x=>4.77*x -121.98, "rpm"));  // 500-9000rpmにて線形回帰 500rpm以下では誤差大（120rpm程度)
@@ -26,7 +26,7 @@ namespace DefiSSMCOM
     {
         private byte _reciever_id;
 
-        public DefiNumericContent(byte receiver_id, Func<Int32, double> conversion_function, String unit)
+        public DefiNumericContent(byte receiver_id, Func<double, double> conversion_function, String unit)
         {
             _reciever_id = receiver_id;
             _conversion_function = conversion_function;
