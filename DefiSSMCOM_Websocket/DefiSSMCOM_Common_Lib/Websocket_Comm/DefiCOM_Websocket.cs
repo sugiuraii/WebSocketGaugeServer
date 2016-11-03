@@ -14,7 +14,7 @@ namespace DefiSSMCOM.WebSocket
 
     public class DefiCOMWebsocket : WebSocketCommon
     {
-        private DefiCOM deficom1;
+        private readonly DefiCOM deficom1;
 
         public DefiCOMWebsocket()
         {

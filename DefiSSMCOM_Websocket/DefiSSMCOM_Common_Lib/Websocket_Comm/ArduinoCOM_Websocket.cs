@@ -14,7 +14,7 @@ namespace DefiSSMCOM.WebSocket
 
     public class ArduinoCOMWebsocket : WebSocketCommon
     {
-        private ArduinoCOM arduinocom1;
+        private readonly ArduinoCOM arduinocom1;
 
         public ArduinoCOMWebsocket()
         {

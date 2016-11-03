@@ -15,9 +15,9 @@ namespace DefiSSMCOM.WebSocket
 
 	public class SSMCOMWebsocket : WebSocketCommon
 	{
-		private SSMCOM ssmcom1;
+		private readonly SSMCOM ssmcom1;
 
-        private Timer update_ssmflag_timer;
+        private readonly Timer update_ssmflag_timer;
 
 		public SSMCOMWebsocket ()
 		{

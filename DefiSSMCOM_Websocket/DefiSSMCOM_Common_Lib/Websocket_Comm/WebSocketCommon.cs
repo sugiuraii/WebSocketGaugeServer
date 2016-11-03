@@ -73,7 +73,7 @@ namespace DefiSSMCOM.WebSocket
 
     public abstract class WebSocketCommon
     {
-        protected WebSocketServer appServer;
+        protected readonly WebSocketServer appServer;
         protected bool running_state = false;
         protected COMCommon com1;
 

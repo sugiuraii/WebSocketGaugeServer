@@ -71,6 +71,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="ApplicationCommon.cs" />
     <Compile Include="DefiSSMCOM\Arduino\ArduinoCOM.cs" />
     <Compile Include="DefiSSMCOM\Arduino\Arduino_Content.cs" />
     <Compile Include="DefiSSMCOM\COMCommon.cs" />

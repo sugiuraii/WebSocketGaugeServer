@@ -14,9 +14,9 @@ namespace DefiSSMCOM.WebSocket
 
     public class ELM327COM_Websocket : WebSocketCommon
     {
-        private ELM327COM elm327com;
+        private readonly ELM327COM elm327com;
 
-        private Timer update_obdflag_timer;
+        private readonly Timer update_obdflag_timer;
 
         public ELM327COM_Websocket ()
 		{
