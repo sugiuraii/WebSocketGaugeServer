@@ -314,7 +314,7 @@ namespace FUELTRIP_Logger
                 {
                     ResponseJSONFormat res_json = JsonConvert.DeserializeObject<ResponseJSONFormat>(jsonmsg);
                     res_json.Validate();
-                    logger.Error("Response from " + ssm_defi_mode.ToString() + ":" + res_json.msg);
+                    logger.Info("Response from " + ssm_defi_mode.ToString() + ":" + res_json.msg);
                 }
 			}
 			catch(JSONFormatsException ex) {

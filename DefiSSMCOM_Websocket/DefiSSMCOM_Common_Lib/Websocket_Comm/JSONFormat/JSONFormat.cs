@@ -8,7 +8,7 @@ using DefiSSMCOM.OBDII;
 
 namespace DefiSSMCOM.WebSocket.JSON
 {
-	public abstract class JSONFormats
+	public abstract class JSONFormat
 	{
         public string mode { get; set; }
 
@@ -28,7 +28,7 @@ namespace DefiSSMCOM.WebSocket.JSON
 		public JSONFormatsException(string message, Exception inner) : base(message) { }
 	}
 
-    public class ResetJSONFormat : JSONFormats
+    public class ResetJSONFormat : JSONFormat
     {
         public const string ModeCode = "RES";
         ResetJSONFormat()
@@ -45,7 +45,7 @@ namespace DefiSSMCOM.WebSocket.JSON
         }
     }
 
-	public class ValueJSONFormat : JSONFormats
+	public class ValueJSONFormat : JSONFormat
 	{
 		public Dictionary<string,string> val;
         public const string ModeCode = "VAL";
@@ -90,7 +90,7 @@ namespace DefiSSMCOM.WebSocket.JSON
 			}
 		}
 	}
-	public class ErrorJSONFormat : JSONFormats
+	public class ErrorJSONFormat : JSONFormat
 	{
         public const string ModeCode = "ERR";
 		public ErrorJSONFormat()
@@ -106,7 +106,7 @@ namespace DefiSSMCOM.WebSocket.JSON
 		public string msg;
 	}
 
-	public class ResponseJSONFormat : JSONFormats
+	public class ResponseJSONFormat : JSONFormat
 	{
         public const string ModeCode = "RES";
 		public ResponseJSONFormat()

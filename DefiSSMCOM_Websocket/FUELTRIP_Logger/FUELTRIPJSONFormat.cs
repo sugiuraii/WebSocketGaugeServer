@@ -13,7 +13,7 @@ using log4net;
 
 namespace FUELTRIP_Logger
 {
-    public class FUELTRIPJSONFormat : JSONFormats
+    public class FUELTRIPJSONFormat : JSONFormat
     {
         public double moment_gasmilage;
         public double total_gas;
@@ -35,7 +35,7 @@ namespace FUELTRIP_Logger
         }
     }
 
-    public class SectResetJSONFormat : JSONFormats
+    public class SectResetJSONFormat : JSONFormat
     {
         public const string ModeCode = "SECTRESET";
         public override void Validate()
@@ -47,7 +47,7 @@ namespace FUELTRIP_Logger
         }
     }
 
-    public class SectFUELTRIPJSONFormat : JSONFormats
+    public class SectFUELTRIPJSONFormat : JSONFormat
     {
         public long sect_span;
         public double[] sect_trip;
@@ -69,7 +69,7 @@ namespace FUELTRIP_Logger
         }
     }
 
-    public class SectSpanJSONFormat : JSONFormats
+    public class SectSpanJSONFormat : JSONFormat
     {
         public int sect_span;
         public const string ModeCode = "SECT_SPAN";
@@ -88,7 +88,7 @@ namespace FUELTRIP_Logger
         }
     }
 
-    public class SectStoreMaxJSONFormat : JSONFormats
+    public class SectStoreMaxJSONFormat : JSONFormat
     {
         public int storemax;
         public const string ModeCode = "SECT_STOREMAX";
