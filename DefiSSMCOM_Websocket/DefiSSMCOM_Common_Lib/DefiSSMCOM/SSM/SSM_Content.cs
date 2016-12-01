@@ -319,7 +319,7 @@ namespace DefiSSMCOM.SSM
             _numeric_content_table.Add(SSMParameterCode.Sub_Accelerator_Sensor, new SSMNumericContent(new byte[] { 0x00, 0x01, 0x02 }, x => 0.02 * x + 0.0, "V"));
             _numeric_content_table.Add(SSMParameterCode.Main_Accelerator_Sensor, new SSMNumericContent(new byte[] { 0x00, 0x01, 0x03 }, x => 0.02 * x + 0.0, "V"));
             _numeric_content_table.Add(SSMParameterCode.Brake_Booster_Pressure, new SSMNumericContent(new byte[] { 0x00, 0x01, 0x04 }, x => 37.0 / 255.0 * x + 0.0, "psig"));
-            _numeric_content_table.Add(SSMParameterCode.Fuel_Pressure_High, new SSMNumericContent(new byte[] { 0x00, 0x01, 0x05 }, x => 0.04 * x + 0.0, "MPa"));
+            _numeric_content_table.Add(SSMParameterCode.Fuel_Rail_Pressure, new SSMNumericContent(new byte[] { 0x00, 0x01, 0x05 }, x => 0.04 * x + 0.0, "MPa"));
             _numeric_content_table.Add(SSMParameterCode.Exhaust_Gas_Temperature, new SSMNumericContent(new byte[] { 0x00, 0x01, 0x06 }, x => 5.0 * x + 5.0 * 40.0, "C"));
             _numeric_content_table.Add(SSMParameterCode.Cold_Start_Injector, new SSMNumericContent(new byte[] { 0x00, 0x01, 0x08 }, x => 0.256 * x + 0.0, "ms"));
             _numeric_content_table.Add(SSMParameterCode.SCV_Step, new SSMNumericContent(new byte[] { 0x00, 0x01, 0x09 }, x => 1.0 * x + 0.0, "step"));

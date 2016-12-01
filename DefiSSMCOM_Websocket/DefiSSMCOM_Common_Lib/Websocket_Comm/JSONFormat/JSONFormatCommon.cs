@@ -30,7 +30,7 @@ namespace DefiSSMCOM.WebSocket.JSON
                 else
                 {
                     if (!(Enum.IsDefined(typeof(parameterCodeType), code)))
-                        throw new JSONFormatsException(typeof(parameterCodeType).ToString() +  "property of " + ModeCode + " packet is not valid.");
+                        throw new JSONFormatsException(typeof(parameterCodeType).ToString() +  " property of " + ModeCode + " packet is not valid.");
                     if (flag != true && flag != false)
                         throw new JSONFormatsException("flag of " + ModeCode + " packet is not valid.");
                 }

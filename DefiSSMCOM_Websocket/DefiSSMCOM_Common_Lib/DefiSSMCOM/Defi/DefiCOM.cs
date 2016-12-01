@@ -71,40 +71,40 @@ namespace DefiSSMCOM.Defi
             {
                 try
                 {
-                    if (inbuf[j] == (char)content_table[DefiParameterCode.Boost].Receiver_id)
+                    if (inbuf[j] == (char)content_table[DefiParameterCode.Manifold_Absolute_Pressure].Receiver_id)
                     {
                         String boost_str = new String(inbuf, j + 2, 3);
-                        content_table[DefiParameterCode.Boost].RawValue = Int32.Parse(boost_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Manifold_Absolute_Pressure].RawValue = Int32.Parse(boost_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Tacho].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Engine_Speed].Receiver_id)
                     {
                         String tacho_str = new String(inbuf, j + 2, 3);
-                        content_table[DefiParameterCode.Tacho].RawValue = Int32.Parse(tacho_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Engine_Speed].RawValue = Int32.Parse(tacho_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Oil_Pres].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Oil_Pressure].Receiver_id)
                     {
                         String oilpres_str = new String(inbuf, j + 2, 3);
-                        content_table[DefiParameterCode.Oil_Pres].RawValue = Int32.Parse(oilpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Oil_Pressure].RawValue = Int32.Parse(oilpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Fuel_Pres].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Fuel_Rail_Pressure].Receiver_id)
                     {
                         String fuelpres_str = new String(inbuf, j + 2, 3);
-                        content_table[DefiParameterCode.Fuel_Pres].RawValue = Int32.Parse(fuelpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Fuel_Rail_Pressure].RawValue = Int32.Parse(fuelpres_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Ext_Temp].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Exhaust_Gas_Temperature].Receiver_id)
                     {
                         String exttemp_str = new String(inbuf, j + 2, 3);
-                        content_table[DefiParameterCode.Ext_Temp].RawValue = Int32.Parse(exttemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Exhaust_Gas_Temperature].RawValue = Int32.Parse(exttemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Oil_Temp].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Oil_Temperature].Receiver_id)
                     {
                         String oiltemp_str = new String(inbuf, j + 2, 3);
-                        content_table[DefiParameterCode.Oil_Temp].RawValue = Int32.Parse(oiltemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Oil_Temperature].RawValue = Int32.Parse(oiltemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
-                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Water_Temp].Receiver_id)
+                    else if (inbuf[j] == (char)content_table[DefiParameterCode.Coolant_Temperature].Receiver_id)
                     {
                         String watertemp_str = new String(inbuf, j + 2, 3);
-                        content_table[DefiParameterCode.Water_Temp].RawValue = Int32.Parse(watertemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
+                        content_table[DefiParameterCode.Coolant_Temperature].RawValue = Int32.Parse(watertemp_str, System.Globalization.NumberStyles.AllowHexSpecifier);
                     }
                 }
                 catch (FormatException ex)

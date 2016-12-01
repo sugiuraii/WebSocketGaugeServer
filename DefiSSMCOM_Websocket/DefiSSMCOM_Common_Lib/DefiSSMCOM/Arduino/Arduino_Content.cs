@@ -30,7 +30,7 @@ namespace DefiSSMCOM.Arduino
 
         protected override void setNumericContentTable()
         {
-            _numeric_content_table.Add(ArduinoParameterCode.Tacho, new ArduinoNumericContent('T', tpulse => 
+            _numeric_content_table.Add(ArduinoParameterCode.Engine_Speed, new ArduinoNumericContent('T', tpulse => 
             {
                 if(tpulse > 0)
                     return 60/(NumPulsePerRev*tpulse * 1e-6);
@@ -38,7 +38,7 @@ namespace DefiSSMCOM.Arduino
                     return 0;
             }, "rpm"));
 
-            _numeric_content_table.Add(ArduinoParameterCode.Speed, new ArduinoNumericContent('S', tpulse =>
+            _numeric_content_table.Add(ArduinoParameterCode.Vehicle_Speed, new ArduinoNumericContent('S', tpulse =>
             {
                 if (tpulse > 0)
                     return 3600 / (637 * tpulse * NumPulsePerSpd * 1e-6);
@@ -46,30 +46,30 @@ namespace DefiSSMCOM.Arduino
                     return 0;
             }, "km/h"));
 
-            _numeric_content_table.Add(ArduinoParameterCode.Boost, new ArduinoNumericContent('A', adc_out => 73.47 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP - 1.88) * 0.0101972, "kgf/cm2"));
-            _numeric_content_table.Add(ArduinoParameterCode.Water_Temp, new ArduinoNumericContent('B', adc_out =>
+            _numeric_content_table.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new ArduinoNumericContent('A', adc_out => 73.47 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP - 1.88) * 0.0101972, "kgf/cm2"));
+            _numeric_content_table.Add(ArduinoParameterCode.Coolant_Temperature, new ArduinoNumericContent('B', adc_out =>
             {
                 double R = adc_out * THERMISTOR_SENSE_R / (ADC_STEP - adc_out);
                 double T = THERMISTOR_B/(Math.Log(R/THERMISTOR_R0)+THERMISTOR_B/298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;
             }, "degC"));
-            _numeric_content_table.Add(ArduinoParameterCode.Oil_Temp, new ArduinoNumericContent('C', adc_out =>
+            _numeric_content_table.Add(ArduinoParameterCode.Oil_Temperature, new ArduinoNumericContent('C', adc_out =>
             {
                 double R = adc_out * THERMISTOR_SENSE_R / (ADC_STEP - adc_out);
                 double T = THERMISTOR_B / (Math.Log(R / THERMISTOR_R0) + THERMISTOR_B / 298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;
             }, "degC"));
-            _numeric_content_table.Add(ArduinoParameterCode.Oil_Temp2, new ArduinoNumericContent('D', adc_out =>
+            _numeric_content_table.Add(ArduinoParameterCode.Oil_Temperature2, new ArduinoNumericContent('D', adc_out =>
             {
                 double R = adc_out * THERMISTOR_SENSE_R / (ADC_STEP - adc_out);
                 double T = THERMISTOR_B / (Math.Log(R / THERMISTOR_R0) + THERMISTOR_B / 298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;
             }, "degC"));
-            _numeric_content_table.Add(ArduinoParameterCode.Oil_Pres, new ArduinoNumericContent('E', adc_out => 250 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP - 0.48) * 0.0101972, "kgf/cm2"));
-            _numeric_content_table.Add(ArduinoParameterCode.Fuel_Pres, new ArduinoNumericContent('F', adc_out => 250 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP - 0.48) * 0.0101972, "kgf/cm2"));
+            _numeric_content_table.Add(ArduinoParameterCode.Oil_Pressure, new ArduinoNumericContent('E', adc_out => 250 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP - 0.48) * 0.0101972, "kgf/cm2"));
+            _numeric_content_table.Add(ArduinoParameterCode.Fuel_Rail_Pressure, new ArduinoNumericContent('F', adc_out => 250 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP - 0.48) * 0.0101972, "kgf/cm2"));
         }
     }
 
@@ -95,14 +95,14 @@ namespace DefiSSMCOM.Arduino
 
     public enum ArduinoParameterCode
     {
-        Tacho,
-        Speed,
+        Engine_Speed,
+        Vehicle_Speed,
 
-        Boost,
-        Water_Temp,
-        Oil_Temp,
-        Oil_Temp2,
-        Oil_Pres,
-        Fuel_Pres,
+        Manifold_Absolute_Pressure,
+        Coolant_Temperature,
+        Oil_Temperature,
+        Oil_Temperature2,
+        Oil_Pressure,
+        Fuel_Rail_Pressure
     };
 }

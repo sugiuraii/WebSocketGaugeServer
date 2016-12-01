@@ -80,7 +80,7 @@
         Sub_Accelerator_Sensor,
         Main_Accelerator_Sensor,
         Brake_Booster_Pressure,
-        Fuel_Pressure_High,
+        Fuel_Rail_Pressure,
         Exhaust_Gas_Temperature,
         Cold_Start_Injector,
         SCV_Step,

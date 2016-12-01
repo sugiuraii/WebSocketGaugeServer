@@ -277,7 +277,7 @@ namespace FUELTRIP_Logger
 
 					if(ssm_defi_mode == SSM_DEFI_mode.Defi)
 					{
-						_current_tacho = double.Parse(val_json.val[DefiParameterCode.Tacho.ToString()]);
+						_current_tacho = double.Parse(val_json.val[DefiParameterCode.Engine_Speed.ToString()]);
 					}
 					else if(ssm_defi_mode == SSM_DEFI_mode.SSM)
 					{
@@ -343,7 +343,7 @@ namespace FUELTRIP_Logger
 
 			// initialize setting
 			DefiWSSendJSONFormat defisendcode = new DefiWSSendJSONFormat ();
-			defisendcode.code = DefiParameterCode.Tacho.ToString ();
+			defisendcode.code = DefiParameterCode.Engine_Speed.ToString ();
 			defisendcode.flag = true;
 
 			DefiWSIntervalJSONFormat definitervalcode = new DefiWSIntervalJSONFormat();
