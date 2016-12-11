@@ -285,11 +285,19 @@ namespace FUELTRIP_Logger
                         try
                         {
                             _current_speed = double.Parse(val_json.val[SSMParameterCode.Vehicle_Speed.ToString()]);
+                        }
+                        catch (KeyNotFoundException ex)
+                        {
+                            logger.Warn(SSMParameterCode.Vehicle_Speed.ToString() + "is not found in received json message. (You can ignore this warning, if this warning stops in several seconds.) Exception message : " + ex.Message + " " + ex.StackTrace);
+                            return;
+                        }
+                        try
+                        {
                             _current_injpulse_width = double.Parse(val_json.val[SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString()]);
                         }
                         catch (KeyNotFoundException ex)
                         {
-                            logger.Error("Vehicle speed or Injpulse in not found in received json message. Exception message : " + ex.Message + " " + ex.StackTrace);
+                            logger.Warn(SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString() + "is not found in received json message. (You can ignore this warning, if this warning stops in several seconds.) Exception message : " + ex.Message + " " + ex.StackTrace);
                             return;
                         }
                         try

@@ -30,7 +30,7 @@ namespace DefiSSMCOM.WebSocket.JSON
 
     public class ResetJSONFormat : JSONFormat
     {
-        public const string ModeCode = "RES";
+        public const string ModeCode = "RESET";
         ResetJSONFormat()
         {
             mode = ModeCode;
