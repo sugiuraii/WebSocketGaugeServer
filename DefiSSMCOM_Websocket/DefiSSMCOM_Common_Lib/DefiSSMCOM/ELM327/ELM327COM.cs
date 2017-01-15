@@ -9,6 +9,8 @@ namespace DefiSSMCOM.OBDII
     {
         private OBDIIContentTable content_table;
         public const byte MODECODE = 0x01;
+        //Wait time after calling ATZ command (in milliseconds)
+        private const int WAIT_AFTER_ATZ = 4000;
 
         //ELM327COM data received event
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
@@ -17,7 +19,7 @@ namespace DefiSSMCOM.OBDII
         public ELM327COM()
         {
             //シリアルポート設定
-            DefaultBaudRate = 9600;
+            DefaultBaudRate = 115200;
             ResetBaudRate = 4800;
             ReadTimeout = 500;
 
@@ -91,13 +93,18 @@ namespace DefiSSMCOM.OBDII
 
             // Input initial AT commands
             Write("ATZ\r");
+            Thread.Sleep(WAIT_AFTER_ATZ);
             logger.Debug("Call ATZ to initialize. Return Msg is " + ReadTo(">"));
+
             // Disable space.
             Write("ATS0\r");
             logger.Debug("Call ATS0 to disable space. Return Msg is " + ReadTo(">"));
             // Disable echoback.
             Write("ATE0\r");
             logger.Debug("Call ATE0 to disable echoback. Return Msg is " + ReadTo(">"));
+            // Disable Linefeed on delimiter
+            Write("ATL0\r");
+            logger.Debug("Call ATL0 to disable linefeed. Return Msg is " + ReadTo(">"));
 
             DiscardInBuffer();
         }
@@ -163,18 +170,19 @@ namespace DefiSSMCOM.OBDII
             DiscardInBuffer();
 
             String outMsg;
-            outMsg = MODECODE.ToString("X2") + content_table[code].PID.ToString("X2") + content_table[code].ReturnByteLength.ToString("X2");
+            outMsg = MODECODE.ToString("X2") + content_table[code].PID.ToString("X2") + content_table[code].ReturnByteLength.ToString("X1");
             Write(outMsg + "\r");
-            logger.Debug("ELM327OUT:" + outMsg);
-            ReadLine();
+            //logger.Debug("ELM327OUT:" + outMsg);
+            String inMsg = "";
 
             try
             {
-                String inMsg;
                 Int32 returnValue;
+                inMsg = ReadTo("\r");
+                if (inMsg.Equals(""))
+                    return;
 
-                inMsg = ReadTo(">").Replace("\r", "").Replace("\n", "").Replace(">","");
-                logger.Debug("ELM327IN:" + inMsg);
+                //logger.Debug("ELM327IN:" + inMsg);
                 returnValue = Convert.ToInt32(inMsg.Remove(0, 4), 16);
 
                 content_table[code].RawValue = returnValue;
@@ -186,8 +194,13 @@ namespace DefiSSMCOM.OBDII
             }
             catch(FormatException ex)
             {
-                logger.Error("String conversion to Int32 was failed " + ex.GetType().ToString() + " " + ex.Message);
-                communicateRealtimeIsError = true;
+                logger.Warn("String conversion to Int32 was failed " + ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
+                //communicateRealtimeIsError = true;
+            }
+            catch(ArgumentOutOfRangeException ex)
+            {
+                logger.Warn("String conversion to Int32 was failed " + ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
+                //communicateRealtimeIsError = true;
             }
         }
     }
