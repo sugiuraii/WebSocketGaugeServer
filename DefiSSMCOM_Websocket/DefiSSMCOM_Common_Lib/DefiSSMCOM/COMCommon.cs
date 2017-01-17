@@ -32,7 +32,6 @@ namespace DefiSSMCOM
 
             //通信エラー発生時のイベント処理登録
             serialPort.ErrorReceived += new SerialErrorReceivedEventHandler(SerialPortErrorReceived);
-
         }
 
         public void CommunicateRealtimeStart()

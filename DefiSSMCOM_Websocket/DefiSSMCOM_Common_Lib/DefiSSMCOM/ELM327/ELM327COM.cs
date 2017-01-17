@@ -11,9 +11,13 @@ namespace DefiSSMCOM.OBDII
         public const byte MODECODE = 0x01;
         //Wait time after calling ATZ command (in milliseconds)
         private const int WAIT_AFTER_ATZ = 4000;
+        //Maximum number of PID in multi PID read.
+        private const int MAX_MULTIREADPID_NUMBER = 6;
 
         //ELM327COM data received event
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
+
+        public bool MultiplePIDRead { get; set; }
 
         //コンストラクタ
         public ELM327COM()
@@ -24,6 +28,7 @@ namespace DefiSSMCOM.OBDII
             ReadTimeout = 500;
 
             content_table = new OBDIIContentTable();
+            MultiplePIDRead = false;
         }
 
         public double get_value(OBDIIParameterCode code)
@@ -105,6 +110,9 @@ namespace DefiSSMCOM.OBDII
             // Disable Linefeed on delimiter
             Write("ATL0\r");
             logger.Debug("Call ATL0 to disable linefeed. Return Msg is " + ReadTo(">"));
+            // Allow Long message.
+            //Write("ATAL\r");
+            //logger.Debug("Call ATAL to allow longer message. Return Msg is " + ReadTo(">"));
 
             DiscardInBuffer();
         }
@@ -113,9 +121,7 @@ namespace DefiSSMCOM.OBDII
         {
             try
             {
-                int i;
-
-                //クエリするSSM_codeリストの作成
+                //クエリするOBDcodeリストの作成
                 List<OBDIIParameterCode> query_OBDII_code_list = new List<OBDIIParameterCode>();
                 foreach (OBDIIParameterCode code in Enum.GetValues(typeof(OBDIIParameterCode)))
                 {
@@ -135,19 +141,43 @@ namespace DefiSSMCOM.OBDII
                     }
                 }
 
-                //クエリするSSM_codeがない場合は抜ける
+                //クエリするOBD_codeがない場合は抜ける
                 if (query_OBDII_code_list.Count <= 0)
                 {
-                    //SSM_codeがない場合、すぐに抜けると直後にcommunicate_mainが呼び出されCPUを占有するので、500ms待つ
+                    //OBD_codeがない場合、すぐに抜けると直後にcommunicate_mainが呼び出されCPUを占有するので、500ms待つ
                     //SlowReadの場合、この処理はしない
                     if (!slow_read_flag)
                         Thread.Sleep(500);
                     return;
                 }
 
-                foreach( OBDIIParameterCode code in query_OBDII_code_list)
+                if ((query_OBDII_code_list.Count == 1) || !MultiplePIDRead)
                 {
-                    communicateOnePID(code);
+                    foreach (OBDIIParameterCode code in query_OBDII_code_list)
+                    {
+                        communicateOnePID(code);
+                    }
+                }
+                else
+                {
+                    List<OBDIIParameterCode> temp_code_list = new List<OBDIIParameterCode>();
+                    
+                    // Call communicateMultiplePID by 6 PIDS;
+                    foreach (OBDIIParameterCode code in query_OBDII_code_list)
+                    {                        
+                        temp_code_list.Add(code);
+ 
+                        if(temp_code_list.Count >= 6)
+                        {
+                            communicateMultplePIDs(temp_code_list);
+                            temp_code_list.Clear();
+                        }
+                    }
+                    // Call communicateMultiplePID in remaining PIDs
+                    if (temp_code_list.Count == 1)
+                        communicateOnePID(temp_code_list[0]);
+                    else
+                        communicateMultplePIDs(temp_code_list);
                 }
 
                 //Invoke SSMDatareceived event
@@ -170,7 +200,8 @@ namespace DefiSSMCOM.OBDII
             DiscardInBuffer();
 
             String outMsg;
-            outMsg = MODECODE.ToString("X2") + content_table[code].PID.ToString("X2") + content_table[code].ReturnByteLength.ToString("X1");
+            //outMsg = MODECODE.ToString("X2") + content_table[code].PID.ToString("X2") + content_table[code].ReturnByteLength.ToString("X1");
+            outMsg = MODECODE.ToString("X2") + content_table[code].PID.ToString("X2") + "1";
             Write(outMsg + "\r");
             //logger.Debug("ELM327OUT:" + outMsg);
             String inMsg = "";
@@ -203,7 +234,69 @@ namespace DefiSSMCOM.OBDII
                 //communicateRealtimeIsError = true;
             }
         }
+
+        //Communicate multiple PIDs (maximum 6PIDS per one time)
+        private void communicateMultplePIDs(List<OBDIIParameterCode> codeList)
+        {
+            //シリアルポート入力バッファ掃除
+            DiscardInBuffer();
+            if(codeList.Count > MAX_MULTIREADPID_NUMBER)
+            {
+                logger.Fatal("Number of multi read PIDs exceeds " + MAX_MULTIREADPID_NUMBER.ToString() + ".");
+                return;
+            }
+
+            int totalReturnByteLength = 0;
+            String outMsg = MODECODE.ToString("X2");
+            foreach(OBDIIParameterCode code in codeList)
+            {
+                outMsg += content_table[code].PID.ToString("X2");
+                totalReturnByteLength += content_table[code].ReturnByteLength;
+            }
+
+            Write(outMsg + "\r");
+            logger.Debug("ELM327OUT:" + outMsg);
+            String inMsg = "";
+
+            try
+            {
+                inMsg = ReadTo("\r");
+                logger.Debug("ELM327IN:" + inMsg);
+
+                //Truncate Mode ID from inMsg
+                inMsg = inMsg.Remove(0, 2);
+
+                int i = 0;
+                while(i < inMsg.Length)
+                {
+                    byte pid = Convert.ToByte(inMsg.Substring(i, 2));
+                    OBDIIParameterCode code = content_table.getParameterCodeFromPID(pid);
+                    i += 2;
+                    int returnByteLength = content_table[code].ReturnByteLength;
+                    int returnValue = Convert.ToInt32(inMsg.Substring(i, 2 * returnByteLength), 16);
+                    i += 2 * returnByteLength;
+
+                    content_table[code].RawValue = returnValue;
+                }
+            }
+            catch (TimeoutException ex)
+            {
+                logger.Warn("ELM327COM timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                communicateRealtimeIsError = true;
+            }
+            catch (FormatException ex)
+            {
+                logger.Warn("String conversion to Int32 was failed " + ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
+                //communicateRealtimeIsError = true;
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                logger.Warn("String conversion to Int32 was failed " + ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
+                //communicateRealtimeIsError = true;
+            }
+        }
     }
+
 
     public class ELM327DataReceivedEventArgs : EventArgs
     {
