@@ -19,7 +19,9 @@ namespace DefiSSMCOM.OBDII
         public ELM327COM()
         {
             //シリアルポート設定
-            DefaultBaudRate = 115200;
+            //DefaultBaudRate = 115200;
+            DefaultBaudRate = 9600;
+
             ResetBaudRate = 4800;
             ReadTimeout = 500;
 
@@ -178,7 +180,9 @@ namespace DefiSSMCOM.OBDII
             try
             {
                 Int32 returnValue;
-                inMsg = ReadTo("\r");
+                //inMsg = ReadTo("\r");
+                inMsg = ReadTo(">");
+                inMsg = inMsg.Replace(">","").Replace("\n","").Replace("\r","");
                 if (inMsg.Equals(""))
                     return;
 
