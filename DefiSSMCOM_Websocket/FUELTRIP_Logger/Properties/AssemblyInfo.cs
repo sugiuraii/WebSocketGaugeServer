@@ -4,11 +4,11 @@ using System.Runtime.CompilerServices;
 // Information about this assembly is defined by the following attributes.
 // Change them to the values specific to your project.
 [assembly: AssemblyTitle ("FUELTRIP_Logger")]
-[assembly: AssemblyDescription ("")]
+[assembly: AssemblyDescription("Fuel trip logging websocket server.")]
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("")]
 [assembly: AssemblyProduct ("")]
-[assembly: AssemblyCopyright ("kuniaki")]
+[assembly: AssemblyCopyright("Sugiura K Nigo <sugiura.k.nigp@gmail.com>")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 // The assembly version has the format "{Major}.{Minor}.{Build}.{Revision}".
@@ -22,3 +22,4 @@ using System.Runtime.CompilerServices;
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = @"Log4net.Config.xml", Watch = true)]
 
 
+[assembly: AssemblyFileVersionAttribute("0.1")]
