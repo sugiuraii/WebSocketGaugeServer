@@ -20,4 +20,4 @@ using System.Runtime.CompilerServices;
 //[assembly: AssemblyDelaySign(false)]
 //[assembly: AssemblyKeyFile("")]
 
-[assembly: AssemblyFileVersionAttribute("0.1")]
+[assembly: AssemblyFileVersionAttribute("0.1.1")]

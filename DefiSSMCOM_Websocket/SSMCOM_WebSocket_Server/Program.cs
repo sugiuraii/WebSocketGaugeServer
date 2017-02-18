@@ -29,25 +29,25 @@ namespace SSMCOM_WebSocket_Server
             }
             catch (XmlException ex)
             {
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return;
             }
             catch (FileNotFoundException ex)
             {
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return;
             }
             catch (DirectoryNotFoundException ex)
             {
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return;
             }
             catch (System.Security.SecurityException ex)
             {
-                Console.WriteLine(ex.Message);
+                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return;
             }
@@ -57,11 +57,11 @@ namespace SSMCOM_WebSocket_Server
 			
 			ssmcomserver1.start ();
 
-            Console.WriteLine("The server started successfully, press key 'q' to stop it!");
-
-			while (Console.ReadKey().KeyChar != 'q')
+			while (true)
 			{
                 Thread.Sleep(500);
+                if (!ssmcomserver1.IsSSMCOMThreadAlive)
+                    break;
                 continue;
 			}
 

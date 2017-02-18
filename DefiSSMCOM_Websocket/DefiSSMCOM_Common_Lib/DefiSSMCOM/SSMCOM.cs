@@ -15,8 +15,12 @@ namespace DefiSSMCOM
             private System.IO.Ports.SerialPort serialPort1;
 			private string _portname;
             private Int32 _slowread_interval;
-            private Thread communicate_realtime_thread1;
-            private bool _communicate_realtime_state1;
+            private Thread communicate_realtime_thread;
+            private bool _communicate_realtime_state;
+            private bool _communicate_realtime_error;
+
+            private int _communicate_reset_count; //何回communicate_reset()が連続でコールされたか？ (COMMUNICATE_RESET_MAXを超えたらプログラムを落とす)
+            const int COMMUNICATE_RESET_MAX = 20; //communicate_reset()コールを連続で許可する回数。
 
             private SSM_Content_Table _content_table;
 
@@ -36,7 +40,7 @@ namespace DefiSSMCOM
                 //シリアルポート設定
                 serialPort1.BaudRate = 4800;
                 serialPort1.ReadTimeout = 500;
-                _communicate_realtime_state1 = false;
+                _communicate_realtime_state = false;
 
                 _content_table = new SSM_Content_Table();
             }
@@ -58,6 +62,14 @@ namespace DefiSSMCOM
                     {
                         error_message("PortName error : " + ex1.GetType().ToString() + " " + ex1.Message);
                     }
+                }
+            }
+
+            public bool IsCommunitateThreadAlive
+            {
+                get
+                {
+                    return communicate_realtime_thread.IsAlive;
                 }
             }
 
@@ -93,18 +105,35 @@ namespace DefiSSMCOM
 
 			public void set_slowread_flag(SSM_Parameter_Code code, bool flag)
             {
-                debug_message("Slowread flag of " + code.ToString() + "is enabled.");
-				_content_table[code].Slow_Read_Enable = flag;
+                set_slowread_flag(code, flag, false);
             }
+            public void set_slowread_flag(SSM_Parameter_Code code, bool flag, bool quiet)
+            {
+                if(!quiet)
+                    debug_message("Slowread flag of " + code.ToString() + "is enabled.");
+                _content_table[code].Slow_Read_Enable = flag;
+            }
+
 			public void set_fastread_flag(SSM_Parameter_Code code, bool flag)
             {
-                debug_message("Fastread flag of " + code.ToString() + "is enabled.");
-				_content_table[code].Fast_Read_Enable = flag;
+                set_fastread_flag(code, flag, false);
+            }
+            public void set_fastread_flag(SSM_Parameter_Code code, bool flag, bool quiet)
+            {
+                if(!quiet)
+                    debug_message("Fastread flag of " + code.ToString() + "is enabled.");
+                _content_table[code].Fast_Read_Enable = flag;
             }
 
             public void set_all_disable()
             {
-                debug_message("All flag reset.");
+                set_all_disable(false);
+            }
+
+            public void set_all_disable(bool quiet)
+            {
+                if(!quiet)
+                    debug_message("All flag reset.");
                 _content_table.set_all_disable();
             }
 
@@ -123,19 +152,19 @@ namespace DefiSSMCOM
 
             public void communicate_start()
             {
-                communicate_realtime_thread1 = new Thread(new ThreadStart(communicate_realtime));
-                _communicate_realtime_state1 = true;
-                communicate_realtime_thread1.Start();
+                communicate_realtime_thread = new Thread(new ThreadStart(communicate_realtime));
+                _communicate_realtime_state = true;
+                communicate_realtime_thread.Start();
                 info_message("SSMCOM communication Started.");
             }
 
             public void communicate_stop()
             {
                 //通信スレッドを終了させる
-                _communicate_realtime_state1 = false;
+                _communicate_realtime_state = false;
 
                 //通信スレッド終了まで待つ
-                communicate_realtime_thread1.Join();
+                communicate_realtime_thread.Join();
 
                 info_message("SSMCOM communication Stopped.");
             }
@@ -151,7 +180,7 @@ namespace DefiSSMCOM
 
                     int i = 0;
                     //スレッドがアボートされるまで続ける（無限ループ）
-                    while (_communicate_realtime_state1)
+                    while (_communicate_realtime_state)
                     {
                         if (i > _slowread_interval)
                         {
@@ -162,6 +191,22 @@ namespace DefiSSMCOM
                         {
                             communicate_main(false);
                             i++;
+                        }
+
+                        if (_communicate_realtime_error)
+                        {
+                            _communicate_reset_count++;
+                            if (_communicate_reset_count > COMMUNICATE_RESET_MAX)
+                            {
+                                throw new System.InvalidOperationException("Number of communicate_reset() call exceeds COMMUNICATE_RESET_MAX : " + COMMUNICATE_RESET_MAX.ToString() + ". Terminate communicate_realtime().");
+                            }
+                            communicate_reset();
+                            _communicate_realtime_error = false;
+                        }
+                        else
+                        {
+                            //communicate_mainでエラーなければエラーカウンタリセット。
+                            _communicate_reset_count = 0;
                         }
                     }
                 }
@@ -182,8 +227,19 @@ namespace DefiSSMCOM
                     //ポートクローズ
                     serialPort1.Close();
                     info_message("SSMCOM COMPort closed.");
-                    _communicate_realtime_state1 = false;
+                    _communicate_realtime_state = false;
                 }
+            }
+
+            private void communicate_reset()
+            {
+                info_message("communicate_reset() is called. Wait 1000msec. Discard buffer. And Close and re-Open SSMCOM COMPort.");
+                //一旦クローズ、1000ms待って再open;
+                serialPort1.DiscardInBuffer();
+                serialPort1.DiscardOutBuffer();
+                serialPort1.Close();
+                Thread.Sleep(1000);
+                serialPort1.Open();
             }
 
             private void communicate_main(bool slow_read)
@@ -199,6 +255,16 @@ namespace DefiSSMCOM
 
                     //送信バッファの作成
                     outbuf = create_outbuf(slow_read, query_SSM_code_list);
+                    
+                    //クエリするSSM_codeがない場合は抜ける
+                    if (query_SSM_code_list.Count <= 0)
+                    {
+                        //SSM_codeがない場合、すぐに抜けると直後にcommunicate_mainが呼び出されCPUを占有するので、500ms待つ
+                        //SlowReadの場合、この処理はしない
+                        if(!slow_read)
+                            Thread.Sleep(500);
+                        return;
+                    }
 
                     //エコーバックサイズの設定
                     int echoback_length = outbuf.Length;
@@ -233,7 +299,7 @@ namespace DefiSSMCOM
                 catch (TimeoutException ex)
                 {
                     warning_message("SSMCOM timeout. " + ex.GetType().ToString() + " " + ex.Message);
-					Thread.Sleep (500);
+                    _communicate_realtime_error = true;
                 }
             }
 

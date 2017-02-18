@@ -21,6 +21,9 @@ namespace DefiSSMCOM
             private bool _communicate_realtime_start; // 読み込みスレッド継続フラグ(communicate_realtime_stop()でfalseになり、読み込みスレッドは終了)
             private bool _communicate_realtime_error; // エラー発生時にtrue trueになったらcommunicate_reset()を呼び出して初期化を試みる。
 
+            private int _communicate_reset_count; //何回communicate_reset()が連続でコールされたか？ (COMMUNICATE_RESET_MAXを超えたらプログラムを落とす)
+            const int COMMUNICATE_RESET_MAX = 20; //communicate_reset()コールを連続で許可する回数。
+
 			// Defilink received Event
 			public event EventHandler DefiLinkPacketReceived;
             //Log4net logger
@@ -31,7 +34,8 @@ namespace DefiSSMCOM
             //DefiLinkボーレート設定
             const int DEFI_BAUD_RATE = 19200;
             //リセット時のボーレート設定(communticate_reset()参照)
-            const int DEFI_RESET_BAUD_RATE = 14400;
+            //FT232RLの場合、許容されるボーレートは3000000/n (nは整数または小数点以下が0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)
+            const int DEFI_RESET_BAUD_RATE = 9600;
 
 
             //コンストラクタ
@@ -48,6 +52,7 @@ namespace DefiSSMCOM
                 serialPort1.ReadTimeout = 500;
                 _communicate_realtime_start = false;
                 _communicate_realtime_error = false;
+                _communicate_reset_count = 0;
 
                 //通信エラー発生時のイベント処理登録
                 serialPort1.ErrorReceived += new SerialErrorReceivedEventHandler(SerialPortErrorReceived);
@@ -72,6 +77,14 @@ namespace DefiSSMCOM
                     {
 						error_message("Port name set error : " + ex1.GetType().ToString() + " " + ex1.Message);
                     }
+                }
+            }
+
+            public bool IsCommunitateThreadAlive
+            {
+                get
+                {
+                    return communicate_realtime_thread1.IsAlive;
                 }
             }
 
@@ -105,10 +118,22 @@ namespace DefiSSMCOM
                     while (_communicate_realtime_start)
                     {
                         communicate_main();
-                        if (_communicate_realtime_error) // シリアルポートエラー（パリティ、フレーミング)を受信したら、初期化を試みる。
+                        if (_communicate_realtime_error) // シリアルポートエラー（タイムアウト、パリティ、フレーミング)を受信したら、初期化を試みる。
                         {
                             communticate_reset();
+                            _communicate_reset_count++;
+
+                            if(_communicate_reset_count > COMMUNICATE_RESET_MAX)
+                            {
+                                throw new System.InvalidOperationException("Number of communicate_reset() call exceeds COMMUNICATE_RESET_MAX : " + COMMUNICATE_RESET_MAX.ToString() + ". Terminate communicate_realtime().");
+                            }
+
                             _communicate_realtime_error = false;
+                        }
+                        else
+                        {
+                            //communicate_mainでエラーなければエラーカウンタリセット。
+                            _communicate_reset_count = 0;
                         }
 
                     }
@@ -181,9 +206,9 @@ namespace DefiSSMCOM
                 }
                 catch (TimeoutException ex)
                 {
-                    //読み出しタイムアウト時は200ミリ秒待つ（データ受信しなかったときのCPU占有防止）
+                    //読み出しタイムアウト時はエラーフラグを立て、次のサイクルでリセット処理を入れる
                     warning_message("Defi packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
-                    Thread.Sleep(200);
+                    _communicate_realtime_error = true;
                     return;
                 }
 
@@ -234,8 +259,10 @@ namespace DefiSSMCOM
                     }
                     catch (FormatException ex)
                     {
-                        //時々DefiPacketが崩れることがあるが、そのまま進める。
+                        //DefiPacketが崩れていた場合エラーフラグを立て、次のサイクルでリセット処理を入れる。
                         warning_message("Invalid Defi packet. " + ex.GetType().ToString() + " " + ex.Message);
+                        _communicate_realtime_error = true;
+                        return;
                     }
                 }
 
