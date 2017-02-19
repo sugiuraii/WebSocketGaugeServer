@@ -7,8 +7,8 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyDescription ("")]
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("")]
-[assembly: AssemblyProduct ("")]
-[assembly: AssemblyCopyright ("kuniaki")]
+[assembly: AssemblyProduct("DefiSSMCOM_Common_Lib")]
+[assembly: AssemblyCopyright("Copyright ©  2016, Sugiura K Nigo <sugiura.k.nigo@gmail.com>")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 // The assembly version has the format "{Major}.{Minor}.{Build}.{Revision}".
@@ -20,3 +20,4 @@ using System.Runtime.CompilerServices;
 //[assembly: AssemblyDelaySign(false)]
 //[assembly: AssemblyKeyFile("")]
 
+[assembly: AssemblyFileVersionAttribute("0.2")]

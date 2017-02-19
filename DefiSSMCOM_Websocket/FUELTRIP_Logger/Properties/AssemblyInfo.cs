@@ -7,8 +7,8 @@ using System.Runtime.CompilerServices;
 [assembly: AssemblyDescription ("")]
 [assembly: AssemblyConfiguration ("")]
 [assembly: AssemblyCompany ("")]
-[assembly: AssemblyProduct ("")]
-[assembly: AssemblyCopyright ("kuniaki")]
+[assembly: AssemblyProduct("FUELTRIP_Logger")]
+[assembly: AssemblyCopyright("Copyright ©  2016, Sugiura K Nigo <sugiura.k.nigo@gmail.com>")]
 [assembly: AssemblyTrademark ("")]
 [assembly: AssemblyCulture ("")]
 // The assembly version has the format "{Major}.{Minor}.{Build}.{Revision}".
@@ -20,5 +20,4 @@ using System.Runtime.CompilerServices;
 //[assembly: AssemblyDelaySign(false)]
 //[assembly: AssemblyKeyFile("")]
 [assembly: log4net.Config.XmlConfigurator(ConfigFile = @"Log4net.Config.xml", Watch = true)]
-
-
+[assembly: AssemblyFileVersionAttribute("0.2")]
