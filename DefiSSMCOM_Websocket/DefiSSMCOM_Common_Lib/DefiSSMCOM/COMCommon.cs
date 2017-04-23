@@ -39,6 +39,7 @@ namespace DefiSSMCOM
         {
             // Set serialport1.BaudRate to default baud rate
             serialPort.BaudRate = DefaultBaudRate;
+            logger.Info("Set baudrate to " + serialPort.BaudRate.ToString() + " bps.");
 
             communicate_realtime_thread1 = new Thread(new ThreadStart(communicate_realtime));
             communicateRealtimeIsRunning = true;
