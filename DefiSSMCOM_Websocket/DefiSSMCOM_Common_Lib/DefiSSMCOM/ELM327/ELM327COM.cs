@@ -12,6 +12,9 @@ namespace DefiSSMCOM.OBDII
         //Wait time after calling ATZ command (in milliseconds)
         private const int WAIT_AFTER_ATZ = 4000;
 
+        //Recommended baudrate for USB ELM327 adaptor
+        private const int RECOMMENDED_BAUD_RATE = 115200;
+
         //ELM327COM data received event
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
 
@@ -19,8 +22,9 @@ namespace DefiSSMCOM.OBDII
         public ELM327COM()
         {
             //シリアルポート設定
-            //DefaultBaudRate = 115200;
-            DefaultBaudRate = 9600;
+            DefaultBaudRate = 115200;
+            //Set baudrate to 9600 if you use obdsim.
+            //DefaultBaudRate = 9600;
 
             ResetBaudRate = 4800;
             ReadTimeout = 500;
@@ -90,6 +94,8 @@ namespace DefiSSMCOM.OBDII
         protected override void communicate_initialize()
         {
             base.communicate_initialize();
+            if (DefaultBaudRate != RECOMMENDED_BAUD_RATE)
+                logger.Warn("Baurdate is different from recommended ELM327-USB bardrate of " + RECOMMENDED_BAUD_RATE.ToString() + "bps");
 
             DiscardInBuffer();
 
@@ -115,8 +121,6 @@ namespace DefiSSMCOM.OBDII
         {
             try
             {
-                int i;
-
                 //クエリするSSM_codeリストの作成
                 List<OBDIIParameterCode> query_OBDII_code_list = new List<OBDIIParameterCode>();
                 foreach (OBDIIParameterCode code in Enum.GetValues(typeof(OBDIIParameterCode)))
@@ -181,12 +185,13 @@ namespace DefiSSMCOM.OBDII
             {
                 Int32 returnValue;
                 //inMsg = ReadTo("\r");
+                logger.Debug("ELM327IN:" + inMsg);
                 inMsg = ReadTo(">");
                 inMsg = inMsg.Replace(">","").Replace("\n","").Replace("\r","");
                 if (inMsg.Equals(""))
                     return;
 
-                //logger.Debug("ELM327IN:" + inMsg);
+
                 returnValue = Convert.ToInt32(inMsg.Remove(0, 4), 16);
 
                 content_table[code].RawValue = returnValue;
