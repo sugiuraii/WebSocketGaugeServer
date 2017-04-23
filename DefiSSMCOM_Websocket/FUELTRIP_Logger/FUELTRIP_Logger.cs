@@ -7,6 +7,7 @@ using WebSocket4Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System.Collections.Generic;
+using DefiSSMCOM;
 using DefiSSMCOM.Defi;
 using DefiSSMCOM.SSM;
 using DefiSSMCOM.WebSocket.JSON;
@@ -14,80 +15,6 @@ using log4net;
 
 namespace FUELTRIP_Logger
 {
-	public class FUELTRIP_JSONFormat : JSONFormats
-	{
-		public double moment_gasmilage;
-		public double total_gas;
-		public double total_trip;
-		public double total_gasmilage;
-
-		public FUELTRIP_JSONFormat()
-		{
-			mode = "MOMENT_FUELTRIP";
-		}
-
-		public override void Validate()
-		{
-			if (mode != "MOMENT_FUELTRIP") {
-				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
-			}
-		}
-	}
-
-	public class SectFUELTRIP_JSONFormat : JSONFormats
-	{
-		public long sect_span;
-		public double[] sect_trip;
-		public double[] sect_gas;
-		public double[] sect_gasmilage;
-
-		public SectFUELTRIP_JSONFormat()
-		{
-			mode = "SECT_FUELTRIP";
-		}
-
-		public override void Validate()
-		{
-			if (mode != "SECT_FUELTRIP") {
-				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
-			}
-		}
-	}
-
-	public class SectSpan_JSONFormat : JSONFormats
-	{
-		public int sect_span;
-
-		public SectSpan_JSONFormat()
-		{
-			mode = "SECT_SPAN";
-		}
-
-		public override void Validate()
-		{
-			if (mode != "SECT_SPAN") {
-				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
-			}
-		}
-	}
-
-	public class SectStoreMax_JSONFormat : JSONFormats
-	{
-		public int storemax;
-
-		public SectStoreMax_JSONFormat()
-		{
-			mode = "SECT_STOREMAX";
-		}
-
-		public override void Validate()
-		{
-			if (mode != "SECT_STOREMAX") {
-				throw new JSONFormatsException ("mode property of " + this.GetType().ToString() + " packet is not valid.");
-			}
-		}
-	}
-
 	public class FUELTRIP_Logger
 	{
 		private const int CONNECT_RETRY_SEC = 5;
@@ -225,23 +152,23 @@ namespace FUELTRIP_Logger
 				switch(received_JSON_mode)
 				{
 				//SSM COM all reset
-				case ("RESET"):
+				case (ResetJSONFormat.ModeCode):
 					_nenpi_trip_calc.reset_sect_trip_gas();
 					_nenpi_trip_calc.reset_total_trip_gas();
 					response_msg(session, "NenpiCalc AllRESET.");
 					break;
-				case ("SECTRESET"):
+				case (SectResetJSONFormat.ModeCode):
 					_nenpi_trip_calc.reset_sect_trip_gas();
 					response_msg(session, "NenpiCalc SectRESET.");
 					break;
-				case ("SECT_SPAN"):
-					SectSpan_JSONFormat span_jsonobj = JsonConvert.DeserializeObject<SectSpan_JSONFormat>(message);
+				case (SectSpanJSONFormat.ModeCode):
+					SectSpanJSONFormat span_jsonobj = JsonConvert.DeserializeObject<SectSpanJSONFormat>(message);
 					span_jsonobj.Validate();
 					_nenpi_trip_calc.Sect_Span = span_jsonobj.sect_span*1000;
 					response_msg(session, "NenpiCalc SectSpan Set to : " + span_jsonobj.sect_span.ToString() + "sec");
 					break;
-				case ("SECT_STOREMAX"):
-					SectStoreMax_JSONFormat storemax_jsonobj = JsonConvert.DeserializeObject<SectStoreMax_JSONFormat>(message);
+				case (SectStoreMaxJSONFormat.ModeCode):
+					SectStoreMaxJSONFormat storemax_jsonobj = JsonConvert.DeserializeObject<SectStoreMaxJSONFormat>(message);
 					storemax_jsonobj.Validate();
 					_nenpi_trip_calc.Sect_Store_Max = storemax_jsonobj.storemax;
 					response_msg(session, "NenpiCalc SectStoreMax Set to : " + storemax_jsonobj.storemax.ToString());
@@ -283,7 +210,7 @@ namespace FUELTRIP_Logger
 
 		private void send_momentum_value()
 		{
-			FUELTRIP_JSONFormat fueltrip_json = new FUELTRIP_JSONFormat ();
+			FUELTRIPJSONFormat fueltrip_json = new FUELTRIPJSONFormat ();
 			fueltrip_json.moment_gasmilage = _nenpi_trip_calc.Momentary_Gas_Milage;
 			fueltrip_json.total_gas = _nenpi_trip_calc.Total_Gas_Consumption;
 			fueltrip_json.total_trip = _nenpi_trip_calc.Total_Trip;
@@ -295,7 +222,7 @@ namespace FUELTRIP_Logger
 
 		private void send_section_value_array()
 		{
-			SectFUELTRIP_JSONFormat sectfueltrip_json = new SectFUELTRIP_JSONFormat ();
+			SectFUELTRIPJSONFormat sectfueltrip_json = new SectFUELTRIPJSONFormat ();
 			sectfueltrip_json.sect_gas = _nenpi_trip_calc.Sect_gas_array;
 			sectfueltrip_json.sect_trip = _nenpi_trip_calc.Sect_trip_array;
 			sectfueltrip_json.sect_gasmilage = _nenpi_trip_calc.Sect_gasmilage_array;
@@ -343,26 +270,34 @@ namespace FUELTRIP_Logger
 
 			try
 			{
-				if(received_JSON_mode == "VAL")
+				if(received_JSON_mode == ValueJSONFormat.ModeCode)
 				{
 					ValueJSONFormat val_json = JsonConvert.DeserializeObject<ValueJSONFormat>(jsonmsg);
 					val_json.Validate();
 
 					if(ssm_defi_mode == SSM_DEFI_mode.Defi)
 					{
-						_current_tacho = double.Parse(val_json.val[Defi_Parameter_Code.Tacho.ToString()]);
+						_current_tacho = double.Parse(val_json.val[DefiParameterCode.Engine_Speed.ToString()]);
 					}
 					else if(ssm_defi_mode == SSM_DEFI_mode.SSM)
 					{
                         //Console.WriteLine(jsonmsg);
                         try
                         {
-                            _current_speed = double.Parse(val_json.val[SSM_Parameter_Code.Vehicle_Speed.ToString()]);
-                            _current_injpulse_width = double.Parse(val_json.val[SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString()]);
+                            _current_speed = double.Parse(val_json.val[SSMParameterCode.Vehicle_Speed.ToString()]);
                         }
                         catch (KeyNotFoundException ex)
                         {
-                            logger.Error("Vehicle speed or Injpulse in not found in received json message. Exception message : " + ex.Message + " " + ex.StackTrace);
+                            logger.Warn(SSMParameterCode.Vehicle_Speed.ToString() + "is not found in received json message. (You can ignore this warning, if this warning stops in several seconds.) Exception message : " + ex.Message + " " + ex.StackTrace);
+                            return;
+                        }
+                        try
+                        {
+                            _current_injpulse_width = double.Parse(val_json.val[SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString()]);
+                        }
+                        catch (KeyNotFoundException ex)
+                        {
+                            logger.Warn(SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString() + "is not found in received json message. (You can ignore this warning, if this warning stops in several seconds.) Exception message : " + ex.Message + " " + ex.StackTrace);
                             return;
                         }
                         try
@@ -377,17 +312,17 @@ namespace FUELTRIP_Logger
                         }
 					}
 				}
-                else if (received_JSON_mode == "ERR")
+                else if (received_JSON_mode == ErrorJSONFormat.ModeCode)
                 {
                     ErrorJSONFormat err_json = JsonConvert.DeserializeObject<ErrorJSONFormat>(jsonmsg);
                     err_json.Validate();
                     logger.Error("Error occured from " + ssm_defi_mode.ToString() + ":" + err_json.msg);
                 }
-                else if (received_JSON_mode == "RES")
+                else if (received_JSON_mode == ResponseJSONFormat.ModeCode)
                 {
                     ResponseJSONFormat res_json = JsonConvert.DeserializeObject<ResponseJSONFormat>(jsonmsg);
                     res_json.Validate();
-                    logger.Error("Response from " + ssm_defi_mode.ToString() + ":" + res_json.msg);
+                    logger.Info("Response from " + ssm_defi_mode.ToString() + ":" + res_json.msg);
                 }
 			}
 			catch(JSONFormatsException ex) {
@@ -415,11 +350,11 @@ namespace FUELTRIP_Logger
             //Thread.Sleep(5000);
 
 			// initialize setting
-			Defi_WS_SendJSONFormat defisendcode = new Defi_WS_SendJSONFormat ();
-			defisendcode.code = Defi_Parameter_Code.Tacho.ToString ();
+			DefiWSSendJSONFormat defisendcode = new DefiWSSendJSONFormat ();
+			defisendcode.code = DefiParameterCode.Engine_Speed.ToString ();
 			defisendcode.flag = true;
 
-			Defi_WS_IntervalJSONFormat definitervalcode = new Defi_WS_IntervalJSONFormat();
+			DefiWSIntervalJSONFormat definitervalcode = new DefiWSIntervalJSONFormat();
 			definitervalcode.interval=DEFIPACKET_INTERVAL;
 
 			_deficom_ws_client.Send(defisendcode.Serialize());
@@ -453,33 +388,33 @@ namespace FUELTRIP_Logger
             //Sleep 5sec in order to wait until the session is registered to the SSM WS session snapshot.
             //Thread.Sleep(5000);
 
-            SSM_SLOWREAD_IntervalJSONFormat ssmcom_slowread_json = new SSM_SLOWREAD_IntervalJSONFormat();
+            SSMSLOWREADIntervalJSONFormat ssmcom_slowread_json = new SSMSLOWREADIntervalJSONFormat();
             ssmcom_slowread_json.interval = 20;
             _ssmcom_ws_client.Send(ssmcom_slowread_json.Serialize());
 
-            SSM_COM_ReadJSONFormat ssmcom_read_json1 = new SSM_COM_ReadJSONFormat();
-            ssmcom_read_json1.code = SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString();
-            ssmcom_read_json1.read_mode = "SLOW";
+            SSMCOMReadJSONFormat ssmcom_read_json1 = new SSMCOMReadJSONFormat();
+            ssmcom_read_json1.code = SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString();
+            ssmcom_read_json1.read_mode = SSMCOMReadJSONFormat.SlowReadModeCOde;
             ssmcom_read_json1.flag = true;
             _ssmcom_ws_client.Send(ssmcom_read_json1.Serialize());
 
-            SSM_COM_ReadJSONFormat ssmcom_read_json2 = new SSM_COM_ReadJSONFormat();
-			ssmcom_read_json2.code = SSM_Parameter_Code.Vehicle_Speed.ToString ();
-			ssmcom_read_json2.read_mode = "FAST";
+            SSMCOMReadJSONFormat ssmcom_read_json2 = new SSMCOMReadJSONFormat();
+			ssmcom_read_json2.code = SSMParameterCode.Vehicle_Speed.ToString ();
+			ssmcom_read_json2.read_mode = SSMCOMReadJSONFormat.FastReadModeCode;
 			ssmcom_read_json2.flag = true;
 			_ssmcom_ws_client.Send(ssmcom_read_json2.Serialize());
 
-            SSM_COM_ReadJSONFormat ssmcom_read_json3 = new SSM_COM_ReadJSONFormat();
-            ssmcom_read_json3 = new SSM_COM_ReadJSONFormat();
-            ssmcom_read_json3.code = SSM_Parameter_Code.Vehicle_Speed.ToString();
-            ssmcom_read_json3.read_mode = "SLOW";
+            SSMCOMReadJSONFormat ssmcom_read_json3 = new SSMCOMReadJSONFormat();
+            ssmcom_read_json3 = new SSMCOMReadJSONFormat();
+            ssmcom_read_json3.code = SSMParameterCode.Vehicle_Speed.ToString();
+            ssmcom_read_json3.read_mode = SSMCOMReadJSONFormat.SlowReadModeCOde;
             ssmcom_read_json3.flag = true;
 			_ssmcom_ws_client.Send (ssmcom_read_json3.Serialize ());
 
-            SSM_COM_ReadJSONFormat ssmcom_read_json4 = new SSM_COM_ReadJSONFormat();
-            ssmcom_read_json4 = new SSM_COM_ReadJSONFormat();
-            ssmcom_read_json4.code = SSM_Parameter_Code.Fuel_Injection_1_Pulse_Width.ToString();
-            ssmcom_read_json4.read_mode = "FAST";
+            SSMCOMReadJSONFormat ssmcom_read_json4 = new SSMCOMReadJSONFormat();
+            ssmcom_read_json4 = new SSMCOMReadJSONFormat();
+            ssmcom_read_json4.code = SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString();
+            ssmcom_read_json4.read_mode = SSMCOMReadJSONFormat.FastReadModeCode;
             ssmcom_read_json4.flag = true;
             _ssmcom_ws_client.Send(ssmcom_read_json4.Serialize());
 
