@@ -127,18 +127,15 @@ namespace DefiSSMCOM.WebSocket
             //Try to start the appServer
             if (!appServer.Setup(appserver_config)) //Setup with listening por
             {
-                //Console.WriteLine("Failed to setup!");
                 logger.Fatal("Failed to setup websocket server.");
             }
             if (!appServer.Start())
             {
-                //Console.WriteLine("Failed to start!");
                 logger.Fatal("Failed to start websocket server.");
                 return;
             }
 
-            //Console.WriteLine("Websocket server is started. WebsocketPort:" + this.Websocket_PortNo.ToString() + " DefiCOMPort: " + this.DefiCOM_PortName);
-            logger.Info("Websocket server is started. WebsocketPort:" + this.WebsocketPortNo.ToString() + " DefiCOMPort: " + this.COMPortName);
+            logger.Info("Websocket server is started. WebsocketPort:" + this.WebsocketPortNo.ToString() + " COMPort: " + this.COMPortName);
 
             com1.CommunicateRealtimeStart();
 
