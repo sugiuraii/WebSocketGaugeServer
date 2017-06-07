@@ -11,7 +11,7 @@ namespace DefiSSMCOM.Application.ArduinoCOM
         public static void Main(string[] args)
         {
             Application appli = new Application();
-            appli.start();
+            appli.webSocketServerStart();
         }
     }
 
@@ -20,9 +20,10 @@ namespace DefiSSMCOM.Application.ArduinoCOM
         private readonly DefiSSMCOM.WebSocket.ArduinoCOMWebsocket arduinocomserver1 = new ArduinoCOMWebsocket();
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public void start()
+        public Application()
         {
-            webSocketServerStart("arduinoserver_settings.xml", arduinocomserver1);
+            setAppSettings(AppSettings.loadFromXml("arduinoserver_settings.xml"));
+            setWebSocketServerObj(arduinocomserver1);
         }
     }
 }
