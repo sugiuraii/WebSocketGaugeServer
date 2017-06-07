@@ -32,6 +32,12 @@ namespace DefiSSMCOM.OBDII
             content_table = new OBDIIContentTable();
         }
 
+        //ELM327COMではDefaultBaudRateの変更を許可
+        public void overrideDefaultBaudRate(int baudRate)
+        {
+            DefaultBaudRate = baudRate;
+        }
+
         public double get_value(OBDIIParameterCode code)
         {
             return content_table[code].Value;
