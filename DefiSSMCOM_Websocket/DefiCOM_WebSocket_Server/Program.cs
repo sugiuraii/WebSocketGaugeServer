@@ -10,17 +10,17 @@ namespace DefiSSMCOM.Application.DefiCOM
     {
         public static void Main(string[] args)
         {
-            Application appli = new Application();
+            DefiCOMApplication appli = new DefiCOMApplication();
             appli.webSocketServerStart();
         }
     }
 
-    public class Application : ApplicationCommon
+    public class DefiCOMApplication : ApplicationCommon
     {
         private readonly DefiSSMCOM.WebSocket.DefiCOMWebsocket deficomserver1 = new DefiCOMWebsocket();
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public Application()
+        public DefiCOMApplication()
         {
             setAppSettings(AppSettings.loadFromXml("defiserver_settings.xml"));
             setWebSocketServerObj(deficomserver1);

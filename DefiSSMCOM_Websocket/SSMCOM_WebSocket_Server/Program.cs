@@ -10,17 +10,17 @@ namespace DefiSSMCOM.Application.SSMCOM
     {
         public static void Main(string[] args)
         {
-            Application appli = new Application();
+            SSMCOMApplication appli = new SSMCOMApplication();
             appli.webSocketServerStart();
         }
     }
 
-    public class Application : ApplicationCommon
+    public class SSMCOMApplication : ApplicationCommon
     {
         private readonly DefiSSMCOM.WebSocket.SSMCOMWebsocket ssmcomserver1 = new SSMCOMWebsocket();
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        public Application()
+        public SSMCOMApplication()
         {
             setAppSettings(AppSettings.loadFromXml("ssmserver_settings.xml"));
             setWebSocketServerObj(ssmcomserver1);

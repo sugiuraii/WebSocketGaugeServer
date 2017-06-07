@@ -9,7 +9,7 @@ namespace DefiSSMCOM.Application
 {
     public class AppSettings
     {
-        protected static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public string comport;
         public int websocket_port;
@@ -69,6 +69,7 @@ namespace DefiSSMCOM.Application
 
     public class AppSettingsWithBaudRate : AppSettings
     {
+        private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         public int baudrate;
         public static AppSettingsWithBaudRate loadFromXml(string filepath)
         {
@@ -77,7 +78,7 @@ namespace DefiSSMCOM.Application
 
             //XmlSerializerオブジェクトの作成
             System.Xml.Serialization.XmlSerializer serializer =
-                new System.Xml.Serialization.XmlSerializer(typeof(AppSettings));
+                new System.Xml.Serialization.XmlSerializer(typeof(AppSettingsWithBaudRate));
 
             try
             {
@@ -139,7 +140,7 @@ namespace DefiSSMCOM.Application
             this.websocketServerObj = websocketServerObj;
         }
 
-        public void webSocketServerStart()
+        public virtual void webSocketServerStart()
         {
             websocketServerObj.COMPortName = appsetting.comport;
             websocketServerObj.WebsocketPortNo = appsetting.websocket_port;
