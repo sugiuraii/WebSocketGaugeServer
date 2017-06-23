@@ -169,7 +169,7 @@ namespace DefiSSMCOM.OBDII
                     }
                 }
 
-                //クエリするSSM_codeがない場合は抜ける
+                //Exit loop if the PIDs to query are not exists.
                 if (query_OBDII_code_list.Count <= 0)
                 {
                     //SSM_codeがない場合、すぐに抜けると直後にcommunicate_mainが呼び出されCPUを占有するので、500ms待つ
@@ -197,10 +197,10 @@ namespace DefiSSMCOM.OBDII
             }
         }
 
-        //1PID分の通信
+        //Communication on 1PID
         private void communicateOnePID(OBDIIParameterCode code)
         {
-            //シリアルポート入力バッファ掃除
+            //Clean up serial port buffer
             DiscardInBuffer();
 
             String outMsg;
@@ -219,7 +219,7 @@ namespace DefiSSMCOM.OBDII
                 // Discard after the char of \r
                 // (discard all after \r)
                 // (This routine is implemented to make countermeasure in the case of multiple message returned.
-                inMsg = discurdAfterChar(inMsg, '\r');
+                inMsg = discardStringAfterChar(inMsg, '\r');
 
                 //logger.Debug("ELM327IN:" + inMsg);
                 inMsg = inMsg.Replace(">","").Replace("\n","").Replace("\r","");
@@ -248,7 +248,7 @@ namespace DefiSSMCOM.OBDII
             }
         }
 
-        private string discurdAfterChar(string instr, char delimiter)
+        private string discardStringAfterChar(string instr, char delimiter)
         {
             int index = instr.IndexOf(delimiter);
             string instrTemp;
