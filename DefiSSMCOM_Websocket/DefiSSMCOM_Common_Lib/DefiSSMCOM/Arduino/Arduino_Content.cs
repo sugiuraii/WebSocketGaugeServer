@@ -11,7 +11,7 @@ namespace DefiSSMCOM.Arduino
         // Water/Oil temp sensor Constants
         public const double THERMISTOR_R0 = 10000; //Thermistor resistance at 25degC
         public const double THERMISTOR_B = 3389;
-        // Thermistor current sense reisistance (parallel to thermistor)
+        // Thermistor current sense reisistance (inserted in series with the thermistor)
         public const double THERMISTOR_SENSE_R = 5000;
 
         //コンストラクタ
