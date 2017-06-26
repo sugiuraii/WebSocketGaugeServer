@@ -27,6 +27,12 @@ namespace DefiSSMCOM.Arduino
             ReadTimeout = 500;
         }
 
+        //ArudinoCOMではDefaultBaudRateの変更を許可
+        public void overrideDefaultBaudRate(int baudRate)
+        {
+            DefaultBaudRate = baudRate;
+        }
+
         //通信部ルーチン実装
         //この実装ではslowread_flagは無視
         protected override void communicate_main(bool slowread_flag)

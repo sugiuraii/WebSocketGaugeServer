@@ -1,5 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<AppSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<AppSettingsWithBaudRate xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <comport>COM7</comport>
-  <websocket_port>2013</websocket_port>
-</AppSettings>
+  <websocket_port>2016</websocket_port>
+  <baudrate>115200</baudrate>
+  <!-- Use 9600bps for obdsim. For OBDLinkSX, please use 115200 bps. 
+    <baudrate>9600</baudrate>
+  -->
+</AppSettingsWithBaudRate>

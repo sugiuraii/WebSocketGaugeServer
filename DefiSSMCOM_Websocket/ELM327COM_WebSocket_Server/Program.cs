@@ -10,19 +10,28 @@ namespace DefiSSMCOM.Application.ELM327COM
     {
         public static void Main(string[] args)
         {
-            Application appli = new Application();
-            appli.start();
+            ELM327COMApplication appli = new ELM327COMApplication();
+            appli.webSocketServerStart();
         }
     }
 
-    public class Application : ApplicationCommon
+    public class ELM327COMApplication : ApplicationCommon
     {
         private readonly DefiSSMCOM.WebSocket.ELM327COM_Websocket elm327comserver1 = new ELM327COM_Websocket();
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private AppSettingsWithBaudRate appsettingWithBaudRate;
 
-        public void start()
+        public ELM327COMApplication()
         {
-            webSocketServerStart("elm327server_settings.xml", elm327comserver1);
+            this.appsettingWithBaudRate = AppSettingsWithBaudRate.loadFromXml("elm327server_settings.xml");
+            setAppSettings(this.appsettingWithBaudRate);
+            setWebSocketServerObj(elm327comserver1);
+        }
+
+        public override void webSocketServerStart()
+        {
+            elm327comserver1.overrideBaudRate(appsettingWithBaudRate.baudrate);
+            base.webSocketServerStart();
         }
     }
 }
