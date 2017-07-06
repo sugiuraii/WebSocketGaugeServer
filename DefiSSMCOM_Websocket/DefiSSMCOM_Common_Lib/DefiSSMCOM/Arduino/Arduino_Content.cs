@@ -9,12 +9,13 @@ namespace DefiSSMCOM.Arduino
         public const double ADC_REF_VOLTAGE = 5;
 
         // Water/Oil temp sensor Constants
-        public const double THERMISTOR_R0 = 10000; //Thermistor resistance at 25degC
-        public const double THERMISTOR_B = 3389;
+        // This parameter are derived from Autogauge water/oil temp sensor (9BTP000 3747-SENSOR)
+        public const double THERMISTOR_R0 = 1306; //Thermistor resistance at 25degC
+        public const double THERMISTOR_B = 3529;
         // Thermistor current sense reisistance (inserted in series with the thermistor)
-        public const double THERMISTOR_SENSE_R = 5000;
+        public const double THERMISTOR_SENSE_R = 100;
 
-        //コンストラクタ
+        //Constructor
         public ArduinoContentTable()
         {
             NumPulsePerRev = 2;
