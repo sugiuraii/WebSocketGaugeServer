@@ -48,9 +48,9 @@ namespace DefiSSMCOM.Arduino
             }, "km/h"));
 
             //Boost conversion for autogauge boost sensor.
-            _numeric_content_table.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new ArduinoNumericContent('A', adc_out => 100 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP - 1) * 0.0101972, "kgf/cm2"));
+            _numeric_content_table.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new ArduinoNumericContent('A', adc_out => 100 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP), "kPa"));
             // (To use boost sensor of defi instead of autogauge, please use following conversion function)
-            // _numeric_content_table.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new ArduinoNumericContent('A', adc_out => 73.47 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP - 1.88) * 0.0101972, "kgf/cm2"));
+            // _numeric_content_table.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new ArduinoNumericContent('A', adc_out => 73.47 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP), "kPa"));
             
             _numeric_content_table.Add(ArduinoParameterCode.Coolant_Temperature, new ArduinoNumericContent('B', adc_out =>
             {
