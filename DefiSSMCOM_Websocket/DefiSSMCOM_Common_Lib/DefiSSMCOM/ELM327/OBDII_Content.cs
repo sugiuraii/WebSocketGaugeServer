@@ -18,7 +18,6 @@ namespace DefiSSMCOM.OBDII
             _conversion_function = conversion_function;
             _unit = unit;
 
-            //デフォルトでは無効。明示的にEnableされない限り通信をしない設定とする。
             SlowReadEnable = false;
             FastReadEnable = false;
         }

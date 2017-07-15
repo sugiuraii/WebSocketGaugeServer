@@ -7,7 +7,7 @@ namespace DefiSSMCOM.SSM
     {
         private Dictionary<SSMSwitchCode, SSMSwitchContent> _switch_content_table = new Dictionary<SSMSwitchCode, SSMSwitchContent>();
 
-        //コンストラクタ
+        //Constructor
         public SSMContentTable()
         {
             setSwicthContentTable();
