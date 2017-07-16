@@ -17,7 +17,10 @@ This document explains how to install DefiSSMCOM_WebsocketServer into linux(debi
 * [Setup supervisor](#setupSupervisor)
 
 ## <a name="addNewUser">Add new user to run the program</a>
-Add new user to run the program. Since this program access to serial ports, this new user have to belong to "dialout' group (otherwise, access to the serial port will be denied).
+Add new user to run the program. 
+
+Since this program access to serial ports, this new user have to belong to "dialout' group (otherwise, access to the serial port will be denied).
+
 In this example, new user of "wscomm" is added. The adduser command may ask you Full Name, phone number etc.., you don't have to input anything.
 
 ```
@@ -40,6 +43,7 @@ Install supervisor to run this program as daemon.
 
 ## <a name="installThisProgram">Install(copy) this program </a>
 Install this program. Currently this program have no installer, so please unzip your favorite directory.
+
 In this example, unzip the program into wscomm's (the user you added above) home directory.
 
 (Before doing this, copy the binary archive to /tmp)
