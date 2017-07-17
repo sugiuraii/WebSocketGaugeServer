@@ -15,6 +15,8 @@ namespace DefiSSMCOM.OBDII
         //Recommended baudrate for USB ELM327 adaptor
         private const int RECOMMENDED_BAUD_RATE = 115200;
 
+        private const int INITIALIZE_FAILED_MAX = 30;
+
         //ELM327COM data received event
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
 
@@ -110,6 +112,7 @@ namespace DefiSSMCOM.OBDII
         {
             DiscardInBuffer();
             bool initializeFinished = false;
+            int initializeFailedCount = 0;
 
             do
             {
@@ -135,6 +138,11 @@ namespace DefiSSMCOM.OBDII
                 catch (TimeoutException ex)
                 {
                     logger.Error("Timeout is occured during ELM327 initialization AT command settings. Wait 2sec and retry.. : " + ex.Message);
+                    initializeFailedCount++;
+                    if(initializeFailedCount > INITIALIZE_FAILED_MAX)
+                    {
+                        throw new InvalidOperationException("ELM327 initialization AT command setting is failed over " + INITIALIZE_FAILED_MAX + "counts.");
+                    }
                     initializeFinished = false;
                     Thread.Sleep(2000);
                 }
