@@ -38,6 +38,9 @@ Windows with .net Framework 4.5 or linux with mono.
 The source code is written on Visual Studio 2013 Community. Open the DefiSSMCOM_Websocket.sln and select build. Required libraries shold be downloaded automatically by NuGet.
 
 ## <a name="installAndSetup">Install and setup</a>
+
+If you want to install this program as linux daemon, please follow this [INSTALLLinux.md](INSTALLLinux.md)
+
 Binary executable files are stored on DefiSSMCOM_WebsocketServer\DefiSSMCOM_Websocket\Debug_Distribution (or download the binary zip file on release page).  
 After copy (or extract) the binary files, please modify the setting xml file. The file name is.  
 * defiserver_settings.xml
