@@ -9,99 +9,31 @@ using log4net;
 
 namespace DefiSSMCOM.WebSocket
 {
-    /// <summary>
-    /// Class to store websocket session parameters.
-    /// </summary>
-    public abstract class WebsocketSessionParam
-    {
-        public abstract void reset();
-    }
-
-    /// <summary>
-    /// Class to store simple (do not contains slow/fast read mode) weboscket session parameter.
-    /// </summary>
-    /// <typeparam name="parameterCodeType">parameter code type (Defi or Arduino)</typeparam>
-    public class SimpleWebsocketSessionParam<parameterCodeType> : WebsocketSessionParam where parameterCodeType : struct
-    {
-        /// <summary>
-        /// Parameter code list to communicate in websocket.
-        /// </summary>
-        public Dictionary<parameterCodeType, bool> Sendlist;
-        /// <summary>
-        /// Interval to send websocket messsage.
-        /// </summary>
-        public int SendInterval { get; set; }
-        public int SendCount { get; set; }
-
-        public SimpleWebsocketSessionParam()
-        {
-            this.Sendlist = new Dictionary<parameterCodeType, bool>();
-
-            foreach (parameterCodeType code in Enum.GetValues(typeof(parameterCodeType)))
-            {
-                this.Sendlist.Add(code, false);
-            }
-
-            this.SendInterval = 0;
-            this.SendCount = 0;
-        }
-
-        public override void reset()
-        {
-            foreach (parameterCodeType code in Enum.GetValues(typeof(parameterCodeType)))
-            {
-                this.Sendlist[code] = false;
-            }
-
-            this.SendInterval = 0;
-            this.SendCount = 0;
-        }
-    }
-
-    public class SlowFastWebsocketSessionParam<parameterCodeType> : WebsocketSessionParam where parameterCodeType : struct
-    {
-        public Dictionary<parameterCodeType, bool> SlowSendlist, FastSendlist;
-
-        public SlowFastWebsocketSessionParam()
-		{
-            this.SlowSendlist = new Dictionary<parameterCodeType, bool>();
-            this.FastSendlist = new Dictionary<parameterCodeType, bool>();
-
-            foreach (parameterCodeType code in Enum.GetValues(typeof(parameterCodeType)))
-            {
-                this.SlowSendlist.Add(code, false);
-                this.FastSendlist.Add(code, false);
-            }
-		}
-
-		public override void reset()
-		{
-            foreach (parameterCodeType code in Enum.GetValues(typeof(parameterCodeType)))
-            {
-                this.SlowSendlist[code] = false;
-                this.FastSendlist[code] = false;
-            }
-		}
-
-    }
-
     public abstract class WebSocketCommon
     {
         protected readonly WebSocketServer appServer;
         protected bool running_state = false;
         protected COMCommon com1;
 
-        //log4net
+        /// <summary>
+        /// Log4Net logger.
+        /// </summary>
         protected static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         /// <summary>
-        /// Lock object to wait until websocket session is deleted.
+        /// Lock object to wait until websocket session is completely created (or deleted).
         /// Websocketセッション作成（消去）が完了するまではフラグ変更等の処理を待つためのlock object
         /// </summary>
         protected object create_session_busy_lock_obj = new object();
 
+        /// <summary>
+        /// Port number to listen websocket connection.
+        /// </summary>
         public int WebsocketPortNo { get; set; }
 
+        /// <summary>
+        /// COM port name to communicate sensors.
+        /// </summary>
         public string COMPortName
         {
             get
@@ -114,7 +46,7 @@ namespace DefiSSMCOM.WebSocket
             }
         }
 
-        public bool IsCOMThreadAlive
+        public bool IsCommunicationThreadAlive
         {
             get
             {
@@ -122,6 +54,9 @@ namespace DefiSSMCOM.WebSocket
             }
         }
 
+        /// <summary>
+        /// Constructor of WebSocketCommon.
+        /// </summary>
         public WebSocketCommon()
         {
             // Create Websocket server
@@ -134,6 +69,9 @@ namespace DefiSSMCOM.WebSocket
         // SessionParam(DefiSessionParam or SSMSessionParamを生成して返すメソッド
         protected abstract WebsocketSessionParam createSessionParam();
 
+        /// <summary>
+        /// Start server instance.
+        /// </summary>
         public void start()
         {
             SuperSocket.SocketBase.Config.ServerConfig appserver_config = new SuperSocket.SocketBase.Config.ServerConfig();
@@ -159,6 +97,9 @@ namespace DefiSSMCOM.WebSocket
             this.running_state = true;
         }
 
+        /// <summary>
+        /// Stop server instance.
+        /// </summary>
         public void stop()
         {
             if (!this.running_state)
@@ -178,6 +119,11 @@ namespace DefiSSMCOM.WebSocket
             com1.CommunicateRealtimeStop();
         }
 
+        /// <summary>
+        /// Send error message to client.
+        /// </summary>
+        /// <param name="session">WebSocket session.</param>
+        /// <param name="message">Message to send.</param>
         protected void send_error_msg(WebSocketSession session, string message)
         {
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
@@ -188,6 +134,11 @@ namespace DefiSSMCOM.WebSocket
             logger.Error("Send Error message to " + destinationAddress.ToString() + " : " + message);
         }
 
+        /// <summary>
+        /// Send response message to client.
+        /// </summary>
+        /// <param name="session">WebSocket session.</param>
+        /// <param name="message">Message to send.</param>
         protected void send_response_msg(WebSocketSession session, string message)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
@@ -200,16 +151,24 @@ namespace DefiSSMCOM.WebSocket
 
         private void appServer_SessionClosed(WebSocketSession session, CloseReason reason)
         {
+            // Stop keepalive message timer
+            KeepAliveDMYMsgTimer keepaliveMsgTimer = (KeepAliveDMYMsgTimer)session.Items["KeepAliveTimer"];
+            keepaliveMsgTimer.Stop();
+
             IPAddress destinationAddress = session.RemoteEndPoint.Address;
             logger.Info("Session closed from : " + destinationAddress.ToString() + " Reason :" + reason.ToString());
         }
 
         private void appServer_NewSessionConnected(WebSocketSession session)
         {
-            lock (create_session_busy_lock_obj)//Websocketセッション作成処理が終わるまで、後続のパケット処理を待つ
+            lock (create_session_busy_lock_obj)//Wait websocket session is created.
             {
                 WebsocketSessionParam sendparam = createSessionParam();
+                KeepAliveDMYMsgTimer keepAliveMsgTimer = new KeepAliveDMYMsgTimer(session);
+                keepAliveMsgTimer.Start();
+
                 session.Items.Add("Param", sendparam);
+                session.Items.Add("KeepAliveTimer", keepAliveMsgTimer);
 
                 IPAddress destinationAddress = session.RemoteEndPoint.Address;
                 logger.Info("New session connected from : " + destinationAddress.ToString());
