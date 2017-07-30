@@ -12,6 +12,7 @@ using DefiSSMCOM;
 using DefiSSMCOM.Defi;
 using DefiSSMCOM.SSM;
 using DefiSSMCOM.WebSocket.JSON;
+using DefiSSMCOM.WebSocket;
 using log4net;
 
 namespace FUELTRIP_Logger
@@ -124,11 +125,19 @@ namespace FUELTRIP_Logger
 		// Websocket server events
 		private void _appServer_SessionClosed(WebSocketSession session, CloseReason reason)
 		{
+            // Stop keepalive message timer
+            KeepAliveDMYMsgTimer keepaliveMsgTimer = (KeepAliveDMYMsgTimer)session.Items["KeepAliveTimer"];
+            keepaliveMsgTimer.Stop();
+
             IPAddress destinationAddress = session.RemoteEndPoint.Address;
             logger.Info("Session closed from : " + destinationAddress.ToString() + " Reason :" + reason.ToString());
         }
 		private void _appServer_NewSessionConnected(WebSocketSession session)
 		{
+            KeepAliveDMYMsgTimer keepAliveMsgTimer = new KeepAliveDMYMsgTimer(session);
+            keepAliveMsgTimer.Start();
+            session.Items.Add("KeepAliveTimer", keepAliveMsgTimer);
+
             IPAddress destinationAddress = session.RemoteEndPoint.Address; 
             logger.Info("New session connected from : " + destinationAddress.ToString());
         }
