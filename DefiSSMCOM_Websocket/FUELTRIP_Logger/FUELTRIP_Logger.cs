@@ -250,6 +250,10 @@ namespace FUELTRIP_Logger
 		// Parse VAL packet
 		private void parse_val_paket(string jsonmsg, SSM_DEFI_mode ssm_defi_mode)
 		{
+            //Ignore "DMY" message. (DMY message is sent from server in order to keep-alive wifi connection (to prevent wifi low-power(high latency) mode).
+            if (jsonmsg == "DMY")
+                return;
+
 			string received_JSON_mode;
 			try{
                 JObject jobject = JObject.Parse(jsonmsg);
