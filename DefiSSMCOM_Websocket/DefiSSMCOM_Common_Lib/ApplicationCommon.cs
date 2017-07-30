@@ -151,7 +151,7 @@ namespace DefiSSMCOM.Application
             {
                 Thread.Sleep(500);
                 //DefiCOMスレッドが異常終了した場合は、プログラム自体も終了する。
-                if (!websocketServerObj.IsCOMThreadAlive)
+                if (!websocketServerObj.IsCommunicationThreadAlive)
                     break;
 
                 continue;

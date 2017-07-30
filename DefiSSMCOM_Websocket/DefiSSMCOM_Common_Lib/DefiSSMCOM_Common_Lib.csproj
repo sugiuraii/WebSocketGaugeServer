@@ -94,6 +94,8 @@
     <Compile Include="Websocket_Comm\JSONFormat\JSONFormat.cs" />
     <Compile Include="Websocket_Comm\JSONFormat\JSONFormatCommon.cs" />
     <Compile Include="Websocket_Comm\JSONFormat\SSMJSONFormat.cs" />
+    <Compile Include="Websocket_Comm\SessionItems\KeepAlivePingTimer.cs" />
+    <Compile Include="Websocket_Comm\SessionItems\WebsocketSessionParam.cs" />
     <Compile Include="Websocket_Comm\SSMCOM_Websocket.cs" />
     <Compile Include="Websocket_Comm\WebSocketCommon.cs" />
   </ItemGroup>
