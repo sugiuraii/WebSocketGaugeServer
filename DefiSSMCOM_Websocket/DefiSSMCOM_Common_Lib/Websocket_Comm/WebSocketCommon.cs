@@ -151,6 +151,10 @@ namespace DefiSSMCOM.WebSocket
 
         private void appServer_SessionClosed(WebSocketSession session, CloseReason reason)
         {
+            // Stop keepalive message timer
+            KeepAliveDMYMsgTimer keepaliveMsgTimer = (KeepAliveDMYMsgTimer)session.Items["KeepAliveTimer"];
+            keepaliveMsgTimer.Stop();
+
             IPAddress destinationAddress = session.RemoteEndPoint.Address;
             logger.Info("Session closed from : " + destinationAddress.ToString() + " Reason :" + reason.ToString());
         }
@@ -160,8 +164,12 @@ namespace DefiSSMCOM.WebSocket
             lock (create_session_busy_lock_obj)//Wait websocket session is created.
             {
                 WebsocketSessionParam sendparam = createSessionParam();
+                KeepAliveDMYMsgTimer keepAliveMsgTimer = new KeepAliveDMYMsgTimer(session);
+                keepAliveMsgTimer.Start();
+
                 session.Items.Add("Param", sendparam);
-                
+                session.Items.Add("KeepAliveTimer", keepAliveMsgTimer);
+
                 IPAddress destinationAddress = session.RemoteEndPoint.Address;
                 logger.Info("New session connected from : " + destinationAddress.ToString());
             }

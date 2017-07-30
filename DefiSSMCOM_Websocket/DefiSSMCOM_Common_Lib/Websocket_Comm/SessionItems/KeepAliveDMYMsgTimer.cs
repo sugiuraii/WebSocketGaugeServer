@@ -15,12 +15,12 @@ namespace DefiSSMCOM.WebSocket
         /// <summary>
         /// Interval of sending keep-alive dummy message (to prevent wifi sleep mode) to clients (in millisecond).
         /// </summary>
-        public static const int KEEPALIVE_MESSAGE_INTERVAL = 90;
+        public const int KEEPALIVE_MESSAGE_INTERVAL = 60;
 
         /// <summary>
         /// Dummy message string.
         /// </summary>
-        public static const string DUMMY_MESSAGE = "DMY";
+        public const string DUMMY_MESSAGE = "DMY";
 
         private readonly WebSocketSession webSocketSession;
         private readonly Ping ping = new Ping();
