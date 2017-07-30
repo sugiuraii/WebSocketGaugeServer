@@ -1,6 +1,7 @@
 ﻿using System;
 using DefiSSMCOM.WebSocket.JSON;
 using SuperSocket.SocketBase;
+using System.Net;
 using SuperWebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
@@ -8,14 +9,27 @@ using log4net;
 
 namespace DefiSSMCOM.WebSocket
 {
+    /// <summary>
+    /// Class to store websocket session parameters.
+    /// </summary>
     public abstract class WebsocketSessionParam
     {
         public abstract void reset();
     }
 
+    /// <summary>
+    /// Class to store simple (do not contains slow/fast read mode) weboscket session parameter.
+    /// </summary>
+    /// <typeparam name="parameterCodeType">parameter code type (Defi or Arduino)</typeparam>
     public class SimpleWebsocketSessionParam<parameterCodeType> : WebsocketSessionParam where parameterCodeType : struct
     {
+        /// <summary>
+        /// Parameter code list to communicate in websocket.
+        /// </summary>
         public Dictionary<parameterCodeType, bool> Sendlist;
+        /// <summary>
+        /// Interval to send websocket messsage.
+        /// </summary>
         public int SendInterval { get; set; }
         public int SendCount { get; set; }
 
@@ -80,7 +94,10 @@ namespace DefiSSMCOM.WebSocket
         //log4net
         protected static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-        //Websocketセッション作成（消去）が完了するまではフラグ変更等の処理を待つためのlock object
+        /// <summary>
+        /// Lock object to wait until websocket session is deleted.
+        /// Websocketセッション作成（消去）が完了するまではフラグ変更等の処理を待つためのlock object
+        /// </summary>
         protected object create_session_busy_lock_obj = new object();
 
         public int WebsocketPortNo { get; set; }
@@ -167,8 +184,8 @@ namespace DefiSSMCOM.WebSocket
             json_error_msg.msg = message;
 
             session.Send(json_error_msg.Serialize());
-            //Console.WriteLine("Send Error message to " + session.Host + " : " + message);
-            logger.Error("Send Error message to " + session.Host + " : " + message);
+            IPAddress destinationAddress = session.RemoteEndPoint.Address;
+            logger.Error("Send Error message to " + destinationAddress.ToString() + " : " + message);
         }
 
         protected void send_response_msg(WebSocketSession session, string message)
@@ -177,14 +194,14 @@ namespace DefiSSMCOM.WebSocket
             json_response_msg.msg = message;
             session.Send(json_response_msg.Serialize());
 
-            //Console.WriteLine("Send Response message to " + session.Host + " : " + message);
-            logger.Info("Send Response message to " + session.Host + " : " + message);
+            IPAddress destinationAddress = session.RemoteEndPoint.Address;
+            logger.Info("Send Response message to " + destinationAddress.ToString() + " : " + message);
         }
 
         private void appServer_SessionClosed(WebSocketSession session, CloseReason reason)
         {
-            //Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
-            logger.Info("Session closed from : " + session.Host + " Reason :" + reason.ToString());
+            IPAddress destinationAddress = session.RemoteEndPoint.Address;
+            logger.Info("Session closed from : " + destinationAddress.ToString() + " Reason :" + reason.ToString());
         }
 
         private void appServer_NewSessionConnected(WebSocketSession session)
@@ -194,8 +211,8 @@ namespace DefiSSMCOM.WebSocket
                 WebsocketSessionParam sendparam = createSessionParam();
                 session.Items.Add("Param", sendparam);
 
-                //Console.WriteLine("New session connected from : " + session.Host);
-                logger.Info("New session connected from : " + session.Host);
+                IPAddress destinationAddress = session.RemoteEndPoint.Address;
+                logger.Info("New session connected from : " + destinationAddress.ToString());
             }
         }
 

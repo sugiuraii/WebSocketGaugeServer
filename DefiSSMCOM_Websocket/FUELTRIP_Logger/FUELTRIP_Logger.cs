@@ -3,6 +3,7 @@ using System.Threading;
 using SuperSocket.SocketBase;
 using SuperSocket.ClientEngine;
 using SuperWebSocket;
+using System.Net;
 using WebSocket4Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -123,13 +124,13 @@ namespace FUELTRIP_Logger
 		// Websocket server events
 		private void _appServer_SessionClosed(WebSocketSession session, CloseReason reason)
 		{
-            //Console.WriteLine("Session closed from : " + session.Host + " Reason :" + reason.ToString());
-            logger.Info("Session closed from : " + session.Host + " Reason :" + reason.ToString());
+            IPAddress destinationAddress = session.RemoteEndPoint.Address;
+            logger.Info("Session closed from : " + destinationAddress.ToString() + " Reason :" + reason.ToString());
         }
 		private void _appServer_NewSessionConnected(WebSocketSession session)
 		{
-            //Console.WriteLine("New session connected from : " + session.Host);
-            logger.Info("New session connected from : " + session.Host);
+            IPAddress destinationAddress = session.RemoteEndPoint.Address; 
+            logger.Info("New session connected from : " + destinationAddress.ToString());
         }
 		private void _appServer_NewMessageReceived(WebSocketSession session, string message)
 		{
