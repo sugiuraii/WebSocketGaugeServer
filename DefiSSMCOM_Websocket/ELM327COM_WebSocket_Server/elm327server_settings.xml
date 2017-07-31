@@ -6,4 +6,5 @@
   <!-- Use 9600bps for obdsim. For OBDLinkSX, please use 115200 bps. 
     <baudrate>9600</baudrate>
   -->
+  <keepalive_interval>60</keepalive_interval>
 </AppSettingsWithBaudRate>

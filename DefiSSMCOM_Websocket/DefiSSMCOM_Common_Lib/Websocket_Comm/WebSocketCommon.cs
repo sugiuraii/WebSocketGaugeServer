@@ -46,6 +46,9 @@ namespace DefiSSMCOM.WebSocket
             }
         }
 
+        /// <summary>
+        /// Get the status of communication thread.
+        /// </summary>
         public bool IsCommunicationThreadAlive
         {
             get
@@ -55,10 +58,17 @@ namespace DefiSSMCOM.WebSocket
         }
 
         /// <summary>
+        /// Interval of sending keep alive dummy message in millisecond.
+        /// </summary>
+        public int KeepAliveInterval { get; set; }
+
+        /// <summary>
         /// Constructor of WebSocketCommon.
         /// </summary>
         public WebSocketCommon()
         {
+            // Default KeepAliveInterval : 60ms
+            this.KeepAliveInterval = 60;
             // Create Websocket server
             appServer = new WebSocketServer();
             appServer.SessionClosed += new SessionHandler<WebSocketSession, CloseReason>(appServer_SessionClosed);
@@ -90,7 +100,7 @@ namespace DefiSSMCOM.WebSocket
                 return;
             }
 
-            logger.Info("Websocket server is started. WebsocketPort:" + this.WebsocketPortNo.ToString() + " COMPort: " + this.COMPortName);
+            logger.Info("Websocket server is started. WebsocketPort:" + this.WebsocketPortNo.ToString() + " COMPort: " + this.COMPortName + "Keep alive dummy message interval:" + this.KeepAliveInterval.ToString()+"ms");
 
             com1.CommunicateRealtimeStart();
 
@@ -164,7 +174,7 @@ namespace DefiSSMCOM.WebSocket
             lock (create_session_busy_lock_obj)//Wait websocket session is created.
             {
                 WebsocketSessionParam sendparam = createSessionParam();
-                KeepAliveDMYMsgTimer keepAliveMsgTimer = new KeepAliveDMYMsgTimer(session);
+                KeepAliveDMYMsgTimer keepAliveMsgTimer = new KeepAliveDMYMsgTimer(session, this.KeepAliveInterval);
                 keepAliveMsgTimer.Start();
 
                 session.Items.Add("Param", sendparam);
@@ -175,6 +185,12 @@ namespace DefiSSMCOM.WebSocket
             }
         }
 
+        /// <summary>
+        /// Abstract method to process received JSON message.
+        /// </summary>
+        /// <param name="receivedJSONmode">JSON mode (VAL,RES,ERR,...)</param>
+        /// <param name="message">Message content.</param>
+        /// <param name="session">Wesocket session.</param>
         protected abstract void processReceivedJSONMessage(string receivedJSONmode, string message, WebSocketSession session);
 
         private void appServer_NewMessageReceived(WebSocketSession session, string message)

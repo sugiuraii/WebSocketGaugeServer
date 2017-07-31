@@ -6,4 +6,5 @@
   <!--
     <baudrate>9600</baudrate>
   -->
+  <keepalive_interval>60</keepalive_interval>
 </AppSettingsWithBaudRate>

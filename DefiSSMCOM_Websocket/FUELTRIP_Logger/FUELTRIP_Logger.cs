@@ -42,13 +42,29 @@ namespace FUELTRIP_Logger
         private string _deficom_WS_URL;
         private string _ssmcom_WS_URL;
 
+        /// <summary>
+        /// Interval of sending keep alive dummy message in millisecond.
+        /// </summary>
+        public int KeepAliveInterval { get; set; }
+
+        /// <summary>
+        /// Porn No to listen connection.
+        /// </summary>
 		public int WebsocketServer_ListenPortNo { get; set; }
 
+        /// <summary>
+        /// Constructor of FUELTRIP_Logger
+        /// </summary>
+        /// <param name="deficom_WS_URL">Deficom websocket server URL.</param>
+        /// <param name="ssmcom_WS_URL">SSMCOM websocket server URL.</param>
 		public FUELTRIP_Logger(string deficom_WS_URL, string ssmcom_WS_URL)
 		{
             this.WebsocketServer_ListenPortNo = 2014;
 
 			_nenpi_trip_calc = new Nenpi_Trip_Calculator ();
+            
+            // Default KeepAliveInterval : 60ms
+            this.KeepAliveInterval = 60;
 
 			//Websocket server setup
 			_appServer = new WebSocketServer ();
@@ -76,6 +92,9 @@ namespace FUELTRIP_Logger
             _nenpi_trip_calc.SectFUELTRIPUpdated += new EventHandler(_nenpi_trip_calc_SectFUELTRIPUpdated);
 		}
 
+        /// <summary>
+        /// Start server instance.
+        /// </summary>
 		public void start()
 		{
 			running_state = true;
@@ -106,6 +125,9 @@ namespace FUELTRIP_Logger
             logger.Info("Websocket server is starting... DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
         }
 
+        /// <summary>
+        /// Stop server instance.
+        /// </summary>
 		public void stop ()
 		{
 			running_state = false;
@@ -134,7 +156,7 @@ namespace FUELTRIP_Logger
         }
 		private void _appServer_NewSessionConnected(WebSocketSession session)
 		{
-            KeepAliveDMYMsgTimer keepAliveMsgTimer = new KeepAliveDMYMsgTimer(session);
+            KeepAliveDMYMsgTimer keepAliveMsgTimer = new KeepAliveDMYMsgTimer(session, this.KeepAliveInterval);
             keepAliveMsgTimer.Start();
             session.Items.Add("KeepAliveTimer", keepAliveMsgTimer);
 

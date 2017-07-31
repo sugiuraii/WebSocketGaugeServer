@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
 using SuperWebSocket;
-using System.Net.NetworkInformation;
 using System.Net;
 
 namespace DefiSSMCOM.WebSocket
@@ -15,21 +14,26 @@ namespace DefiSSMCOM.WebSocket
         /// <summary>
         /// Interval of sending keep-alive dummy message (to prevent wifi sleep mode) to clients (in millisecond).
         /// </summary>
-        public const int KEEPALIVE_MESSAGE_INTERVAL = 60;
+        private readonly int KeepAliveInterval;
 
         /// <summary>
         /// Dummy message string.
         /// </summary>
-        public const string DUMMY_MESSAGE = "DMY";
+        private const string DUMMY_MESSAGE = "DMY";
 
         private readonly WebSocketSession webSocketSession;
-        private readonly Ping ping = new Ping();
 
         private readonly Timer keepAliveTimer;
 
-        public KeepAliveDMYMsgTimer(WebSocketSession session)
+        /// <summary>
+        /// Constructor of KeepAliveMsgTimer
+        /// </summary>
+        /// <param name="session">Target WebSocket session.</param>
+        /// <param name="interval">Keep alive interval in milisecond.</param>
+        public KeepAliveDMYMsgTimer(WebSocketSession session, int interval)
         {
             this.webSocketSession = session;
+            this.KeepAliveInterval = interval;
 
             this.keepAliveTimer = new Timer((object obj) => 
             {
@@ -38,7 +42,7 @@ namespace DefiSSMCOM.WebSocket
 
                 targetSession.Send(DUMMY_MESSAGE);
 
-            },this,Timeout.Infinite, KEEPALIVE_MESSAGE_INTERVAL);
+            },this,Timeout.Infinite, KeepAliveInterval);
         }
 
         /// <summary>
@@ -46,7 +50,7 @@ namespace DefiSSMCOM.WebSocket
         /// </summary>
         public void Start()
         {
-            this.keepAliveTimer.Change(0, KEEPALIVE_MESSAGE_INTERVAL);
+            this.keepAliveTimer.Change(0, KeepAliveInterval);
         }
 
         /// <summary>
@@ -54,7 +58,7 @@ namespace DefiSSMCOM.WebSocket
         /// </summary>
         public void Stop()
         {
-            this.keepAliveTimer.Change(Timeout.Infinite, KEEPALIVE_MESSAGE_INTERVAL);
+            this.keepAliveTimer.Change(Timeout.Infinite, KeepAliveInterval);
         }
     }
 }

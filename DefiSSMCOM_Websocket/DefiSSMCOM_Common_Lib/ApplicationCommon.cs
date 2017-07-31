@@ -11,9 +11,24 @@ namespace DefiSSMCOM.Application
     {
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
+        /// <summary>
+        /// COM port name.
+        /// </summary>
         public string comport;
+        /// <summary>
+        /// Websocket port number.
+        /// </summary>
         public int websocket_port;
+        /// <summary>
+        /// Keep alive dummy message interval (in millisecond).
+        /// </summary>
+        public int keepalive_interval;
 
+        /// <summary>
+        /// Create Appsetting with reading xml file.
+        /// </summary>
+        /// <param name="filepath">XML file path</param>
+        /// <returns>AppSettings read from XML.</returns>
         public static AppSettings loadFromXml(string filepath)
         {
             AppSettings appsetting = new AppSettings();
@@ -70,7 +85,11 @@ namespace DefiSSMCOM.Application
     public class AppSettingsWithBaudRate : AppSettings
     {
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        /// <summary>
+        /// Communication baudrate.
+        /// </summary>
         public int baudrate;
+
         public static AppSettingsWithBaudRate loadFromXml(string filepath)
         {
             AppSettingsWithBaudRate appsetting = new AppSettingsWithBaudRate();
@@ -144,6 +163,7 @@ namespace DefiSSMCOM.Application
         {
             websocketServerObj.COMPortName = appsetting.comport;
             websocketServerObj.WebsocketPortNo = appsetting.websocket_port;
+            websocketServerObj.KeepAliveInterval = appsetting.keepalive_interval;
 
             websocketServerObj.start();
 
