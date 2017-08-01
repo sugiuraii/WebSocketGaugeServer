@@ -1,5 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <AppSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <!-- 
+    On linux, please set comport name like
+    <comport>/dev/ttyUSB0</comport>
+  -->
   <comport>COM4</comport>
   <websocket_port>2012</websocket_port>
   <keepalive_interval>60</keepalive_interval>

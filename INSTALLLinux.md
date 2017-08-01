@@ -62,10 +62,10 @@ After this, new directory of "WebsocketServer" is created.
 
 ## <a name=setupThisProgram>Setup this program</a>
 The settings of the programs are written on xml files such as,
-* Defi/defiserver_settings.xml
-* SSM/ssmserver_settings.xml
-* Arduino/arduinoserver_settings.xml
-* ELM327/elm327server_settings.xml
+* [Defi/defiserver_settings.xml](./DefiSSMCOM_Websocket/DefiCOM_WebSocket_Server/defiserver_settings.xml)
+* [SSM/ssmserver_settings.xml](./DefiSSMCOM_Websocket/SSMCOM_WebSocket_Server/ssmserver_settings.xml)
+* [Arduino/arduinoserver_settings.xml](./DefiSSMCOM_Websocket/ArduinoCOM_WebSocket_Server/arduinoserver_settings.xml)
+* [ELM327/elm327server_settings.xml](./DefiSSMCOM_Websocket/ELM327COM_WebSocket_Server/elm327server_settings.xml)
 
 At least, <comport> tag of these files need to be modified. In linux, you can set the comport name such as,
 ```
