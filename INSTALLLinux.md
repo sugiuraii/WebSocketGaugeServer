@@ -84,7 +84,7 @@ cd /etc/supervisor/conf.d
 sudo vi arduino_websocket.conf
 ```
 
-And make `arduino_websocket.conf` as follow,
+And make [arduino_websocket.conf](./LinuxInstall.SettingFiles/arduino_websocket.conf) as follow,
 ```
 [program:arduino_websocket]
 command=mono ArduinoCOM_WebSocket_Server.exe
@@ -99,7 +99,7 @@ redirect_stderr=true
 ```
 Please note that `wscomm` is the username you created on for the program, the `directory` is the directory where you extracted the program binary exe file.
 
-And create `defi_websocket.conf`, `ssm_websocket.conf`, `elm327_websocket.conf` in the similar way as this.
+And create [defi_websocket.conf](./LinuxInstall.SettingFiles/defi_websocket.conf), [ssm_websocket.conf](./LinuxInstall.SettingFiles/ssm_websocket.conf), [elm327_websocket.conf](./LinuxInstall.SettingFiles/elm327_websocket.conf) in the similar way as this.
 Of cause, you can skip making these files if you do not have plan to use these programs.
 
 `defi_websocket.conf`
