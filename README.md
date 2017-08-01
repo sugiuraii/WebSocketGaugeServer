@@ -37,6 +37,8 @@ Windows with .net Framework 4.5 or linux with mono.
 ## <a name="howToBuild">How to build</a>
 The source code is written on Visual Studio 2013 Community. Open the DefiSSMCOM_Websocket.sln and select build. Required libraries shold be downloaded automatically by NuGet.
 
+Please note that current source code cannot be built properly on "Release" or "Release_Distribution" configration. Please use "Debug_Distribution" configuration.
+
 ## <a name="installAndSetup">Install and setup</a>
 
 If you want to install this program as linux daemon, please follow this [INSTALLLinux.md](INSTALLLinux.md)
