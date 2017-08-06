@@ -7,35 +7,40 @@ namespace DefiSSMCOM.Arduino
     {
         private ArduinoContentTable content_table;
 
-        // Arduinoから1サイクルで送信されるデータ(行)数(Tacho + Speed + ADC6ch分)
+        // Number of row sent from arduino by 1cycle (Tacho + Speed + ADC6ch = 8ch)
         private const int NUM_ROWS_PER_CYCLE = 8;
         // Arduino received Event
         public event EventHandler ArduinoPacketReceived;
 
-        //コンストラクタ
+        //Constructor
         public ArduinoCOM()
         {
             content_table = new ArduinoContentTable();
 
-            //Arduinoシリアルボーレート設定
-            DefaultBaudRate = 19200;
-            //リセット時のボーレート設定(communticate_reset()参照)
-            //FT232RLの場合、許容されるボーレートは3000000/n (nは整数または小数点以下が0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)
+            //Default baudrate (can be overrided by setting xml file)
+            DefaultBaudRate = 38400;
+            //Baudrate on emergency reset(refer communticate_reset()参)
+            //On using FT232RL, baudrate should be 3000000/n (n is integer or x.125, x.25, x.375, x.5, x.625, x.75, x.875)
             ResetBaudRate = 9600;
 
             Parity = Parity.None;
             ReadTimeout = 500;
         }
 
-        //通信部ルーチン実装
-        //この実装ではslowread_flagは無視
-        protected override void communicate_main(bool slowread_flag)
+        //Override ArudinoCOM DefaultBaudRate
+        public void overrideDefaultBaudRate(int baudRate)
+        {
+            DefaultBaudRate = baudRate;
+        }
+
+        //Main method for communication
+        protected override void communicate_main(bool slowread_flag) //slowread flag is ignored on arduinoCOM
         {
             int i;
             string readbuf;
             char headerCode;
-            //読み込みルーチン
-
+            
+            //Read
             for (i = 0; i < NUM_ROWS_PER_CYCLE; i++)
             {
                 try
@@ -45,20 +50,20 @@ namespace DefiSSMCOM.Arduino
                         headerCode = readbuf[0];
                     else
                     {
-                        //Headerコード読み込み失敗(行の文字列長0)
+                        //Header code is failed to read (0 length)
                         logger.Warn("Arduino header read failed (0length data packet)");
                         return;
                     }
                 }
                 catch (TimeoutException ex)
                 {
-                    //読み出しタイムアウト時はエラーフラグを立て、次のサイクルでリセット処理を入れる
+                    //On timeout, set communicateRealtimeIsError = true to try reset on next cycle.
                     logger.Warn("Arduino packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
                     communicateRealtimeIsError = true;
                     return;
                 }
 
-                //Headerコードを読んで、値を格納
+                //Read header code and store values into variables.
                 try
                 {
                     bool paramCodeHit = false;
@@ -72,13 +77,13 @@ namespace DefiSSMCOM.Arduino
                         }
                     }
 
-                    //どのヘッダコードにも該当しない場合、Warningを出す
+                    //Invoke warning if unknown header code is received
                     if(!paramCodeHit)
                         logger.Warn("Header code matching is failed. Header code is : " + headerCode);
                 }
                 catch (FormatException ex)
                 {
-                    //ArduinoPacketが崩れていた場合エラーフラグを立て、次のサイクルでリセット処理を入れる。
+                    // If the message from arduino is corrupt, set communicatRealtime error flag to try reset on next cycle.
                     logger.Warn("Invalid Arduino packet format. " + ex.GetType().ToString() + " " + ex.Message);
                     communicateRealtimeIsError = true;
                     return;

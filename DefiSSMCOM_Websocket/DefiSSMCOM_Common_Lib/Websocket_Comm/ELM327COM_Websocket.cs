@@ -31,6 +31,11 @@ namespace DefiSSMCOM.WebSocket
             update_obdflag_timer.Change(0, 2000);
 		}
 
+        public void overrideBaudRate(int baudRate)
+        {
+            elm327com.overrideDefaultBaudRate(baudRate);
+        }
+
         protected override WebsocketSessionParam createSessionParam()
         {
             return new ELM327WebsocketSessionParam();

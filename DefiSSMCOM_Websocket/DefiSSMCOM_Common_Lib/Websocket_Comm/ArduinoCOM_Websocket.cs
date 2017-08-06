@@ -26,6 +26,11 @@ namespace DefiSSMCOM.WebSocket
             arduinocom1.ArduinoPacketReceived += new EventHandler(arduinocom1_ArduinoDataReceived);
         }
 
+        public void overrideBaudRate(int baudRate)
+        {
+            arduinocom1.overrideDefaultBaudRate(baudRate);
+        }
+
         protected override WebsocketSessionParam createSessionParam()
         {
             return new ArduinoCOMWebsocketSessionParam();

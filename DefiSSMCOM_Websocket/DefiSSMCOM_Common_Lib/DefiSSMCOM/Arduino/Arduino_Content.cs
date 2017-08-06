@@ -9,18 +9,19 @@ namespace DefiSSMCOM.Arduino
         public const double ADC_REF_VOLTAGE = 5;
 
         // Water/Oil temp sensor Constants
-        public const double THERMISTOR_R0 = 10000; //Thermistor resistance at 25degC
-        public const double THERMISTOR_B = 3389;
-        // Thermistor current sense reisistance (parallel to thermistor)
-        public const double THERMISTOR_SENSE_R = 5000;
+        // This parameter are derived from Autogauge water/oil temp sensor (9BTP000 3747-SENSOR)
+        public const double THERMISTOR_R0 = 1306; //Thermistor resistance at 25degC
+        public const double THERMISTOR_B = 3529;
+        // Thermistor current sense reisistance (inserted in series with the thermistor)
+        public const double THERMISTOR_SENSE_R = 100;
 
-        //コンストラクタ
+        //Constructor
         public ArduinoContentTable()
         {
             NumPulsePerRev = 2;
             NumPulsePerSpd = 4;
-            WaterTempThermistorSerialResistance = 5000;
-            OilTempThermistorSerialResistance = 5000;
+            WaterTempThermistorSerialResistance = THERMISTOR_SENSE_R;
+            OilTempThermistorSerialResistance = THERMISTOR_SENSE_R;
         }
 
         public int NumPulsePerRev { get; set; }
@@ -46,24 +47,28 @@ namespace DefiSSMCOM.Arduino
                     return 0;
             }, "km/h"));
 
-            _numeric_content_table.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new ArduinoNumericContent('A', adc_out => 73.47 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP - 1.88) * 0.0101972, "kgf/cm2"));
+            //Boost conversion for autogauge boost sensor.
+            _numeric_content_table.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new ArduinoNumericContent('A', adc_out => 100 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP), "kPa"));
+            // (To use boost sensor of defi instead of autogauge, please use following conversion function)
+            // _numeric_content_table.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new ArduinoNumericContent('A', adc_out => 73.47 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP), "kPa"));
+            
             _numeric_content_table.Add(ArduinoParameterCode.Coolant_Temperature, new ArduinoNumericContent('B', adc_out =>
             {
-                double R = adc_out * THERMISTOR_SENSE_R / (ADC_STEP - adc_out);
+                double R = adc_out * WaterTempThermistorSerialResistance / (ADC_STEP - adc_out);
                 double T = THERMISTOR_B/(Math.Log(R/THERMISTOR_R0)+THERMISTOR_B/298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;
             }, "degC"));
             _numeric_content_table.Add(ArduinoParameterCode.Oil_Temperature, new ArduinoNumericContent('C', adc_out =>
             {
-                double R = adc_out * THERMISTOR_SENSE_R / (ADC_STEP - adc_out);
+                double R = adc_out * OilTempThermistorSerialResistance / (ADC_STEP - adc_out);
                 double T = THERMISTOR_B / (Math.Log(R / THERMISTOR_R0) + THERMISTOR_B / 298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;
             }, "degC"));
             _numeric_content_table.Add(ArduinoParameterCode.Oil_Temperature2, new ArduinoNumericContent('D', adc_out =>
             {
-                double R = adc_out * THERMISTOR_SENSE_R / (ADC_STEP - adc_out);
+                double R = adc_out * OilTempThermistorSerialResistance / (ADC_STEP - adc_out);
                 double T = THERMISTOR_B / (Math.Log(R / THERMISTOR_R0) + THERMISTOR_B / 298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;

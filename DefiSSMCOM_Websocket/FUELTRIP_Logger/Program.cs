@@ -11,6 +11,7 @@ namespace FUELTRIP_Logger
         public string defiserver_url;
         public string ssmserver_url;
         public int websocket_port;
+        public int keepalive_interval;
     }
 
 	class MainClass
@@ -52,6 +53,7 @@ namespace FUELTRIP_Logger
 
 			FUELTRIP_Logger fueltriplogger1 = new FUELTRIP_Logger (appsetting.defiserver_url,appsetting.ssmserver_url);
             fueltriplogger1.WebsocketServer_ListenPortNo = appsetting.websocket_port;
+            fueltriplogger1.KeepAliveInterval = appsetting.keepalive_interval;
 
 			Console.WriteLine("The server started successfully, press key 'q' to stop it!");
 

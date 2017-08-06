@@ -15,6 +15,8 @@ namespace DefiSSMCOM.OBDII
         //Recommended baudrate for USB ELM327 adaptor
         private const int RECOMMENDED_BAUD_RATE = 115200;
 
+        private const int INITIALIZE_FAILED_MAX = 30;
+
         //ELM327COM data received event
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
 
@@ -30,6 +32,12 @@ namespace DefiSSMCOM.OBDII
             ReadTimeout = 500;
 
             content_table = new OBDIIContentTable();
+        }
+
+        //ELM327COMではDefaultBaudRateの変更を許可
+        public void overrideDefaultBaudRate(int baudRate)
+        {
+            DefaultBaudRate = baudRate;
         }
 
         public double get_value(OBDIIParameterCode code)
@@ -104,6 +112,7 @@ namespace DefiSSMCOM.OBDII
         {
             DiscardInBuffer();
             bool initializeFinished = false;
+            int initializeFailedCount = 0;
 
             do
             {
@@ -129,6 +138,11 @@ namespace DefiSSMCOM.OBDII
                 catch (TimeoutException ex)
                 {
                     logger.Error("Timeout is occured during ELM327 initialization AT command settings. Wait 2sec and retry.. : " + ex.Message);
+                    initializeFailedCount++;
+                    if(initializeFailedCount > INITIALIZE_FAILED_MAX)
+                    {
+                        throw new InvalidOperationException("ELM327 initialization AT command setting is failed over " + INITIALIZE_FAILED_MAX + "counts.");
+                    }
                     initializeFinished = false;
                     Thread.Sleep(2000);
                 }
@@ -163,7 +177,7 @@ namespace DefiSSMCOM.OBDII
                     }
                 }
 
-                //クエリするSSM_codeがない場合は抜ける
+                //Exit loop if the PIDs to query are not exists.
                 if (query_OBDII_code_list.Count <= 0)
                 {
                     //SSM_codeがない場合、すぐに抜けると直後にcommunicate_mainが呼び出されCPUを占有するので、500ms待つ
@@ -191,10 +205,10 @@ namespace DefiSSMCOM.OBDII
             }
         }
 
-        //1PID分の通信
+        //Communication on 1PID
         private void communicateOnePID(OBDIIParameterCode code)
         {
-            //シリアルポート入力バッファ掃除
+            //Clean up serial port buffer
             DiscardInBuffer();
 
             String outMsg;
@@ -213,7 +227,7 @@ namespace DefiSSMCOM.OBDII
                 // Discard after the char of \r
                 // (discard all after \r)
                 // (This routine is implemented to make countermeasure in the case of multiple message returned.
-                inMsg = discurdAfterChar(inMsg, '\r');
+                inMsg = discardStringAfterChar(inMsg, '\r');
 
                 //logger.Debug("ELM327IN:" + inMsg);
                 inMsg = inMsg.Replace(">","").Replace("\n","").Replace("\r","");
@@ -242,7 +256,7 @@ namespace DefiSSMCOM.OBDII
             }
         }
 
-        private string discurdAfterChar(string instr, char delimiter)
+        private string discardStringAfterChar(string instr, char delimiter)
         {
             int index = instr.IndexOf(delimiter);
             string instrTemp;

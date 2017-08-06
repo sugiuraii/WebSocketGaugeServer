@@ -63,6 +63,17 @@
   <PropertyGroup>
     <StartupObject>DefiSSMCOM.Application.ArduinoCOM.MainClass</StartupObject>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Distribution|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\Release_Distribution\Arduino\</OutputPath>
+    <DefineConstants>DEBUG</DefineConstants>
+    <DebugType>full</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+    <Prefer32Bit>true</Prefer32Bit>
+    <Optimize>true</Optimize>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net, Version=1.2.15.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
       <HintPath>..\packages\log4net.2.0.5\lib\net45-full\log4net.dll</HintPath>
@@ -108,6 +119,7 @@
     <Content Include="ArduinoWebsocket_Server.ico" />
     <Content Include="arduinoserver_settings.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
     </Content>
     <Content Include="Log4net.Config.xml">
       <SubType>Designer</SubType>
