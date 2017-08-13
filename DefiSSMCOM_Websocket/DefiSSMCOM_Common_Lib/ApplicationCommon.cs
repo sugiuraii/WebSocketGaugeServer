@@ -41,7 +41,7 @@ namespace DefiSSMCOM.Application
             try
             {
                 //ファイルを開く
-                fs = new System.IO.FileStream(filepath, System.IO.FileMode.Open);
+                fs = new System.IO.FileStream(filepath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
             }
             catch (DirectoryNotFoundException ex)
             {
