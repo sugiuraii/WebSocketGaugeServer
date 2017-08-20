@@ -76,7 +76,7 @@ namespace FUELTRIP_Logger
 
             //ファイルを開く
             System.IO.FileStream fs =
-                new System.IO.FileStream(filepath, System.IO.FileMode.Open);
+                new System.IO.FileStream(filepath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
 
             try
             {
