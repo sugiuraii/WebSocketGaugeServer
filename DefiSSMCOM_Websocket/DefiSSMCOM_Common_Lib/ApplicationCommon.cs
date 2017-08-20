@@ -34,43 +34,36 @@ namespace DefiSSMCOM.Application
             AppSettings appsetting = new AppSettings();
             FileStream fs;
 
-            //XmlSerializerオブジェクトの作成
             System.Xml.Serialization.XmlSerializer serializer =
                 new System.Xml.Serialization.XmlSerializer(typeof(AppSettings));
 
             try
             {
-                //ファイルを開く
                 fs = new System.IO.FileStream(filepath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
             }
             catch (DirectoryNotFoundException ex)
             {
-                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return appsetting;
             }
             catch (FileNotFoundException ex)
             {
-                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return appsetting;
             }
             catch (System.Security.SecurityException ex)
             {
-                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return appsetting;
             }
 
             try
             {
-                //XMLファイルから読み込み、逆シリアル化する
                 appsetting =
                     (AppSettings)serializer.Deserialize(fs);
             }
             catch (XmlException ex)
             {
-                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
             }
             finally
@@ -95,43 +88,36 @@ namespace DefiSSMCOM.Application
             AppSettingsWithBaudRate appsetting = new AppSettingsWithBaudRate();
             FileStream fs;
 
-            //XmlSerializerオブジェクトの作成
             System.Xml.Serialization.XmlSerializer serializer =
                 new System.Xml.Serialization.XmlSerializer(typeof(AppSettingsWithBaudRate));
 
             try
             {
-                //ファイルを開く
-                fs = new System.IO.FileStream(filepath, System.IO.FileMode.Open);
+                fs = new System.IO.FileStream(filepath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
             }
             catch (DirectoryNotFoundException ex)
             {
-                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return appsetting;
             }
             catch (FileNotFoundException ex)
             {
-                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return appsetting;
             }
             catch (System.Security.SecurityException ex)
             {
-                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
                 return appsetting;
             }
 
             try
             {
-                //XMLファイルから読み込み、逆シリアル化する
                 appsetting =
                     (AppSettingsWithBaudRate)serializer.Deserialize(fs);
             }
             catch (XmlException ex)
             {
-                //Console.WriteLine(ex.Message);
                 logger.Error(ex.Message);
             }
             finally
