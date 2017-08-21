@@ -1,13 +1,13 @@
-DefiSSMCOM_WebsocketServer linux install manual
+WebSocketGaugeServer linux install manual
 ---
 
 ## Description
-The DefiSSMCOM_WebsocketServer is developed on .net. This program can run on linux thanks to [mono](http://www.mono-project.com/). 
+The WebSocketGaugeServer is developed on .net framework. This program can run on linux thanks to [mono](http://www.mono-project.com/). 
 
 To use this program in carputer (computer in the car), this program may preffered to run as daemon.
 Currently, this program itself is not desighed to run as daemon. However, it is possible to use this program as a daemon with using [Supervisor](http://supervisord.org/).
 
-This document explains how to install DefiSSMCOM_WebsocketServer into linux(debian-based) PC, and how to setup with supervisor.
+This document explains how to install WebSocketGaugeServer into linux(debian-based) PC, and how to setup with supervisor.
 
 ## Table of contents
 * [Add new user to run the program](#addNewUser)

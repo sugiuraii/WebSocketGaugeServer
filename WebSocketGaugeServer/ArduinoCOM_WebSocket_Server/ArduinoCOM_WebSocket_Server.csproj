@@ -144,9 +144,9 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DefiSSMCOM_Common_Lib\DefiSSMCOM_Common_Lib.csproj">
+    <ProjectReference Include="..\DefiSSMCOM_Common_Lib\WebSocketGaugeServer_Common_Lib.csproj">
       <Project>{898d1578-b886-48f0-8a17-253548c67b3f}</Project>
-      <Name>DefiSSMCOM_Common_Lib</Name>
+      <Name>WebSocketGaugeServer_Common_Lib</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

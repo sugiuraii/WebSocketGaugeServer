@@ -1,4 +1,4 @@
-DefiSSMCOM_WebsocketServer
+WebSocketGaugeServer
 ---
 
 ## Table of contents
