@@ -5,10 +5,10 @@
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
     <ProductVersion>10.0.0</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{C9466584-60DF-4E42-A8A4-95CAF8C01550}</ProjectGuid>
+    <ProjectGuid>{C1975B6D-4B29-4955-807D-9DF795E8B434}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>DefiSSMCOM.Application.DefiCOM</RootNamespace>
-    <AssemblyName>DefiCOM_WebSocket_Server</AssemblyName>
+    <RootNamespace>SSMCOM_WebSocket_Server</RootNamespace>
+    <AssemblyName>SSMCOM_WebSocket_Server</AssemblyName>
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <TargetFrameworkProfile />
@@ -22,10 +22,10 @@
     <UpdatePeriodically>false</UpdatePeriodically>
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
-    <ProductName>DefiCOM WebSocket Server</ProductName>
+    <ProductName>SSMCOM WebSocket Server</ProductName>
     <PublisherName>DefiSSMCOM WebSocket Server</PublisherName>
     <SuiteName>DefiSSMCOM WebSocket Server</SuiteName>
-    <ApplicationRevision>6</ApplicationRevision>
+    <ApplicationRevision>4</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <CreateDesktopShortcut>true</CreateDesktopShortcut>
@@ -55,10 +55,13 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestCertificateThumbprint>3F57D3896FBB1DC678E06647A774A0C0DDF838FA</ManifestCertificateThumbprint>
+    <ApplicationIcon>SSMCOM_Websocket_Server.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup>
-    <ManifestKeyFile>DefiCOM_WebSocket_Server_一時キー.pfx</ManifestKeyFile>
+    <ManifestCertificateThumbprint>B65C556ACE5D693F3EEA36618EFB06C62407306E</ManifestCertificateThumbprint>
+  </PropertyGroup>
+  <PropertyGroup>
+    <ManifestKeyFile>SSMCOM_WebSocket_Server_一時キー.pfx</ManifestKeyFile>
   </PropertyGroup>
   <PropertyGroup>
     <GenerateManifests>false</GenerateManifests>
@@ -66,15 +69,9 @@
   <PropertyGroup>
     <SignManifests>false</SignManifests>
   </PropertyGroup>
-  <PropertyGroup>
-    <ApplicationIcon>DefiCOM_Websocket_Server.ico</ApplicationIcon>
-  </PropertyGroup>
-  <PropertyGroup>
-    <StartupObject>DefiSSMCOM.Application.DefiCOM.MainClass</StartupObject>
-  </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_Distribution|x86'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Debug_Distribution\Defi\</OutputPath>
+    <OutputPath>..\Debug_Distribution\SSM\</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>x86</PlatformTarget>
@@ -82,6 +79,7 @@
     <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
+  <PropertyGroup />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
     <OutputPath>bin\Debug\</OutputPath>
@@ -101,7 +99,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_Distribution|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Debug_Distribution\Defi\</OutputPath>
+    <OutputPath>..\Debug_Distribution\SSM\</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -119,7 +117,7 @@
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release_Distribution|AnyCPU'">
     <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Release_Distribution\Defi\</OutputPath>
+    <OutputPath>..\Release_Distribution\SSM\</OutputPath>
     <DefineConstants>DEBUG;</DefineConstants>
     <DebugType>full</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -148,10 +146,9 @@
     </Reference>
     <Reference Include="SuperSocket.SocketBase">
       <HintPath>..\packages\SuperWebSocket.0.9.0.2\lib\net40\SuperSocket.SocketBase.dll</HintPath>
-      <Private>True</Private>
     </Reference>
     <Reference Include="SuperSocket.SocketEngine">
-      <HintPath>..\packages\SuperWebSocket.0.9.0.2\lib\Net40\SuperSocket.SocketEngine.dll</HintPath>
+      <HintPath>..\packages\SuperWebSocket.0.9.0.2\lib\net40\SuperSocket.SocketEngine.dll</HintPath>
     </Reference>
     <Reference Include="SuperWebSocket">
       <HintPath>..\packages\SuperWebSocket.0.9.0.2\lib\net40\SuperWebSocket.dll</HintPath>
@@ -161,30 +158,21 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <ItemGroup>
-    <ProjectReference Include="..\DefiSSMCOM_Common_Lib\DefiSSMCOM_Common_Lib.csproj">
+    <ProjectReference Include="..\DefiSSMCOM_Common_Lib\WebSocketGaugeServer_Common_Lib.csproj">
       <Project>{898D1578-B886-48F0-8A17-253548C67B3F}</Project>
-      <Name>DefiSSMCOM_Common_Lib</Name>
+      <Name>WebSocketGaugeServer_Common_Lib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Properties\app.manifest" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="DefiCOM_Websocket_Server.ico" />
-    <Content Include="defiserver_settings.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Log4net.Config.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
+    <None Include="SSMCOM_WebSocket_Server_一時キー.pfx" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.5">
@@ -210,24 +198,35 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
-    <PublishFile Include="defiserver_settings.xml">
-      <Visible>False</Visible>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
-      <Group>
-      </Group>
-      <TargetPath>
-      </TargetPath>
-      <FileType>File</FileType>
-    </PublishFile>
+    <Content Include="SSMCOM_Websocket_Server.ico" />
+    <Content Include="ssmserver_settings.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Log4net.Config.xml">
+      <SubType>Designer</SubType>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
     <PublishFile Include="Log4net.Config.xml">
       <Visible>False</Visible>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
       <Group>
       </Group>
       <TargetPath>
       </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="ssmserver_settings.xml">
+      <Visible>False</Visible>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>

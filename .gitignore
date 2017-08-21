@@ -1,4 +1,5 @@
-/DefiSSMCOM_Websocket/Debug_Distribution
-/DefiSSMCOM_Websocket/packages
+/WebsocketGaugeServer/Debug_Distribution
+/WebsocketGaugeServer/packages
 obj
-Release_Distribution
+bin
+/WebsocketGaugeServer/Release_Distribution

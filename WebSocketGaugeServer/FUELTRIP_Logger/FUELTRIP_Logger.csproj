@@ -178,9 +178,9 @@
     <None Include="Properties\app.manifest" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\DefiSSMCOM_Common_Lib\DefiSSMCOM_Common_Lib.csproj">
+    <ProjectReference Include="..\DefiSSMCOM_Common_Lib\WebSocketGaugeServer_Common_Lib.csproj">
       <Project>{898D1578-B886-48F0-8A17-253548C67B3F}</Project>
-      <Name>DefiSSMCOM_Common_Lib</Name>
+      <Name>WebSocketGaugeServer_Common_Lib</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
