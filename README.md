@@ -35,7 +35,7 @@ Operation are checked on following hardware...
 |--------|--------|--------|--------|
 | DefiCOM_WebSocket_Server | Defi-Link Control Unit-I/II  | STi Genome sport single meter (boost) | Only "Engine_Speed (rpm)" and "Manifold_Absolute_Pressure(boost)" are checked. Other sensors are not checked .<br> Not compatible with Defi-Link ADVANCE Control Unit.<br> Comport simulator software is available [here](https://github.com/sugiuraii/DefiCOM_SSMCOM_Emulator)|
 | SSMCOM_WebSocket_Server | Subaru SSM capable ECU and OpenPort 1.2 compatible cable | monamona-cable and JDM Subaru Impreza WRX STI (GDBA, 2000 model) | Schematics seems to be open on [this OSDN site](https://ja.osdn.net/projects/ecuexplorer/docman/)<br> Comport simulator software is available [here](https://github.com/sugiuraii/DefiCOM_SSMCOM_Emulator) |
-| ArduinoCOM_WebSocket_Server | ArduinoUNO compatible board | Nobrand ArduinoUNO compatibe board | Sketch is available on [this site](https://github.com/sugiuraii/ArduinoPulseSensorGeneratorReader).<br> This sketch is tuned for Autogauge boost sensor and temperature sensor. |
+| ArduinoCOM_WebSocket_Server | ArduinoUNO compatible board | Nobrand ArduinoUNO compatible board | Sketch is available on [this site](https://github.com/sugiuraii/ArduinoPulseSensorGeneratorReader).<br> This sketch is tuned for Autogauge boost sensor and temperature sensor. |
 | ELM327COM_WebSocket_Server | ELM327 compatible OBD-II cable | [ScanTool.net OBDLink SX USB cable](https://www.scantool.net/obdlink-sx/) and JDM Toyota Prius (ZVW30, 2009 model) | Operation is also tested on [OBDSim](https://icculus.org/obdgpslogger/obdsim.html) |
 
 ## <a name="dependency">Dependency</a>
