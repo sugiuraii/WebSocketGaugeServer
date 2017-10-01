@@ -20,13 +20,11 @@ namespace DefiSSMCOM.OBDII
         //ELM327COM data received event
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
 
-        //コンストラクタ
+        //Constructor
         public ELM327COM()
         {
-            //シリアルポート設定
+            //Setup serial port
             DefaultBaudRate = 115200;
-            //Set baudrate to 9600 if you use obdsim.
-            //DefaultBaudRate = 9600;
 
             ResetBaudRate = 4800;
             ReadTimeout = 500;
@@ -34,7 +32,7 @@ namespace DefiSSMCOM.OBDII
             content_table = new OBDIIContentTable();
         }
 
-        //ELM327COMではDefaultBaudRateの変更を許可
+        //Changing DefaultBaudRate is allowed in ELM327COM
         public void overrideDefaultBaudRate(int baudRate)
         {
             DefaultBaudRate = baudRate;
@@ -157,7 +155,7 @@ namespace DefiSSMCOM.OBDII
         {
             try
             {
-                //クエリするSSM_codeリストの作成
+                //Create PID list to query
                 List<OBDIIParameterCode> query_OBDII_code_list = new List<OBDIIParameterCode>();
                 foreach (OBDIIParameterCode code in Enum.GetValues(typeof(OBDIIParameterCode)))
                 {
@@ -180,8 +178,7 @@ namespace DefiSSMCOM.OBDII
                 //Exit loop if the PIDs to query are not exists.
                 if (query_OBDII_code_list.Count <= 0)
                 {
-                    //SSM_codeがない場合、すぐに抜けると直後にcommunicate_mainが呼び出されCPUを占有するので、500ms待つ
-                    //SlowReadの場合、この処理はしない
+                    //If no PIDs are in query list, return with waiting 500ms(wait is ignored if slow_read_flag = true).
                     if (!slow_read_flag)
                         Thread.Sleep(500);
                     return;
