@@ -7,20 +7,44 @@ namespace DefiSSMCOM.OBDII
 {
     public class ELM327COM : COMCommon
     {
+        /// <summary>
+        /// Content table to store read data.
+        /// </summary>
         private OBDIIContentTable content_table;
+        
+        /// <summary>
+        /// Flag list whether PID is available on ECU. (will be filled at the initial stage of communication)
+        /// </summary>
+        private Dictionary<byte, bool> PIDAvailableFlag = new Dictionary<byte, bool>();
+        
+        /// <summary>
+        /// OBD communication mode (0x01 = read current frame)
+        /// </summary>
         public const byte MODECODE = 0x01;
-        //Wait time after calling ATZ command (in milliseconds)
+        
+        /// <summary>
+        /// Wait time after calling ATZ command (in milliseconds)
+        /// </summary>
         private const int WAIT_AFTER_ATZ = 4000;
 
-        //Recommended baudrate for USB ELM327 adaptor
+        /// <summary>
+        /// Recommended baudrate for USB ELM327 adaptor
+        /// </summary>
         private const int RECOMMENDED_BAUD_RATE = 115200;
 
+        /// <summary>
+        /// Maximum count to retry initialization.
+        /// </summary>
         private const int INITIALIZE_FAILED_MAX = 30;
 
-        //ELM327COM data received event
+        /// <summary>
+        /// Eventhandler called when ELM327 data is received.
+        /// </summary>
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
 
-        //Constructor
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public ELM327COM()
         {
             //Setup serial port
@@ -32,7 +56,11 @@ namespace DefiSSMCOM.OBDII
             content_table = new OBDIIContentTable();
         }
 
-        //Changing DefaultBaudRate is allowed in ELM327COM
+        /// <summary>
+        /// Override ELM327 default baudrate
+        /// Changing DefaultBaudRate is allowed in ELM327COM.
+        /// </summary>
+        /// <param name="baudRate">Baudrate to change to.</param>
         public void overrideDefaultBaudRate(int baudRate)
         {
             DefaultBaudRate = baudRate;
@@ -130,6 +158,8 @@ namespace DefiSSMCOM.OBDII
                     // Disable Linefeed on delimiter
                     Write("ATL0\r");
                     logger.Debug("Call ATL0 to disable linefeed. Return Msg is " + ReadTo(">"));
+
+                    queryAvailablePIDs();
 
                     initializeFinished = true;
                 }
@@ -272,6 +302,45 @@ namespace DefiSSMCOM.OBDII
                 return instrTemp.Substring(0,index);
         }
 
+        private void queryAvailablePIDs()
+        {
+            String outMsg;
+            outMsg = MODECODE.ToString("X2") + 0x00.ToString("X2");
+            Write(outMsg + "\r");
+            String inMsg = ReadTo(">");
+            inMsg = discardStringAfterChar(inMsg, '\r');
+
+            inMsg = inMsg.Replace(">","").Replace("\n","").Replace("\r","");
+            setAvailablePIDFlags((byte)0x00, inMsg.Remove(0, 4));
+        }
+
+        /// <summary>
+        /// Set available PID flags.
+        /// </summary>
+        /// <param name="offsetPID"></param>
+        /// <param name="hexAvailablePIDFlags"></param>
+        private void setAvailablePIDFlags(byte offsetPID, string hexPIDFlagString)
+        {
+            if(hexPIDFlagString.Length != 8)
+                throw new ArgumentException("Available PID flag string is not 8 (=4bytes). OffsetPID is " + offsetPID.ToString(), "hexPIDFlagString");
+
+            byte[] PIDFlagToSet = new byte[4];
+            PIDFlagToSet[0] = Convert.ToByte(hexPIDFlagString.Substring(0, 2), 16);
+            PIDFlagToSet[1] = Convert.ToByte(hexPIDFlagString.Substring(2, 2), 16);
+            PIDFlagToSet[2] = Convert.ToByte(hexPIDFlagString.Substring(4, 2), 16);
+            PIDFlagToSet[3] = Convert.ToByte(hexPIDFlagString.Substring(6, 2), 16);
+
+            for(int i = 0; i < 4; i++)
+            {
+                for(int j = 7; j >= 0; j--)
+                {
+                    int bitoffset = 8 - j;
+                    byte targetPID = (byte)(offsetPID + i * 8 + bitoffset);
+                    bool flag = ((PIDFlagToSet[i] & (0x01) << j) > 0) ? true:false;
+                    PIDAvailableFlag[targetPID] = flag;
+                }
+            }
+        }
     }
 
 
