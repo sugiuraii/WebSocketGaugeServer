@@ -8,6 +8,12 @@ namespace DefiSSMCOM.OBDII
     public class ELM327COM : COMCommon
     {
         /// <summary>
+        /// Switch to query available PID.
+        /// Currently this flag is set disabled since PID query function have problem in multiple ECU communication.
+        /// </summary>
+        private const bool QUERY_AND_CHECK_AVAILABLE_PID = false;
+
+        /// <summary>
         /// Content table to store read data.
         /// </summary>
         private OBDIIContentTable content_table;
@@ -99,7 +105,11 @@ namespace DefiSSMCOM.OBDII
         {
             if (!quiet)
                 logger.Debug("Slowread flag of " + code.ToString() + "is enabled.");
-            content_table[code].SlowReadEnable = flag;
+
+            if (!checkPIDisAvailable(content_table[code].PID) && flag)
+                logger.Warn("SlowRead-requested parameter code of " + code.ToString() + "is not available on ECU. Read request is discarded.");
+            else
+                content_table[code].SlowReadEnable = flag;
         }
 
         public void set_fastread_flag(OBDIIParameterCode code, bool flag)
@@ -110,7 +120,11 @@ namespace DefiSSMCOM.OBDII
         {
             if (!quiet)
                 logger.Debug("Fastread flag of " + code.ToString() + "is enabled.");
-            content_table[code].FastReadEnable = flag;
+
+            if (!checkPIDisAvailable(content_table[code].PID) && flag)
+                logger.Warn("FastRead-requested parameter code of " + code.ToString() + "is not available on ECU. Read request is discarded.");
+            else
+                content_table[code].FastReadEnable = flag;
         }
 
         public void set_all_disable()
@@ -159,7 +173,11 @@ namespace DefiSSMCOM.OBDII
                     Write("ATL0\r");
                     logger.Debug("Call ATL0 to disable linefeed. Return Msg is " + ReadTo(">"));
 
-                    queryAvailablePIDs();
+                    //Query available PIDs to ECU
+                    if (QUERY_AND_CHECK_AVAILABLE_PID)
+                        queryAvailablePIDs();
+                    else
+                        logger.Warn("Available PID query is disabled. Any PIDs will be queried to ECU.");
 
                     initializeFinished = true;
                 }
@@ -215,9 +233,7 @@ namespace DefiSSMCOM.OBDII
                 }
 
                 foreach( OBDIIParameterCode code in query_OBDII_code_list)
-                {
-                    communicateOnePID(code);
-                }
+                    content_table[code].RawValue = communicateOnePID(code);
 
                 //Invoke SSMDatareceived event
                 ELM327DataReceivedEventArgs elm327_received_eventargs = new ELM327DataReceivedEventArgs();
@@ -232,21 +248,62 @@ namespace DefiSSMCOM.OBDII
             }
         }
 
-        //Communication on 1PID
-        private void communicateOnePID(OBDIIParameterCode code)
+        /// <summary>
+        /// Send PID and get value from ELM327.
+        /// </summary>
+        /// <param name="code">OBDII parameter code</param>
+        /// <returns>Returned data.</returns>
+        private Int32 communicateOnePID(OBDIIParameterCode code)
+        {
+            String inMsg = "";
+            try
+            {
+                byte PID = content_table[code].PID;
+                int returnByteLength = content_table[code].ReturnByteLength;
+                inMsg = communicateOnePID(PID, returnByteLength);
+                return Convert.ToInt32(inMsg, 16);
+            }
+            catch (FormatException ex)
+            {
+                logger.Warn("String conversion to Int32 is failed");
+                logger.Warn(ex.GetType().ToString());
+                logger.Warn(ex.Message);
+                logger.Warn("Send code : " + code.ToString());
+                logger.Warn("Received message : " + inMsg);
+                //communicateRealtimeIsError = true;
+                return 0;
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                logger.Warn("String conversion to Int32 is failed");
+                logger.Warn(ex.GetType().ToString());
+                logger.Warn(ex.Message);
+                logger.Warn("Send code : " + code.ToString());
+                logger.Warn("Received message : " + inMsg);
+                //communicateRealtimeIsError = true;
+                return 0;
+            }
+        }
+
+        /// <summary>
+        /// Send PID and get value from ELM327.
+        /// </summary>
+        /// <param name="PID">PID byte</param>
+        /// <param name="returnByteLength">Length of return byte from ECU.</param>
+        /// <returns>Returned data.</returns>
+        private String communicateOnePID(byte PID, int returnByteLength)
         {
             //Clean up serial port buffer
             DiscardInBuffer();
 
             String outMsg;
-            outMsg = MODECODE.ToString("X2") + content_table[code].PID.ToString("X2") + content_table[code].ReturnByteLength.ToString("X1");
+            outMsg = MODECODE.ToString("X2") + PID.ToString("X2") + returnByteLength.ToString("X1");
             Write(outMsg + "\r");
             //logger.Debug("ELM327OUT:" + outMsg);
             String inMsg = "";
 
             try
             {
-                Int32 returnValue;
                 //inMsg = ReadTo("\r");
                 
                 // Read to next prompt char of '>'
@@ -259,30 +316,30 @@ namespace DefiSSMCOM.OBDII
                 //logger.Debug("ELM327IN:" + inMsg);
                 inMsg = inMsg.Replace(">","").Replace("\n","").Replace("\r","");
                 if (inMsg.Equals(""))
-                    return;
+                {
+                    logger.Warn("ELM327 respond blank message.");
+                    return "0";
+                }
 
-                //logger.Debug("Filtered ELM327IN:" + inMsg);
-                returnValue = Convert.ToInt32(inMsg.Remove(0, 4), 16);
-
-                content_table[code].RawValue = returnValue;
+                return inMsg.Remove(0, 4);
             }
             catch(TimeoutException ex)
             {
-                logger.Warn("ELM327COM timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                logger.Warn("ELM327COM timeout. ");
+                logger.Warn(ex.GetType().ToString());
+                logger.Warn(ex.Message);
+                logger.Warn("Send message : " + outMsg);
                 communicateRealtimeIsError = true;
-            }
-            catch(FormatException ex)
-            {
-                logger.Warn("String conversion to Int32 was failed " + ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
-                //communicateRealtimeIsError = true;
-            }
-            catch(ArgumentOutOfRangeException ex)
-            {
-                logger.Warn("String conversion to Int32 was failed " + ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
-                //communicateRealtimeIsError = true;
+                return "0";
             }
         }
 
+        /// <summary>
+        /// Discard string after given character.
+        /// </summary>
+        /// <param name="instr">Input string.</param>
+        /// <param name="delimiter">Character to discard after.</param>
+        /// <returns>Result string.</returns>
         private string discardStringAfterChar(string instr, char delimiter)
         {
             int index = instr.IndexOf(delimiter);
@@ -302,16 +359,30 @@ namespace DefiSSMCOM.OBDII
                 return instrTemp.Substring(0,index);
         }
 
+        /// <summary>
+        /// Query availavble PIDs to ECU and store to PIDAvailableFlags;
+        /// </summary>
         private void queryAvailablePIDs()
         {
-            String outMsg;
-            outMsg = MODECODE.ToString("X2") + 0x00.ToString("X2");
-            Write(outMsg + "\r");
-            String inMsg = ReadTo(">");
-            inMsg = discardStringAfterChar(inMsg, '\r');
+            logger.Debug("Query available PIDs to ECU...");
 
-            inMsg = inMsg.Replace(">","").Replace("\n","").Replace("\r","");
-            setAvailablePIDFlags((byte)0x00, inMsg.Remove(0, 4));
+            for (byte PIDoffset = 0x00; PIDoffset <= 0xc0; PIDoffset += 0x20)
+            {
+                String PIDAvaliablequeryResult = communicateOnePID(PIDoffset, 4);
+                if(!setAvailablePIDFlags(PIDoffset, PIDAvaliablequeryResult))
+                    break;
+            }
+            
+            // Generate available PID code list string and output to log.
+            String availablePIDListStr = "";
+            foreach (KeyValuePair<byte, bool> PID in PIDAvailableFlag)
+            {
+                if (PID.Value)
+                    availablePIDListStr += (PID.Key.ToString("X2") + " ");
+            }
+
+            logger.Debug("Available PID : " + availablePIDListStr);
+
         }
 
         /// <summary>
@@ -319,7 +390,8 @@ namespace DefiSSMCOM.OBDII
         /// </summary>
         /// <param name="offsetPID"></param>
         /// <param name="hexAvailablePIDFlags"></param>
-        private void setAvailablePIDFlags(byte offsetPID, string hexPIDFlagString)
+        /// <returns>Next PID group is available or not</returns>
+        private bool setAvailablePIDFlags(byte offsetPID, string hexPIDFlagString)
         {
             if(hexPIDFlagString.Length != 8)
                 throw new ArgumentException("Available PID flag string is not 8 (=4bytes). OffsetPID is " + offsetPID.ToString(), "hexPIDFlagString");
@@ -340,6 +412,34 @@ namespace DefiSSMCOM.OBDII
                     PIDAvailableFlag[targetPID] = flag;
                 }
             }
+            
+            // Check next PID gruop is availale or not
+            bool nextPIDGroupAvailable = (PIDFlagToSet[3] & (0x01)) > 0 ? true : false;
+            return nextPIDGroupAvailable;
+        }
+
+        /// <summary>
+        /// Check PID is available or not.
+        /// </summary>
+        /// <param name="PID">PID to check.</param>
+        /// <returns>Result</returns>
+        private bool checkPIDisAvailable(byte PID)
+        {
+            // Pass-through checking if QUERY_AND_CHECK_AVAILABLE_PID is false.
+            if (!QUERY_AND_CHECK_AVAILABLE_PID)
+                return true;
+
+            bool result;
+            try
+            {
+                result = PIDAvailableFlag[PID];
+            }
+            catch(KeyNotFoundException ex)
+            {
+                result = false;
+            }
+
+            return result;
         }
     }
 
