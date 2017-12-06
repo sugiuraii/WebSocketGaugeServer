@@ -12,6 +12,47 @@ namespace FUELTRIP_Logger
         public string ssmserver_url;
         public int websocket_port;
         public int keepalive_interval;
+
+        public calculation Calculation;
+        public class calculation
+        {
+            public fuelCalculationMethod FuelCalculationMethod;
+            public enum fuelCalculationMethod
+            {
+                RPM_INJECTION_PW,
+                MASS_AIR_FLOW,
+                MASS_AIR_FLOW_AF,
+                FUEL_RATE
+            }
+
+            public dataSource DataSource;
+            public class dataSource
+            {
+                public enum DataSourceType
+                {
+                    DEFI,
+                    SSM,
+                    ARDUINO,
+                    ELM327
+                }
+                public DataSourceType VehicleSpeedSource;
+                public DataSourceType RPMSource;
+                public DataSourceType InjectionPWSource;
+                public DataSourceType MassAirFlowSource;
+                public DataSourceType AFRatioSource;
+                public DataSourceType FuelRateSource;
+            }
+
+            public parameters Parameters;
+            public class parameters
+            {
+                public double FuelCorrectionFactor;
+                public double TripCorrectionFactor;
+                public int NumCylinder;
+                public double InjectorLatency;
+                public double InjectorCapacity;
+            }
+        }
     }
 
 	class MainClass
