@@ -85,7 +85,7 @@ namespace FUELTRIP_Logger
                 return;
             }
 
-			FUELTRIP_Logger fueltriplogger1 = new FUELTRIP_Logger (appsetting.defiserver_url,appsetting.ssmserver_url);
+			FUELTRIPLogger fueltriplogger1 = new FUELTRIPLogger(appsetting);
             fueltriplogger1.WebsocketServer_ListenPortNo = appsetting.websocket_port;
             fueltriplogger1.KeepAliveInterval = appsetting.keepalive_interval;
 

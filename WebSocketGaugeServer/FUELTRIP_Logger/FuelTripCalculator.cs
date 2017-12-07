@@ -234,10 +234,6 @@ namespace FUELTRIP_Logger
 			}
 		}
 
-        public FuelTripCalculator() : this(new FuelTripCalculatorOption())
-        {
-        }
-
 		public FuelTripCalculator(FuelTripCalculatorOption option)
 		{
             this.calculatorOption = option;

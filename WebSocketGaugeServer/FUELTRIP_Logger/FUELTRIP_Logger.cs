@@ -17,7 +17,7 @@ using log4net;
 
 namespace FUELTRIP_Logger
 {
-	public class FUELTRIP_Logger
+	public class FUELTRIPLogger
 	{
 		private const int CONNECT_RETRY_SEC = 5;
         private const int DEFIPACKET_INTERVAL = 2;
@@ -57,14 +57,14 @@ namespace FUELTRIP_Logger
         /// </summary>
         /// <param name="deficom_WS_URL">Deficom websocket server URL.</param>
         /// <param name="ssmcom_WS_URL">SSMCOM websocket server URL.</param>
-		public FUELTRIP_Logger(string deficom_WS_URL, string ssmcom_WS_URL)
+		public FUELTRIPLogger(AppSettings appSettings)
 		{
-            this.WebsocketServer_ListenPortNo = 2014;
+            this.WebsocketServer_ListenPortNo = appSettings.websocket_port;
 
-			_nenpi_trip_calc = new FuelTripCalculator ();
+			_nenpi_trip_calc = new FuelTripCalculator(appSettings.Calculation.CalculationOption);
             
             // Default KeepAliveInterval : 60ms
-            this.KeepAliveInterval = 60;
+            this.KeepAliveInterval = appSettings.keepalive_interval;
 
 			//Websocket server setup
 			_appServer = new WebSocketServer ();
@@ -72,17 +72,17 @@ namespace FUELTRIP_Logger
 			_appServer.NewSessionConnected += new SessionHandler<WebSocketSession> (_appServer_NewSessionConnected);
 			_appServer.SessionClosed += new SessionHandler<WebSocketSession, CloseReason> (_appServer_SessionClosed);
 
-            _deficom_WS_URL = deficom_WS_URL;
-            _ssmcom_WS_URL = ssmcom_WS_URL;
+            _deficom_WS_URL = appSettings.defiserver_url;
+            _ssmcom_WS_URL = appSettings.ssmserver_url;
 
 			//deficom ws
-			_deficom_ws_client = new WebSocket (deficom_WS_URL);
+			_deficom_ws_client = new WebSocket (_deficom_WS_URL);
 			_deficom_ws_client.Opened += new EventHandler(_deficom_ws_client_Opened);
 			_deficom_ws_client.Error += new EventHandler<ErrorEventArgs>(_deficom_ws_client_Error);
 			_deficom_ws_client.Closed += new EventHandler(_deficom_ws_client_Closed);
 			_deficom_ws_client.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_deficom_ws_client_MessageReceived);
             //ssmcom ws
-            _ssmcom_ws_client = new WebSocket (ssmcom_WS_URL);
+            _ssmcom_ws_client = new WebSocket (_ssmcom_WS_URL);
 			_ssmcom_ws_client.Opened += new EventHandler(_ssmcom_ws_client_Opened);
 			_ssmcom_ws_client.Error += new EventHandler<ErrorEventArgs>(_ssmcom_ws_client_Error);
 			_ssmcom_ws_client.Closed += new EventHandler(_ssmcom_ws_client_Closed);
