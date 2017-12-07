@@ -29,7 +29,7 @@ namespace FUELTRIP_Logger
         //log4net
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private Nenpi_Trip_Calculator _nenpi_trip_calc;
+		private FuelTripCalculator _nenpi_trip_calc;
 		private WebSocketServer _appServer;
 		private WebSocket _deficom_ws_client;
 		private WebSocket _ssmcom_ws_client;
@@ -61,7 +61,7 @@ namespace FUELTRIP_Logger
 		{
             this.WebsocketServer_ListenPortNo = 2014;
 
-			_nenpi_trip_calc = new Nenpi_Trip_Calculator ();
+			_nenpi_trip_calc = new FuelTripCalculator ();
             
             // Default KeepAliveInterval : 60ms
             this.KeepAliveInterval = 60;

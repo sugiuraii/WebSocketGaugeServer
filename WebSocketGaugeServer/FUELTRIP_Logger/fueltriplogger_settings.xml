@@ -29,15 +29,15 @@
       <AFRatioSource>SSM</AFRatioSource>
       <FuelRateSource>ELM327</FuelRateSource>
     </DataSource>
-    <Parameters>
+    <CalculationOption>
       <FuelCorrectionFactor>1.0</FuelCorrectionFactor>
       <TripCorrectionFactor>1.0</TripCorrectionFactor>
       <!--
         Follwoing 3 parmeters are considered only on "RPM_INJECTION_PW" mode.
       -->
       <NumCylinder>4</NumCylinder>
-      <InjectorLatency>0.76</InjectorLatency>
+      <InjectionLatency>0.76</InjectionLatency>
       <InjectorCapacity>575</InjectorCapacity>
-    </Parameters>
+    </CalculationOption>
   </Calculation>
 </AppSettings>

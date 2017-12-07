@@ -45,21 +45,12 @@ namespace FUELTRIP_Logger
                 public DataSourceType FuelRateSource;
             }
 
-            public parameters Parameters;
-            public class parameters
-            {
-                public double FuelCorrectionFactor;
-                public double TripCorrectionFactor;
-                public int NumCylinder;
-                public double InjectorLatency;
-                public double InjectorCapacity;
-            }
+            public FuelTripCalculatorOption CalculationOption;
         }
     }
 
 	class MainClass
 	{
-
         //log4net
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         private static AppSettings appsetting;
