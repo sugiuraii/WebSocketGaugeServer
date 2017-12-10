@@ -18,17 +18,9 @@ namespace FUELTRIP_Logger
 
         public class calculation
         {
-            public fuelCalculationMethod FuelCalculationMethod;
-            public dataSource DataSource;
+            public FuelCalculationMethod FuelCalculationMethod;
+            public DataSource DataSource;
             public FuelTripCalculatorOption CalculationOption;
-        }
-
-        public enum fuelCalculationMethod
-        {
-            RPM_INJECTION_PW,
-            MASS_AIR_FLOW,
-            MASS_AIR_FLOW_AF,
-            FUEL_RATE
         }
 
         public enum DataSourceType
@@ -39,7 +31,7 @@ namespace FUELTRIP_Logger
             ELM327
         }
 
-        public class dataSource
+        public class DataSource
         {
             public DataSourceType VehicleSpeedSource;
             public DataSourceType RPMSource;
@@ -51,7 +43,7 @@ namespace FUELTRIP_Logger
 
         public void ValidateSettings()
         {
-            dataSource datasource = this.Calculation.DataSource;
+            DataSource datasource = this.Calculation.DataSource;
             switch(datasource.VehicleSpeedSource)
             {
                 case DataSourceType.DEFI:
