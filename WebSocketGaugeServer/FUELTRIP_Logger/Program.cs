@@ -41,7 +41,6 @@ namespace FUELTRIP_Logger
 
         public class dataSource
         {
-
             public DataSourceType VehicleSpeedSource;
             public DataSourceType RPMSource;
             public DataSourceType InjectionPWSource;
@@ -163,7 +162,6 @@ namespace FUELTRIP_Logger
             try
             {
                 return (AppSettings)serializer.Deserialize(fs);
-
             }
             catch (XmlException ex)
             {

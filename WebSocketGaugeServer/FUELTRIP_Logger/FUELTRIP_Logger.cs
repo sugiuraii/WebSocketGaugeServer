@@ -117,7 +117,7 @@ namespace FUELTRIP_Logger
                 return;
             }
 
-            _nenpi_trip_calc.load_trip_gas();
+            _nenpi_trip_calc.loadTripFuel();
             _deficom_ws_client.Open();
             _ssmcom_ws_client.Open();
 
@@ -131,7 +131,7 @@ namespace FUELTRIP_Logger
 		public void stop ()
 		{
 			running_state = false;
-			_nenpi_trip_calc.save_trip_gas ();
+			_nenpi_trip_calc.saveTripFuel ();
             if(_deficom_ws_client.State == WebSocketState.Open)
     			_deficom_ws_client.Close ();
             if(_ssmcom_ws_client.State == WebSocketState.Open)
@@ -185,24 +185,24 @@ namespace FUELTRIP_Logger
 				{
 				//SSM COM all reset
 				case (ResetJSONFormat.ModeCode):
-					_nenpi_trip_calc.reset_sect_trip_gas();
-					_nenpi_trip_calc.reset_total_trip_gas();
+					_nenpi_trip_calc.resetSectTripFuel();
+					_nenpi_trip_calc.resetTotalTripFuel();
 					response_msg(session, "NenpiCalc AllRESET.");
 					break;
 				case (SectResetJSONFormat.ModeCode):
-					_nenpi_trip_calc.reset_sect_trip_gas();
+					_nenpi_trip_calc.resetSectTripFuel();
 					response_msg(session, "NenpiCalc SectRESET.");
 					break;
 				case (SectSpanJSONFormat.ModeCode):
 					SectSpanJSONFormat span_jsonobj = JsonConvert.DeserializeObject<SectSpanJSONFormat>(message);
 					span_jsonobj.Validate();
-					_nenpi_trip_calc.Sect_Span = span_jsonobj.sect_span*1000;
+					_nenpi_trip_calc.SectSpan = span_jsonobj.sect_span*1000;
 					response_msg(session, "NenpiCalc SectSpan Set to : " + span_jsonobj.sect_span.ToString() + "sec");
 					break;
 				case (SectStoreMaxJSONFormat.ModeCode):
 					SectStoreMaxJSONFormat storemax_jsonobj = JsonConvert.DeserializeObject<SectStoreMaxJSONFormat>(message);
 					storemax_jsonobj.Validate();
-					_nenpi_trip_calc.Sect_Store_Max = storemax_jsonobj.storemax;
+					_nenpi_trip_calc.SectStoreMax = storemax_jsonobj.storemax;
 					response_msg(session, "NenpiCalc SectStoreMax Set to : " + storemax_jsonobj.storemax.ToString());
 					break;
 				default:
@@ -243,10 +243,10 @@ namespace FUELTRIP_Logger
 		private void send_momentum_value()
 		{
 			FUELTRIPJSONFormat fueltrip_json = new FUELTRIPJSONFormat ();
-			fueltrip_json.moment_gasmilage = _nenpi_trip_calc.Momentary_Gas_Milage;
-			fueltrip_json.total_gas = _nenpi_trip_calc.Total_Gas_Consumption;
-			fueltrip_json.total_trip = _nenpi_trip_calc.Total_Trip;
-			fueltrip_json.total_gasmilage = _nenpi_trip_calc.Total_Gas_Milage;
+			fueltrip_json.moment_gasmilage = _nenpi_trip_calc.MomentaryTripPerFuel;
+			fueltrip_json.total_gas = _nenpi_trip_calc.TotalFuelConsumption;
+			fueltrip_json.total_trip = _nenpi_trip_calc.TotalTrip;
+			fueltrip_json.total_gasmilage = _nenpi_trip_calc.TotalTripPerFuel;
 
 
             broadcast_websocket_msg(fueltrip_json.Serialize());
@@ -255,10 +255,10 @@ namespace FUELTRIP_Logger
 		private void send_section_value_array()
 		{
 			SectFUELTRIPJSONFormat sectfueltrip_json = new SectFUELTRIPJSONFormat ();
-			sectfueltrip_json.sect_gas = _nenpi_trip_calc.Sect_gas_array;
-			sectfueltrip_json.sect_trip = _nenpi_trip_calc.Sect_trip_array;
-			sectfueltrip_json.sect_gasmilage = _nenpi_trip_calc.Sect_gasmilage_array;
-			sectfueltrip_json.sect_span = _nenpi_trip_calc.Sect_Span;
+			sectfueltrip_json.sect_gas = _nenpi_trip_calc.SectFuelArray;
+			sectfueltrip_json.sect_trip = _nenpi_trip_calc.SectTripArray;
+			sectfueltrip_json.sect_gasmilage = _nenpi_trip_calc.SectTripPerFuelArray;
+			sectfueltrip_json.sect_span = _nenpi_trip_calc.SectSpan;
 
             broadcast_websocket_msg(sectfueltrip_json.Serialize());
 

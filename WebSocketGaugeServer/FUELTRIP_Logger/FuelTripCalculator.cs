@@ -7,6 +7,9 @@ using System.Diagnostics;
 
 namespace FUELTRIP_Logger
 {
+    /// <summary>
+    /// Option class for FuelTripCalculator
+    /// </summary>
     public class FuelTripCalculatorOption
     {
         /// <summary>
@@ -31,109 +34,123 @@ namespace FUELTRIP_Logger
         public double InjectorCapacity;
     }
 
+    /// <summary>
+    /// Fuel and trip calculation class.
+    /// </summary>
 	public class FuelTripCalculator
 	{
-		private double _current_tacho;
-		private double _current_speed;
-		private double _current_injpulse_width;
+		private double currentEngineRev;
+		private double currentVehicleSpeed;
+		private double currentInjectionPulseWidth;
 
         private FuelTripCalculatorOption calculatorOption;
+		
+		private Stopwatch stopWatch;
+		private const long stopwatchTimeout = 3000;
 
-		//時間計測
-		private Stopwatch _stopwatch;
-		private const long stopwatch_timeout = 3000; //タイムアウト
+		/// <summary>
+        /// Time span (in ms) to save fuel and trip to file.
+		/// </summary>
+        private const int saveSpan = 5000;
+		private double saveElapsedTime;
+		
+        /// <summary>
+        /// File path to save fuel and trip data
+        /// </summary>
+		private string filePath;
+		/// <summary>
+		/// Folder path to save fuel and trip data
+		/// </summary>
+		private string folderPath;
 
-		//燃料消費量、トリップを保存するスパン(5s)
-		private const int save_span = 5000;
-		private double _save_elapsed;
+		/// <summary>
+		/// Span time of section fuel and trip
+		/// </summary>
+		private long sectSpan;
+		private long sectElapsed;
+		
+        /// <summary>
+        /// Number of store to save section fuel and trip
+        /// </summary>
+		private int sectStoreMax;
+		private TripFuelContent sectTripFuelTemporary;
+		private TripFuelContent sectTripFuelLatest;
+		private Queue<TripFuelContent> sectTripFuelQueue;
 
-
-		//燃費、トリップデータ保存ファイルパス
-		private string _filepath;
-		//↑のフォルダパス
-		private string _folderpath;
-
-		//区間データ更新頻度
-		private long _sect_span;
-		private long _sect_elapsed;
-		//区間データ保存キュー
-		private int _sect_store_max;
-		private Trip_gas_Content _sect_trip_gas_temporary;
-		private Trip_gas_Content _sect_trip_gas_latest;
-		private Queue<Trip_gas_Content> _sect_trip_gas_queue;
-
-		public int Sect_Store_Max
+		public int SectStoreMax
 		{
 			get
 			{
-				return _sect_store_max;
+				return sectStoreMax;
 			}
 			set
 			{
-				_sect_store_max = value;
-				reset_sect_trip_gas ();
+				sectStoreMax = value;
+				resetSectTripFuel ();
 			}
 		}
 
 
-		//区間データ更新時に発生するイベント
+		/// <summary>
+		/// Event handler called when section fuel/trip is updated.
+		/// </summary>
 		public event EventHandler SectFUELTRIPUpdated;
 
-		public long Sect_Span
+		public long SectSpan
 		{
 			get
 			{
-				return _sect_span;
+				return sectSpan;
 			}
 			set
 			{
-				_sect_span = value;
+				sectSpan = value;
 			}
 		}
 
-		//総燃料消費量、トリップ
-		private Trip_gas_Content _total_trip_gas;
-		public double Total_Trip
+		//Total fuel consumption and trip
+		private TripFuelContent totalTripFuel;
+		public double TotalTrip
 		{
 			get
 			{
-				return _total_trip_gas.trip;
+				return totalTripFuel.trip;
 			}
 		}
-		public double Total_Gas_Consumption
+		public double TotalFuelConsumption
 		{
 			get
 			{
-				return _total_trip_gas.gas_consumption;
+				return totalTripFuel.fuelConsumption;
 			}
 		}
 
-		//総区間燃費(計算)
-		public double Total_Gas_Milage
+		// Total km/L
+		public double TotalTripPerFuel
 		{
 			get
 			{
-				return _total_trip_gas.gas_milage;
+				return totalTripFuel.TripPerFuel;
 			
 			}
 		}
 
 		//区間トリップ、燃料消費量
-		public Trip_gas_Content[] Sect_trip_gas_Array
+		public TripFuelContent[] SectTripFuelArray
 		{
 			get 
 			{
-				Trip_gas_Content[] sect_trip_gas_array = _sect_trip_gas_queue.ToArray ();
+				TripFuelContent[] sect_trip_gas_array = sectTripFuelQueue.ToArray ();
 				return sect_trip_gas_array;
 			}
 		}
 
-		public double[] Sect_trip_array
+		public double[] SectTripArray
 		{
 			get
 			{
 				int i;
-				Trip_gas_Content[] sect_trip_gas_array = _sect_trip_gas_queue.ToArray ();
+				TripFuelContent[] sect_trip_gas_array = sectTripFuelQueue.ToArray ();
 
 				double[] trip_array = new double[sect_trip_gas_array.Length];
 
@@ -145,34 +162,34 @@ namespace FUELTRIP_Logger
 			}
 		}
 
-		public double[] Sect_gas_array
+		public double[] SectFuelArray
 		{
 			get
 			{
 				int i;
-				Trip_gas_Content[] sect_trip_gas_array = _sect_trip_gas_queue.ToArray ();
+				TripFuelContent[] sect_trip_gas_array = sectTripFuelQueue.ToArray ();
 
 				double[] gas_array = new double[sect_trip_gas_array.Length];
 
 				for (i = 0; i < sect_trip_gas_array.Length; i++) {
-					gas_array [i] = sect_trip_gas_array [i].gas_consumption;
+					gas_array [i] = sect_trip_gas_array [i].fuelConsumption;
 				}
 
 				return gas_array;
 			}
 		}
 
-		public double[] Sect_gasmilage_array
+		public double[] SectTripPerFuelArray
 		{
 			get
 			{
 				int i;
-				Trip_gas_Content[] sect_trip_gas_array = _sect_trip_gas_queue.ToArray ();
+				TripFuelContent[] sect_trip_gas_array = sectTripFuelQueue.ToArray ();
 
 				double[] gasmilage_array = new double[sect_trip_gas_array.Length];
 
 				for (i = 0; i < sect_trip_gas_array.Length; i++) {
-					gasmilage_array [i] = sect_trip_gas_array [i].gas_milage;
+					gasmilage_array [i] = sect_trip_gas_array [i].TripPerFuel;
 				}
 
 				return gasmilage_array;
@@ -180,52 +197,52 @@ namespace FUELTRIP_Logger
 		}
 
 
-		public double Sect_Trip_Latest
+		public double SectTripLatest
 		{
 			get
 			{
-				return _sect_trip_gas_latest.trip;
+				return sectTripFuelLatest.trip;
 			}
 		}
-		public double Sect_Gas_Consumption_Latest
+		public double SectFuelLatest
 		{
 			get
 			{
-				return _sect_trip_gas_latest.gas_consumption;
+				return sectTripFuelLatest.fuelConsumption;
 			}
 		}
-		public double Sect_Gas_Milage_Latest
+		public double SectTripPerFuelLatest
 		{
 			get
 			{
-				return _sect_trip_gas_latest.gas_milage;
+				return sectTripFuelLatest.TripPerFuel;
 			}
 		}
 
 		//瞬間トリップ、燃料消費量
-		private double _momentary_trip;
-		private double _momentary_gas_consumption;
+		private double momentaryTrip;
+		private double momentaryFuelConsumption;
 		public double Momentary_Trip
 		{
 			get
 			{
-				return _momentary_trip;
+				return momentaryTrip;
 			}
 		}
-		public double Momentary_Gas_Consumption
+		public double MomentaryFuelConsumption
 		{
 			get
 			{
-				return _momentary_gas_consumption;
+				return momentaryFuelConsumption;
 			}
 		}
-		public double Momentary_Gas_Milage
+		public double MomentaryTripPerFuel
 		{
 			get
 			{
-				if (_momentary_gas_consumption != 0)
+				if (momentaryFuelConsumption != 0)
 				{
-					return _momentary_trip / _momentary_gas_consumption;
+					return momentaryTrip / momentaryFuelConsumption;
 				}
 				else
 				{
@@ -238,112 +255,112 @@ namespace FUELTRIP_Logger
 		{
             this.calculatorOption = option;
 
-			_total_trip_gas = new Trip_gas_Content ();
+			totalTripFuel = new TripFuelContent ();
 
-			_sect_elapsed = 0;
-			_sect_store_max = 60;
-			_sect_span = 60*1000;
-			_sect_trip_gas_temporary = new Trip_gas_Content ();
-			_sect_trip_gas_queue = new Queue<Trip_gas_Content>();
-			_sect_trip_gas_latest = new Trip_gas_Content();
+			sectElapsed = 0;
+			sectStoreMax = 60;
+			sectSpan = 60*1000;
+			sectTripFuelTemporary = new TripFuelContent ();
+			sectTripFuelQueue = new Queue<TripFuelContent>();
+			sectTripFuelLatest = new TripFuelContent();
 
-			_save_elapsed = 0;
+			saveElapsedTime = 0;
 
 			//データ格納しているファイルパスの指定
-			_folderpath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
-			_filepath = Path.Combine( _folderpath, "." + "FUELTRIP_Logger");
+			folderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			filePath = Path.Combine( folderPath, "." + "FUELTRIP_Logger");
 
-			load_trip_gas();
+			loadTripFuel();
 
-			_stopwatch = new Stopwatch ();
-			_stopwatch.Reset ();
+			stopWatch = new Stopwatch ();
+			stopWatch.Reset ();
 		}
 
 		//デストラクタ
 		~FuelTripCalculator()
 		{
-			save_trip_gas();
+			saveTripFuel();
 		}
 
-		public void update(double tacho, double speed, double injpulse_width)
+		public void update(double rev, double speed, double injpulseWdth)
 		{
-            if (!_stopwatch.IsRunning)
+            if (!stopWatch.IsRunning)
             {
-                _stopwatch.Start();
+                stopWatch.Start();
                 return;
             }
                 
-			_stopwatch.Stop ();
+			stopWatch.Stop ();
 
             //get elasped time
-            long stopwatch_elasped = _stopwatch.ElapsedMilliseconds;
+            long stopwatch_elasped = stopWatch.ElapsedMilliseconds;
 
 			// Set current value
-			_current_speed = speed;
-			_current_tacho = tacho;
-			_current_injpulse_width = injpulse_width;
+			currentVehicleSpeed = speed;
+			currentEngineRev = rev;
+			currentInjectionPulseWidth = injpulseWdth;
 
 			// elaspedが長すぎる場合,タイムアウトを発生
-			if (stopwatch_elasped > stopwatch_timeout) {
-				_stopwatch.Reset ();
-                _stopwatch.Start();
+			if (stopwatch_elasped > stopwatchTimeout) {
+				stopWatch.Reset ();
+                stopWatch.Start();
 				throw new TimeoutException ("tacho/speed/injpulse update span is too large (Timeout).");
 			}
-            _stopwatch.Reset();
-			_stopwatch.Start ();
+            stopWatch.Reset();
+			stopWatch.Start ();
 
-			_momentary_trip = get_momentary_trip(stopwatch_elasped);
-			_momentary_gas_consumption = get_momentary_gas_comsumption(stopwatch_elasped);
+			momentaryTrip = getMomentaryTrip(stopwatch_elasped);
+			momentaryFuelConsumption = getMomentaryFuelComsumption(stopwatch_elasped);
 
-			_total_trip_gas.trip += _momentary_trip;
-			_total_trip_gas.gas_consumption += _momentary_gas_consumption;
+			totalTripFuel.trip += momentaryTrip;
+			totalTripFuel.fuelConsumption += momentaryFuelConsumption;
 
-			_sect_elapsed += stopwatch_elasped;
+			sectElapsed += stopwatch_elasped;
 
 			//区間データアップデート
-			if (_sect_elapsed < _sect_span)
+			if (sectElapsed < sectSpan)
 			{
-				_sect_trip_gas_temporary.trip += _momentary_trip;
-				_sect_trip_gas_temporary.gas_consumption += _momentary_gas_consumption;
+				sectTripFuelTemporary.trip += momentaryTrip;
+				sectTripFuelTemporary.fuelConsumption += momentaryFuelConsumption;
 			}
 			else
 			{
 				//Section履歴に追加
-				enqueue_sect_trip_gas (_sect_trip_gas_temporary);
+				enqueueSectTripFuel (sectTripFuelTemporary);
 
-				_sect_trip_gas_temporary = new Trip_gas_Content();
-				_sect_elapsed = 0;
+				sectTripFuelTemporary = new TripFuelContent();
+				sectElapsed = 0;
 
 				//区間データ更新イベント発生
 				SectFUELTRIPUpdated (this, EventArgs.Empty);
 			}
 
 			//総燃費、総距離を5sごとに保存
-			if (_save_elapsed < save_span)
+			if (saveElapsedTime < saveSpan)
 			{
-				_save_elapsed += stopwatch_elasped;
+				saveElapsedTime += stopwatch_elasped;
 			}
 			else
 			{
-				save_trip_gas();
-				_save_elapsed = 0;
+				saveTripFuel();
+				saveElapsedTime = 0;
 			}				
 		}
 
-		private double get_momentary_trip(long elasped_millisecond)
+		private double getMomentaryTrip(long elasped_millisecond)
 		{
-			double speed = _current_speed;
+			double speed = currentVehicleSpeed;
             double TripCoefficient = calculatorOption.TripCorrectionFactor;
 			double monentary_trip = TripCoefficient * (speed) / 3600 / 1000 * elasped_millisecond;
 
 			return monentary_trip;
 		}
 
-		private double get_momentary_gas_comsumption(long elasped_millisecond)
+		private double getMomentaryFuelComsumption(long elasped_millisecond)
 		{
 			//燃料消費量計算
-			double inj_pulse_width = _current_injpulse_width;
-			double tacho = _current_tacho;
+			double inj_pulse_width = currentInjectionPulseWidth;
+			double tacho = currentEngineRev;
 
             double GasConsumptionCoefficient = calculatorOption.FuelCorrectionFactor;
             double NumCylinder = calculatorOption.NumCylinder;
@@ -363,51 +380,51 @@ namespace FUELTRIP_Logger
 			return momentary_gas_consumption;
 		}
 
-		private void enqueue_sect_trip_gas(Trip_gas_Content content)
+		private void enqueueSectTripFuel(TripFuelContent content)
 		{
-			_sect_trip_gas_latest = content;
-			_sect_trip_gas_queue.Enqueue (content);
+			sectTripFuelLatest = content;
+			sectTripFuelQueue.Enqueue (content);
 
-			if (_sect_trip_gas_queue.Count > _sect_store_max) {
-				_sect_trip_gas_queue.Dequeue ();
+			if (sectTripFuelQueue.Count > sectStoreMax) {
+				sectTripFuelQueue.Dequeue ();
 			}
 
 		}
 
-		public void reset_total_trip_gas()
+		public void resetTotalTripFuel()
 		{
-			_total_trip_gas = new Trip_gas_Content ();
+			totalTripFuel = new TripFuelContent ();
 		}
 
-		public void reset_sect_trip_gas()
+		public void resetSectTripFuel()
 		{
-			_sect_trip_gas_latest = new Trip_gas_Content ();
-			_sect_trip_gas_queue = new Queue<Trip_gas_Content> ();
+			sectTripFuelLatest = new TripFuelContent ();
+			sectTripFuelQueue = new Queue<TripFuelContent> ();
 		}
 
-		public void load_trip_gas()
+		public void loadTripFuel()
 		{
 			//XmlSerializerオブジェクトの作成
 			System.Xml.Serialization.XmlSerializer serializer =
-				new System.Xml.Serialization.XmlSerializer(typeof(Trip_gas_Content));
+				new System.Xml.Serialization.XmlSerializer(typeof(TripFuelContent));
 
 			try
 			{
 				//ファイルを開く
 				System.IO.FileStream fs =
-					new System.IO.FileStream(_filepath, System.IO.FileMode.Open);
+					new System.IO.FileStream(filePath, System.IO.FileMode.Open);
 
 				try
 				{
 					//XMLファイルから読み込み、逆シリアル化する
-					_total_trip_gas =
-						(Trip_gas_Content)serializer.Deserialize(fs);
+					totalTripFuel =
+						(TripFuelContent)serializer.Deserialize(fs);
 
 				}
 				catch (XmlException ex)
 				{
 					Console.WriteLine(ex.Message);
-					this.reset_total_trip_gas();
+					this.resetTotalTripFuel();
 				}
 
 				fs.Close();
@@ -416,44 +433,44 @@ namespace FUELTRIP_Logger
 			catch (FileNotFoundException ex)
 			{
 				Console.WriteLine(ex.Message);
-				this.reset_total_trip_gas ();
+				this.resetTotalTripFuel ();
 			}
 			catch (DirectoryNotFoundException ex)
 			{
 				Console.WriteLine(ex.Message);
-				System.IO.Directory.CreateDirectory(@_folderpath);
-				this.reset_sect_trip_gas ();
+				System.IO.Directory.CreateDirectory(folderPath);
+				this.resetSectTripFuel ();
 			}
 			catch (System.Security.SecurityException ex)
 			{
 				Console.WriteLine(ex.Message);
-				this.reset_total_trip_gas ();
+				this.resetTotalTripFuel ();
 			}
 		}
 
 
-		public void save_trip_gas()
+		public void saveTripFuel()
 		{
 			//XmlSerializerオブジェクトを作成
 			//書き込むオブジェクトの型を指定する
 			System.Xml.Serialization.XmlSerializer serializer1 =
-				new System.Xml.Serialization.XmlSerializer(typeof(Trip_gas_Content));
+				new System.Xml.Serialization.XmlSerializer(typeof(TripFuelContent));
 			//ファイルを開く
 			System.IO.FileStream fs1 =
-				new System.IO.FileStream(_filepath, System.IO.FileMode.Create);
+				new System.IO.FileStream(filePath, System.IO.FileMode.Create);
 			//シリアル化し、XMLファイルに保存する
-			serializer1.Serialize(fs1, _total_trip_gas);
+			serializer1.Serialize(fs1, totalTripFuel);
 			//閉じる
 			fs1.Close();
 		}
 	}
 
-	public class Trip_gas_Content
+	public class TripFuelContent
 	{
 		public double trip { get; set; }
-		public double gas_consumption { get; set; }
+		public double fuelConsumption { get; set; }
 
-		public Trip_gas_Content()
+		public TripFuelContent()
 		{
 			reset ();
 		}
@@ -461,17 +478,17 @@ namespace FUELTRIP_Logger
 		private void reset()
 		{
 			this.trip = 0;
-			this.gas_consumption = 0;
+			this.fuelConsumption = 0;
 		}
 
-		public double gas_milage
+		public double TripPerFuel
 		{
 			get
 			{
-				if (this.gas_consumption == 0)
+				if (this.fuelConsumption == 0)
 					return 0;
 				else
-					return this.trip / this.gas_consumption;
+					return this.trip / this.fuelConsumption;
 			}
 		}
 
