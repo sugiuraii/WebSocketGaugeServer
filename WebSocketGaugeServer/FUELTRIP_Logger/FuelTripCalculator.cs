@@ -44,7 +44,8 @@ namespace FUELTRIP_Logger
 		private double currentInjectionPulseWidth;
 
         private FuelTripCalculatorOption calculatorOption;
-		
+        private FuelCalculationMethod calculationMethod;
+
 		private Stopwatch stopWatch;
 		private const long stopwatchTimeout = 3000;
 
@@ -251,9 +252,15 @@ namespace FUELTRIP_Logger
 			}
 		}
 
-		public FuelTripCalculator(FuelTripCalculatorOption option)
+        /// <summary>
+        /// Consturctor of FuelTripCalculator.
+        /// </summary>
+        /// <param name="option">Calculation option.</param>
+        /// <param name="calculationMethod">Calclation method</param>
+		public FuelTripCalculator(FuelTripCalculatorOption option, FuelCalculationMethod calculationMethod)
 		{
             this.calculatorOption = option;
+            this.calculationMethod = calculationMethod;
 
 			totalTripFuel = new TripFuelContent ();
 
@@ -266,7 +273,7 @@ namespace FUELTRIP_Logger
 
 			saveElapsedTime = 0;
 
-			//データ格納しているファイルパスの指定
+			//Set data folder and file path.
 			folderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
 			filePath = Path.Combine( folderPath, "." + "FUELTRIP_Logger");
 
@@ -276,7 +283,7 @@ namespace FUELTRIP_Logger
 			stopWatch.Reset ();
 		}
 
-		//デストラクタ
+		//Destructor
 		~FuelTripCalculator()
 		{
 			saveTripFuel();
@@ -293,15 +300,15 @@ namespace FUELTRIP_Logger
 			stopWatch.Stop ();
 
             //get elasped time
-            long stopwatch_elasped = stopWatch.ElapsedMilliseconds;
+            long stopwatch_elapsed = stopWatch.ElapsedMilliseconds;
 
 			// Set current value
 			currentVehicleSpeed = speed;
 			currentEngineRev = rev;
 			currentInjectionPulseWidth = injpulseWdth;
 
-			// elaspedが長すぎる場合,タイムアウトを発生
-			if (stopwatch_elasped > stopwatchTimeout) {
+			// Invoke timeout exception if the elapsed time over timeout
+			if (stopwatch_elapsed > stopwatchTimeout) {
 				stopWatch.Reset ();
                 stopWatch.Start();
 				throw new TimeoutException ("tacho/speed/injpulse update span is too large (Timeout).");
@@ -309,13 +316,13 @@ namespace FUELTRIP_Logger
             stopWatch.Reset();
 			stopWatch.Start ();
 
-			momentaryTrip = getMomentaryTrip(stopwatch_elasped);
-			momentaryFuelConsumption = getMomentaryFuelComsumption(stopwatch_elasped);
+			momentaryTrip = getMomentaryTrip(stopwatch_elapsed);
+			momentaryFuelConsumption = getMomentaryFuelComsumption(stopwatch_elapsed);
 
 			totalTripFuel.trip += momentaryTrip;
 			totalTripFuel.fuelConsumption += momentaryFuelConsumption;
 
-			sectElapsed += stopwatch_elasped;
+			sectElapsed += stopwatch_elapsed;
 
 			//区間データアップデート
 			if (sectElapsed < sectSpan)
@@ -338,7 +345,7 @@ namespace FUELTRIP_Logger
 			//総燃費、総距離を5sごとに保存
 			if (saveElapsedTime < saveSpan)
 			{
-				saveElapsedTime += stopwatch_elasped;
+				saveElapsedTime += stopwatch_elapsed;
 			}
 			else
 			{
