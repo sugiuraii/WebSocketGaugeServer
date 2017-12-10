@@ -363,33 +363,7 @@ namespace FUELTRIP_Logger
 			return monentary_trip;
 		}
 
-        /// <summary>
-        /// Calculate and return momentary fuel consumption.
-        /// </summary>
-        /// <param name="elasped_millisecond">elasped millisecond</param>
-        /// <returns>Calculated momentary fuel consumption</returns>
-		private double getMomentaryFuelComsumption(long elasped_millisecond)
-		{
-			double inj_pulse_width = currentInjectionPulseWidth;
-			double tacho = currentEngineRev;
 
-            double GasConsumptionCoefficient = calculatorOption.FuelCorrectionFactor;
-            double NumCylinder = calculatorOption.NumCylinder;
-            double InjectorCapacity = calculatorOption.InjectorCapacity;
-            double InjectionLatency = calculatorOption.InjectionLatency;
-
-			double momentaryFuelConsumption;
-			if (tacho > 500) //Calculate fuel consumption only if the rev is over idling rev.
-				momentaryFuelConsumption = GasConsumptionCoefficient * (double)NumCylinder * (double)tacho * InjectorCapacity * (inj_pulse_width - InjectionLatency) / (7.2E9) * elasped_millisecond / 1000;
-			else
-				momentaryFuelConsumption = 0;
-
-            //If the calculated momentary fuel consumption is negative, override by zero. 
-            if (momentaryFuelConsumption < 0)
-                momentaryFuelConsumption = 0;
-
-			return momentaryFuelConsumption;
-		}
 
 		private void enqueueSectTripFuel(TripFuelContent content)
 		{

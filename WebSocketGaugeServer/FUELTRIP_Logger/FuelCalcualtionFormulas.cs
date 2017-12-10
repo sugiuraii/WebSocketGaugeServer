@@ -27,24 +27,24 @@ namespace FUELTRIP_Logger
         /// <param name="calculatorOption">Calculator option</param>
         /// <returns></returns>
         public static double FuelCalcByRevInjPW(long elaspedMillisecond, double engineRev, double injectionPulseWidth, FuelTripCalculatorOption calculatorOption)
-		{			
+        {
             double GasConsumptionCoefficient = calculatorOption.FuelCorrectionFactor;
             int NumCylinder = calculatorOption.NumCylinder;
             double InjectorCapacity = calculatorOption.InjectorCapacity;
             double InjectionLatency = calculatorOption.InjectionLatency;
 
-			double momentaryFuelConsumption;
-			if (engineRev > 500) //Calculate fuel consumption only if the rev is over idling rev.
-				momentaryFuelConsumption = GasConsumptionCoefficient * (double)NumCylinder * (double)engineRev * InjectorCapacity * (injectionPulseWidth - InjectionLatency) / (7.2E9) * elaspedMillisecond / 1000;
-			else
-				momentaryFuelConsumption = 0;
+            double momentaryFuelConsumption;
+            if (engineRev > 500) //Calculate fuel consumption only if the rev is over idling rev.
+                momentaryFuelConsumption = GasConsumptionCoefficient * (double)NumCylinder * (double)engineRev * InjectorCapacity * (injectionPulseWidth - InjectionLatency) / (7.2E9) * elaspedMillisecond / 1000;
+            else
+                momentaryFuelConsumption = 0;
 
             //If the calculated momentary fuel consumption is negative, override by zero. 
             if (momentaryFuelConsumption < 0)
                 momentaryFuelConsumption = 0;
 
-			return momentaryFuelConsumption;
-		}
+            return momentaryFuelConsumption;
+        }
 
         /// <summary>
         /// Calulate fuel consumption by mass air flow and AF ratio.
@@ -57,7 +57,7 @@ namespace FUELTRIP_Logger
         public static double FuelCalcByAFAndMassAir(long elapsedMillisecond, double massAirFlow, double AFRatio, FuelTripCalculatorOption calculatorOption)
         {
             double GasConsumptionCoefficient = calculatorOption.FuelCorrectionFactor;
-            double momentaryFuelConsumption = massAirFlow/AFRatio/DensityOfFuel/1000;
+            double momentaryFuelConsumption = massAirFlow / AFRatio / DensityOfFuel / 1000;
 
             return momentaryFuelConsumption * GasConsumptionCoefficient * elapsedMillisecond;
         }
@@ -71,6 +71,7 @@ namespace FUELTRIP_Logger
         /// <returns></returns>
         public static double FuelCalcByMassAir(long elapsedMillisecond, double massAirFlow, FuelTripCalculatorOption calculatorOption)
         {
-            return FuelCalcByAFAndMassAir(elapsedMillisecond, massAirFlow, DefaultAFRatio, calculatorOption);s
+            return FuelCalcByAFAndMassAir(elapsedMillisecond, massAirFlow, DefaultAFRatio, calculatorOption);
         }
+    }
 }
