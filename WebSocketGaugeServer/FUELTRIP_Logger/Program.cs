@@ -49,14 +49,46 @@ namespace FUELTRIP_Logger
             public DataSourceType AFRatioSource;
             public DataSourceType FuelRateSource;
         }
-        /*
+
         public void ValidateSettings()
         {
             dataSource datasource = this.Calculation.DataSource;
+            switch(datasource.VehicleSpeedSource)
+            {
+                case DataSourceType.DEFI:
+                    throw new ArgumentException("VehicleSpeed is not supported by " + datasource.VehicleSpeedSource.ToString());
+            }
 
+            switch(datasource.InjectionPWSource)
+            {
+                case DataSourceType.DEFI:
+                case DataSourceType.ARDUINO:
+                case DataSourceType.ELM327:
+                    throw new ArgumentException("InjectionPW is not supported by " + datasource.InjectionPWSource.ToString());
+            }
 
+            switch(datasource.MassAirFlowSource)
+            {
+                case DataSourceType.DEFI:
+                case DataSourceType.ARDUINO:
+                    throw new ArgumentException("MassAirFlow is not supported by " + datasource.MassAirFlowSource.ToString());
+            }
+
+            switch(datasource.AFRatioSource)
+            {
+                case DataSourceType.DEFI:
+                case DataSourceType.ARDUINO:
+                    throw new ArgumentException("AFRatio is not supported by " + datasource.AFRatioSource.ToString());
+            }
+
+            switch(datasource.FuelRateSource)
+            {
+                case DataSourceType.DEFI:
+                case DataSourceType.SSM:
+                case DataSourceType.ARDUINO:
+                    throw new ArgumentException("FuelRate is not supported by " + datasource.FuelRateSource.ToString());
+            }
         }
-        */
     }
 
 	class MainClass
@@ -69,6 +101,7 @@ namespace FUELTRIP_Logger
             try
             {
                 load_setting_xml("fueltriplogger_settings.xml");
+                appsetting.ValidateSettings();
             }
             catch (XmlException ex)
             {
@@ -91,6 +124,11 @@ namespace FUELTRIP_Logger
             catch (System.Security.SecurityException ex)
             {
                 //Console.WriteLine(ex.Message);
+                logger.Error(ex.Message);
+                return;
+            }
+            catch(ArgumentException ex)
+            {
                 logger.Error(ex.Message);
                 return;
             }
