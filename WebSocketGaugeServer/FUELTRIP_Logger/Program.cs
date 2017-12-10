@@ -95,12 +95,13 @@ namespace FUELTRIP_Logger
 	{
         //log4net
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static AppSettings appsetting;
+
 		public static void Main (string[] args)
 		{
+            AppSettings appsetting;
             try
             {
-                load_setting_xml("fueltriplogger_settings.xml");
+                appsetting = LoadSettingXml("fueltriplogger_settings.xml");
                 appsetting.ValidateSettings();
             }
             catch (XmlException ex)
@@ -150,21 +151,18 @@ namespace FUELTRIP_Logger
 			fueltriplogger1.stop ();
 		}
 
-        private static void load_setting_xml(string filepath)
+        private static AppSettings LoadSettingXml(string filepath)
         {
-            //XmlSerializerオブジェクトの作成
+            //Construct XmlSerializer
             System.Xml.Serialization.XmlSerializer serializer =
                 new System.Xml.Serialization.XmlSerializer(typeof(AppSettings));
 
-            //ファイルを開く
             System.IO.FileStream fs =
                 new System.IO.FileStream(filepath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
 
             try
             {
-                //XMLファイルから読み込み、逆シリアル化する
-                appsetting =
-                    (AppSettings)serializer.Deserialize(fs);
+                return (AppSettings)serializer.Deserialize(fs);
 
             }
             catch (XmlException ex)
