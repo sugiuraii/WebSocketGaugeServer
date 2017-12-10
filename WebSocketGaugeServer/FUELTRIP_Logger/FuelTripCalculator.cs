@@ -356,9 +356,13 @@ namespace FUELTRIP_Logger
 			return monentary_trip;
 		}
 
+        /// <summary>
+        /// Calculate and return momentary fuel consumption.
+        /// </summary>
+        /// <param name="elasped_millisecond">elasped millisecond</param>
+        /// <returns>Calculated momentary fuel consumption</returns>
 		private double getMomentaryFuelComsumption(long elasped_millisecond)
 		{
-			//燃料消費量計算
 			double inj_pulse_width = currentInjectionPulseWidth;
 			double tacho = currentEngineRev;
 
@@ -367,17 +371,17 @@ namespace FUELTRIP_Logger
             double InjectorCapacity = calculatorOption.InjectorCapacity;
             double InjectionLatency = calculatorOption.InjectionLatency;
 
-			double momentary_gas_consumption;
-			if (tacho > 500) //アイドリング回転以下の場合は、燃料消費量に加えない
-				momentary_gas_consumption = GasConsumptionCoefficient * (double)NumCylinder * (double)tacho * InjectorCapacity * (inj_pulse_width - InjectionLatency) / (7.2E9) * elasped_millisecond / 1000;
+			double momentaryFuelConsumption;
+			if (tacho > 500) //Calculate fuel consumption only if the rev is over idling rev.
+				momentaryFuelConsumption = GasConsumptionCoefficient * (double)NumCylinder * (double)tacho * InjectorCapacity * (inj_pulse_width - InjectionLatency) / (7.2E9) * elasped_millisecond / 1000;
 			else
-				momentary_gas_consumption = 0;
+				momentaryFuelConsumption = 0;
 
-            //燃料消費量が負の場合、燃料消費量は0とする
-            if (momentary_gas_consumption < 0)
-                momentary_gas_consumption = 0;
+            //If the calculated momentary fuel consumption is negative, override by zero. 
+            if (momentaryFuelConsumption < 0)
+                momentaryFuelConsumption = 0;
 
-			return momentary_gas_consumption;
+			return momentaryFuelConsumption;
 		}
 
 		private void enqueueSectTripFuel(TripFuelContent content)
@@ -404,19 +408,16 @@ namespace FUELTRIP_Logger
 
 		public void loadTripFuel()
 		{
-			//XmlSerializerオブジェクトの作成
 			System.Xml.Serialization.XmlSerializer serializer =
 				new System.Xml.Serialization.XmlSerializer(typeof(TripFuelContent));
 
 			try
 			{
-				//ファイルを開く
 				System.IO.FileStream fs =
 					new System.IO.FileStream(filePath, System.IO.FileMode.Open);
 
 				try
 				{
-					//XMLファイルから読み込み、逆シリアル化する
 					totalTripFuel =
 						(TripFuelContent)serializer.Deserialize(fs);
 
