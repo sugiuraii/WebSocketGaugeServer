@@ -14,39 +14,49 @@ namespace FUELTRIP_Logger
         public string elm327server_url;
         public int websocket_port;
         public int keepalive_interval;
-
         public calculation Calculation;
+
         public class calculation
         {
             public fuelCalculationMethod FuelCalculationMethod;
-            public enum fuelCalculationMethod
-            {
-                RPM_INJECTION_PW,
-                MASS_AIR_FLOW,
-                MASS_AIR_FLOW_AF,
-                FUEL_RATE
-            }
-
             public dataSource DataSource;
-            public class dataSource
-            {
-                public enum DataSourceType
-                {
-                    DEFI,
-                    SSM,
-                    ARDUINO,
-                    ELM327
-                }
-                public DataSourceType VehicleSpeedSource;
-                public DataSourceType RPMSource;
-                public DataSourceType InjectionPWSource;
-                public DataSourceType MassAirFlowSource;
-                public DataSourceType AFRatioSource;
-                public DataSourceType FuelRateSource;
-            }
-
             public FuelTripCalculatorOption CalculationOption;
         }
+
+        public enum fuelCalculationMethod
+        {
+            RPM_INJECTION_PW,
+            MASS_AIR_FLOW,
+            MASS_AIR_FLOW_AF,
+            FUEL_RATE
+        }
+
+        public enum DataSourceType
+        {
+            DEFI,
+            SSM,
+            ARDUINO,
+            ELM327
+        }
+
+        public class dataSource
+        {
+
+            public DataSourceType VehicleSpeedSource;
+            public DataSourceType RPMSource;
+            public DataSourceType InjectionPWSource;
+            public DataSourceType MassAirFlowSource;
+            public DataSourceType AFRatioSource;
+            public DataSourceType FuelRateSource;
+        }
+        /*
+        public void ValidateSettings()
+        {
+            dataSource datasource = this.Calculation.DataSource;
+
+
+        }
+        */
     }
 
 	class MainClass
