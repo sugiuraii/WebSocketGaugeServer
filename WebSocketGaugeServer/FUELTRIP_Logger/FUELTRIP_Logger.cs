@@ -61,7 +61,7 @@ namespace FUELTRIP_Logger
 		{
             this.WebsocketServer_ListenPortNo = appSettings.websocket_port;
 
-			_nenpi_trip_calc = new FuelTripCalculator(appSettings.Calculation.CalculationOption);
+			_nenpi_trip_calc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod);
             
             // Default KeepAliveInterval : 60ms
             this.KeepAliveInterval = appSettings.keepalive_interval;
