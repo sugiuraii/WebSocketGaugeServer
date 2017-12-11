@@ -38,11 +38,7 @@ namespace FUELTRIP_Logger
     /// Fuel and trip calculation class.
     /// </summary>
 	public class FuelTripCalculator
-	{
-		private double currentEngineRev;
-		private double currentVehicleSpeed;
-		private double currentInjectionPulseWidth;
-
+	{		
         private FuelTripCalculatorOption calculatorOption;
         private FuelCalculationMethod calculationMethod;
 
@@ -289,7 +285,17 @@ namespace FUELTRIP_Logger
 			saveTripFuel();
 		}
 
-		public void update(double rev, double speed, double injpulseWdth)
+        /// <summary>
+        /// Update fuel and trip by given parameters.
+        /// (Unused parameters are ignored for calculation)
+        /// </summary>
+        /// <param name="rev">Engine rev (only refered on RPM_INJECTION_PW mode)</param>
+        /// <param name="speed">Vehicle speed.</param>
+        /// <param name="injpulseWdth">Injection pulse width (in ms)(only refered on RPM_INJECTION_PW mode)</param>
+        /// <param name="massAirFlow">Mass air flow (g/s) (only refered on MASS_AIR_FLOW or MASS_AIR_FLOW_AF mode)</param>
+        /// <param name="AFRatio">AF ration (only refered on MASS_AIR_FLOW_AF mode)</param>
+        /// <param name="fuelRate">Fuel rate (L/h) (only refered on FUEL_RATE mode)</param>
+		public void update(double rev, double speed, double injpulseWdth, double massAirFlow, double AFRatio, double fuelRate)
 		{
             if (!stopWatch.IsRunning)
             {
@@ -302,29 +308,43 @@ namespace FUELTRIP_Logger
             //get elasped time
             long stopwatch_elapsed = stopWatch.ElapsedMilliseconds;
 
-			// Set current value
-			currentVehicleSpeed = speed;
-			currentEngineRev = rev;
-			currentInjectionPulseWidth = injpulseWdth;
-
 			// Invoke timeout exception if the elapsed time over timeout
 			if (stopwatch_elapsed > stopwatchTimeout) {
 				stopWatch.Reset ();
                 stopWatch.Start();
-				throw new TimeoutException ("tacho/speed/injpulse update span is too large (Timeout).");
+				throw new TimeoutException ("tacho/speed/injpulse/massAirFlow/AFRatio update span is too large (Timeout).");
 			}
             stopWatch.Reset();
 			stopWatch.Start ();
 
-			momentaryTrip = getMomentaryTrip(stopwatch_elapsed);
-			momentaryFuelConsumption = getMomentaryFuelComsumption(stopwatch_elapsed);
+            //Calculate momentary trip from speed.
+			momentaryTrip = getMomentaryTrip(stopwatch_elapsed, speed, calculatorOption);
+			
+            //Calculate momentart fuel consumption.
+            switch(calculationMethod)
+            {
+                case FuelCalculationMethod.RPM_INJECTION_PW:
+                    momentaryFuelConsumption = FuelCalcualtionFormulas.FuelCalcByRevInjPW(stopwatch_elapsed, rev, injpulseWdth, calculatorOption);
+                    break;
+                case FuelCalculationMethod.MASS_AIR_FLOW:
+                    momentaryFuelConsumption = FuelCalcualtionFormulas.FuelCalcByMassAir(stopwatch_elapsed, massAirFlow, calculatorOption);
+                    break;
+                case FuelCalculationMethod.MASS_AIR_FLOW_AF:
+                    momentaryFuelConsumption = FuelCalcualtionFormulas.FuelCalcByAFAndMassAir(stopwatch_elapsed, massAirFlow, AFRatio, calculatorOption);
+                    break;
+                case FuelCalculationMethod.FUEL_RATE:
+                    momentaryFuelConsumption = fuelRate / 3600;
+                    break;
+            }
 
+            // Add to tolal trip and total fuel.
 			totalTripFuel.trip += momentaryTrip;
 			totalTripFuel.fuelConsumption += momentaryFuelConsumption;
 
+            // Increase section elapsed timer co
 			sectElapsed += stopwatch_elapsed;
 
-			//区間データアップデート
+			// Update sect data.
 			if (sectElapsed < sectSpan)
 			{
 				sectTripFuelTemporary.trip += momentaryTrip;
@@ -342,7 +362,7 @@ namespace FUELTRIP_Logger
 				SectFUELTRIPUpdated (this, EventArgs.Empty);
 			}
 
-			//総燃費、総距離を5sごとに保存
+			//Save total fuel and trip to file by saveSpan(default : 5min)
 			if (saveElapsedTime < saveSpan)
 			{
 				saveElapsedTime += stopwatch_elapsed;
@@ -354,16 +374,13 @@ namespace FUELTRIP_Logger
 			}				
 		}
 
-		private double getMomentaryTrip(long elasped_millisecond)
+		private double getMomentaryTrip(long elasped_millisecond, double currentVehicleSpeed, FuelTripCalculatorOption calculatorOption)
 		{
-			double speed = currentVehicleSpeed;
             double TripCoefficient = calculatorOption.TripCorrectionFactor;
-			double monentary_trip = TripCoefficient * (speed) / 3600 / 1000 * elasped_millisecond;
+			double monentary_trip = TripCoefficient * (currentVehicleSpeed) / 3600 / 1000 * elasped_millisecond;
 
 			return monentary_trip;
 		}
-
-
 
 		private void enqueueSectTripFuel(TripFuelContent content)
 		{
@@ -373,7 +390,6 @@ namespace FUELTRIP_Logger
 			if (sectTripFuelQueue.Count > sectStoreMax) {
 				sectTripFuelQueue.Dequeue ();
 			}
-
 		}
 
 		public void resetTotalTripFuel()
