@@ -216,10 +216,9 @@ namespace FUELTRIP_Logger
 			}
 		}
 
-		//瞬間トリップ、燃料消費量
 		private double momentaryTrip;
 		private double momentaryFuelConsumption;
-		public double Momentary_Trip
+		public double MomerntaryTrip
 		{
 			get
 			{
@@ -446,19 +445,16 @@ namespace FUELTRIP_Logger
 			}
 		}
 
-
+        /// <summary>
+        /// Save fuel and trip data to file.
+        /// </summary>
 		public void saveTripFuel()
 		{
-			//XmlSerializerオブジェクトを作成
-			//書き込むオブジェクトの型を指定する
 			System.Xml.Serialization.XmlSerializer serializer1 =
 				new System.Xml.Serialization.XmlSerializer(typeof(TripFuelContent));
-			//ファイルを開く
 			System.IO.FileStream fs1 =
 				new System.IO.FileStream(filePath, System.IO.FileMode.Create);
-			//シリアル化し、XMLファイルに保存する
 			serializer1.Serialize(fs1, totalTripFuel);
-			//閉じる
 			fs1.Close();
 		}
 	}
