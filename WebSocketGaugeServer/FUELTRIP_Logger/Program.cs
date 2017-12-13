@@ -60,6 +60,10 @@ namespace FUELTRIP_Logger
             public DataSourceType FuelRateSource;
         }
 
+        /// <summary>
+        /// Create the list of parameter code from data source and calculation method setting.
+        /// </summary>
+        /// <returns>The list of required parameter code.</returns>
         public RequiredParameterCode getRequiredParameterCodes()
         {
             RequiredParameterCode requiredCodes = new RequiredParameterCode();
@@ -68,11 +72,89 @@ namespace FUELTRIP_Logger
             switch(calcMethod)
             {
                 case FuelCalculationMethod.FUEL_RATE:
-                    switch(dataSource)
-                        case : DataSourceType.ELM327:
-                            requiredCodes.ELM327OBDCodes.Add(OBDIIParameterCode.F)
+                {
+                    switch(dataSource.FuelRateSource)
+                    {
+                        case DataSourceType.ELM327:
+                            requiredCodes.ELM327OBDCodes.Add(OBDIIParameterCode.Engine_fuel_rate);
+                            break;
+                        default :
+                            throw new ArgumentException("Engine Fuel rate is supported only on ELM327.");
+                    }
+                    break;
+                }
+                case FuelCalculationMethod.RPM_INJECTION_PW :
+                {
+                    switch(dataSource.InjectionPWSource)
+                    {
+                        case DataSourceType.SSM:
+                            requiredCodes.SSMCodes.Add(SSMParameterCode.Fuel_Injection_1_Pulse_Width);
+                            break;
+                        default :
+                            throw new ArgumentException("Fuel injection pulse width is supported only on SSM");
+                    }
+                    switch(dataSource.RPMSource)
+                    {
+                        case DataSourceType.DEFI:
+                            requiredCodes.DefiCodes.Add(DefiParameterCode.Engine_Speed);
+                            break;
+                        case DataSourceType.SSM:
+                            requiredCodes.SSMCodes.Add(SSMParameterCode.Engine_Speed);
+                            break;
+                        case DataSourceType.ARDUINO:
+                            requiredCodes.ArduinoCodes.Add(ArduinoParameterCode.Engine_Speed);
+                            break;
+                        case DataSourceType.ELM327:
+                            requiredCodes.ELM327OBDCodes.Add(OBDIIParameterCode.Engine_Speed);
+                            break;
+                    }
+                    break;
+                }
+                case FuelCalculationMethod.MASS_AIR_FLOW_AF:
+                {
+                    switch(dataSource.MassAirFlowSource)
+                    {
+                        case DataSourceType.SSM:
+                            requiredCodes.SSMCodes.Add(SSMParameterCode.Mass_Air_Flow);
+                            break;
+                        case DataSourceType.ELM327:
+                            requiredCodes.ELM327OBDCodes.Add(OBDIIParameterCode.Mass_Air_Flow);
+                            break;
+                        default:
+                            throw new ArgumentException("Mass air flow is supported only on SSM or ELM327.");
+                    }
+                    switch(dataSource.AFRatioSource)
+                    {
+                        case DataSourceType.SSM:
+                            requiredCodes.SSMCodes.Add(SSMParameterCode.Air_Fuel_Sensor_1);
+                            break;
+                        case DataSourceType.ELM327:
+                            requiredCodes.ELM327OBDCodes.Add(OBDIIParameterCode.Command_equivalence_ratio);
+                            break;
+                        default:
+                            throw new ArgumentException("A/F ratio is supported only on SSM or ELM327.");
+                    }
+                    break;
+                }
+                case FuelCalculationMethod.MASS_AIR_FLOW:
+                {
+                    switch (dataSource.MassAirFlowSource)
+                    {
+                        case DataSourceType.SSM:
+                            requiredCodes.SSMCodes.Add(SSMParameterCode.Mass_Air_Flow);
+                            break;
+                        case DataSourceType.ELM327:
+                            requiredCodes.ELM327OBDCodes.Add(OBDIIParameterCode.Mass_Air_Flow);
+                            break;
+                        default:
+                            throw new ArgumentException("Mass air flow is supported only on SSM or ELM327.");
+                    }
+                    break;
+                }
             }
+            return requiredCodes;
         }
+
         public void ValidateSettings()
         {
             DataSource datasource = this.Calculation.DataSource;
