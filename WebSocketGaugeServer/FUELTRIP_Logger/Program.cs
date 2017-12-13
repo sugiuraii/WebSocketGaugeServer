@@ -3,9 +3,28 @@ using System.Xml;
 using System.IO;
 using log4net;
 using System.Threading;
+using System.Collections.Generic;
+using DefiSSMCOM.Defi;
+using DefiSSMCOM.SSM;
+using DefiSSMCOM.Arduino;
+using DefiSSMCOM.OBDII;
 
 namespace FUELTRIP_Logger
 {
+    /// <summary>
+    /// Class to store required parameter code.
+    /// </summary>
+    public class RequiredParameterCode
+    {
+        public List<DefiParameterCode> DefiCodes = new List<DefiParameterCode>();
+        public List<SSMParameterCode> SSMCodes = new List<SSMParameterCode>();
+        public List<ArduinoParameterCode> ArduinoCodes = new List<ArduinoParameterCode>();
+        public List<OBDIIParameterCode> ELM327OBDCodes = new List<OBDIIParameterCode>();
+    }
+
+    /// <summary>
+    /// Application setting class.
+    /// </summary>
     public class AppSettings
     {
         public string defiserver_url;
@@ -41,6 +60,19 @@ namespace FUELTRIP_Logger
             public DataSourceType FuelRateSource;
         }
 
+        public RequiredParameterCode getRequiredParameterCodes()
+        {
+            RequiredParameterCode requiredCodes = new RequiredParameterCode();
+            FuelCalculationMethod calcMethod = this.Calculation.FuelCalculationMethod;
+            DataSource dataSource = this.Calculation.DataSource;
+            switch(calcMethod)
+            {
+                case FuelCalculationMethod.FUEL_RATE:
+                    switch(dataSource)
+                        case : DataSourceType.ELM327:
+                            requiredCodes.ELM327OBDCodes.Add(OBDIIParameterCode.F)
+            }
+        }
         public void ValidateSettings()
         {
             DataSource datasource = this.Calculation.DataSource;

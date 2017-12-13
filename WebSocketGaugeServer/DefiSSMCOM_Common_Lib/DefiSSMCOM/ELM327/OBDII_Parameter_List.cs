@@ -51,6 +51,11 @@ namespace DefiSSMCOM.OBDII
         Commanded_throttle_actuator,
         Time_run_with_MIL_on,
         Time_since_trouble_codes_cleared,
-        Ethanol_fuel_percent
+        Ethanol_fuel_percent,
+
+        // Temporary added on 2017/12/14
+        Engine_fuel_rate,
+        Engine_oil_temperature,
+        Hybrid_battery_pack_remaining_life
     };
 }
