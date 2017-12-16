@@ -238,6 +238,7 @@ namespace FUELTRIP_Logger
                 logger.Error(ex.Message);
                 return;
             }
+            RequiredParameterCode codelist = appsetting.getRequiredParameterCodes();
 
 			FUELTRIPLogger fueltriplogger1 = new FUELTRIPLogger(appsetting);
             fueltriplogger1.WebsocketServer_ListenPortNo = appsetting.websocket_port;

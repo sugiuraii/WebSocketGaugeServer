@@ -132,7 +132,7 @@ namespace FUELTRIP_Logger
 			}
 		}
 
-		//区間トリップ、燃料消費量
+		//Section fuel and trip
 		public TripFuelContent[] SectTripFuelArray
 		{
 			get 
@@ -351,13 +351,12 @@ namespace FUELTRIP_Logger
 			}
 			else
 			{
-				//Section履歴に追加
 				enqueueSectTripFuel (sectTripFuelTemporary);
 
 				sectTripFuelTemporary = new TripFuelContent();
 				sectElapsed = 0;
 
-				//区間データ更新イベント発生
+				//Invoke event
 				SectFUELTRIPUpdated (this, EventArgs.Empty);
 			}
 

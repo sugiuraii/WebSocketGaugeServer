@@ -17,6 +17,47 @@ using log4net;
 
 namespace FUELTRIP_Logger
 {
+    class WebSocketClients
+    {
+    	private const int CONNECT_RETRY_SEC = 5;
+        private const int DEFIPACKET_INTERVAL = 2;
+        public WebSocket DefiCOMWSClient;
+        public WebSocket SSMCOMWSClient;
+        public WebSocket ArduinoWSClient;
+        public WebSocket ELN327WSClient;
+
+        public WebSocketClients(AppSettings appSettings)
+        {
+
+        }
+
+        private WebSocket initializeDefiCOMWSClient(string url, List<DefiParameterCode> DefiCodes)
+        {
+            WebSocket wsClient = new WebSocket(url);
+            
+            wsClient.Opened += (sender, e) => 
+            {
+                foreach(DefiParameterCode code in DefiCodes)
+                {
+			        DefiWSSendJSONFormat defisendcode = new DefiWSSendJSONFormat ();
+			        defisendcode.code = code.ToString ();
+			        defisendcode.flag = true;
+
+			        DefiWSIntervalJSONFormat definitervalcode = new DefiWSIntervalJSONFormat();
+			        definitervalcode.interval=DEFIPACKET_INTERVAL;
+
+			        wsClient.Send(defisendcode.Serialize());
+			        wsClient.Send(definitervalcode.Serialize());
+                }
+		    };
+            //deficom ws
+			deficomWSClient.Error += new EventHandler<ErrorEventArgs>(_deficom_ws_client_Error);
+			deficomWSClient.Closed += new EventHandler(_deficom_ws_client_Closed);
+			deficomWSClient.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_deficom_ws_client_MessageReceived);
+
+        }
+
+    }
 	public class FUELTRIPLogger
 	{
 		private const int CONNECT_RETRY_SEC = 5;
@@ -29,18 +70,15 @@ namespace FUELTRIP_Logger
         //log4net
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
-		private FuelTripCalculator _nenpi_trip_calc;
-		private WebSocketServer _appServer;
-		private WebSocket _deficom_ws_client;
-		private WebSocket _ssmcom_ws_client;
+		private FuelTripCalculator fuelTripCalc;
+		private WebSocketServer appServer;
+		private WebSocket deficomWSClient;
+		private WebSocket ssmcomWSClient;
 		private bool running_state = false;
 
-		private double _current_tacho;
-		private double _current_speed;
-		private double _current_injpulse_width;
-
-        private string _deficom_WS_URL;
-        private string _ssmcom_WS_URL;
+		private double currentEngineRev;
+		private double currentVehicleSpeed;
+		private double currentInjPulseWidth;
 
         /// <summary>
         /// Interval of sending keep alive dummy message in millisecond.
@@ -61,35 +99,32 @@ namespace FUELTRIP_Logger
 		{
             this.WebsocketServer_ListenPortNo = appSettings.websocket_port;
 
-			_nenpi_trip_calc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod);
+			fuelTripCalc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod);
             
             // Default KeepAliveInterval : 60ms
             this.KeepAliveInterval = appSettings.keepalive_interval;
 
 			//Websocket server setup
-			_appServer = new WebSocketServer ();
-			_appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(_appServer_NewMessageReceived);
-			_appServer.NewSessionConnected += new SessionHandler<WebSocketSession> (_appServer_NewSessionConnected);
-			_appServer.SessionClosed += new SessionHandler<WebSocketSession, CloseReason> (_appServer_SessionClosed);
-
-            _deficom_WS_URL = appSettings.defiserver_url;
-            _ssmcom_WS_URL = appSettings.ssmserver_url;
+			appServer = new WebSocketServer ();
+			appServer.NewMessageReceived += new SessionHandler<WebSocketSession, string>(_appServer_NewMessageReceived);
+			appServer.NewSessionConnected += new SessionHandler<WebSocketSession> (_appServer_NewSessionConnected);
+			appServer.SessionClosed += new SessionHandler<WebSocketSession, CloseReason> (_appServer_SessionClosed);
 
 			//deficom ws
-			_deficom_ws_client = new WebSocket (_deficom_WS_URL);
-			_deficom_ws_client.Opened += new EventHandler(_deficom_ws_client_Opened);
-			_deficom_ws_client.Error += new EventHandler<ErrorEventArgs>(_deficom_ws_client_Error);
-			_deficom_ws_client.Closed += new EventHandler(_deficom_ws_client_Closed);
-			_deficom_ws_client.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_deficom_ws_client_MessageReceived);
+			deficomWSClient = new WebSocket (appSettings.defiserver_url);
+			deficomWSClient.Opened += new EventHandler(_deficom_ws_client_Opened);
+			deficomWSClient.Error += new EventHandler<ErrorEventArgs>(_deficom_ws_client_Error);
+			deficomWSClient.Closed += new EventHandler(_deficom_ws_client_Closed);
+			deficomWSClient.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_deficom_ws_client_MessageReceived);
             //ssmcom ws
-            _ssmcom_ws_client = new WebSocket (_ssmcom_WS_URL);
-			_ssmcom_ws_client.Opened += new EventHandler(_ssmcom_ws_client_Opened);
-			_ssmcom_ws_client.Error += new EventHandler<ErrorEventArgs>(_ssmcom_ws_client_Error);
-			_ssmcom_ws_client.Closed += new EventHandler(_ssmcom_ws_client_Closed);
-			_ssmcom_ws_client.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_ssmcom_ws_client_MessageReceived);
+            ssmcomWSClient = new WebSocket (appSettings.ssmserver_url);
+			ssmcomWSClient.Opened += new EventHandler(_ssmcom_ws_client_Opened);
+			ssmcomWSClient.Error += new EventHandler<ErrorEventArgs>(_ssmcom_ws_client_Error);
+			ssmcomWSClient.Closed += new EventHandler(_ssmcom_ws_client_Closed);
+			ssmcomWSClient.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_ssmcom_ws_client_MessageReceived);
 			running_state = false;
 
-            _nenpi_trip_calc.SectFUELTRIPUpdated += new EventHandler(_nenpi_trip_calc_SectFUELTRIPUpdated);
+            fuelTripCalc.SectFUELTRIPUpdated += new EventHandler(_nenpi_trip_calc_SectFUELTRIPUpdated);
 		}
 
         /// <summary>
@@ -105,24 +140,24 @@ namespace FUELTRIP_Logger
             appserver_config.Port = this.WebsocketServer_ListenPortNo;
 
             //Start Websocket server
-            if (!_appServer.Setup(appserver_config)) //Setup with listening port
+            if (!appServer.Setup(appserver_config)) //Setup with listening port
             {
                 //Console.WriteLine("Failed to setup!");
                 logger.Fatal("Failed to setup websocket server.");
             }
-            if (!_appServer.Start())
+            if (!appServer.Start())
             {
                 //Console.WriteLine("Failed to start!");
                 logger.Fatal("Failed to start websocket server.");
                 return;
             }
 
-            _nenpi_trip_calc.loadTripFuel();
-            _deficom_ws_client.Open();
-            _ssmcom_ws_client.Open();
+            fuelTripCalc.loadTripFuel();
+            deficomWSClient.Open();
+            ssmcomWSClient.Open();
 
             //Console.WriteLine("Websocket server is starting... DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
-            logger.Info("Websocket server is starting... DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
+            logger.Info("Websocket server is starting... ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
         }
 
         /// <summary>
@@ -131,13 +166,13 @@ namespace FUELTRIP_Logger
 		public void stop ()
 		{
 			running_state = false;
-			_nenpi_trip_calc.saveTripFuel ();
-            if(_deficom_ws_client.State == WebSocketState.Open)
-    			_deficom_ws_client.Close ();
-            if(_ssmcom_ws_client.State == WebSocketState.Open)
-    			_ssmcom_ws_client.Close ();
-            if(_appServer.State == ServerState.Running)
-                _appServer.Stop ();
+			fuelTripCalc.saveTripFuel ();
+            if(deficomWSClient.State == WebSocketState.Open)
+    			deficomWSClient.Close ();
+            if(ssmcomWSClient.State == WebSocketState.Open)
+    			ssmcomWSClient.Close ();
+            if(appServer.State == ServerState.Running)
+                appServer.Stop ();
 
             //Console.WriteLine("The server was stopped!");
             logger.Info("Websocket server is stopped");
@@ -185,24 +220,24 @@ namespace FUELTRIP_Logger
 				{
 				//SSM COM all reset
 				case (ResetJSONFormat.ModeCode):
-					_nenpi_trip_calc.resetSectTripFuel();
-					_nenpi_trip_calc.resetTotalTripFuel();
+					fuelTripCalc.resetSectTripFuel();
+					fuelTripCalc.resetTotalTripFuel();
 					response_msg(session, "NenpiCalc AllRESET.");
 					break;
 				case (SectResetJSONFormat.ModeCode):
-					_nenpi_trip_calc.resetSectTripFuel();
+					fuelTripCalc.resetSectTripFuel();
 					response_msg(session, "NenpiCalc SectRESET.");
 					break;
 				case (SectSpanJSONFormat.ModeCode):
 					SectSpanJSONFormat span_jsonobj = JsonConvert.DeserializeObject<SectSpanJSONFormat>(message);
 					span_jsonobj.Validate();
-					_nenpi_trip_calc.SectSpan = span_jsonobj.sect_span*1000;
+					fuelTripCalc.SectSpan = span_jsonobj.sect_span*1000;
 					response_msg(session, "NenpiCalc SectSpan Set to : " + span_jsonobj.sect_span.ToString() + "sec");
 					break;
 				case (SectStoreMaxJSONFormat.ModeCode):
 					SectStoreMaxJSONFormat storemax_jsonobj = JsonConvert.DeserializeObject<SectStoreMaxJSONFormat>(message);
 					storemax_jsonobj.Validate();
-					_nenpi_trip_calc.SectStoreMax = storemax_jsonobj.storemax;
+					fuelTripCalc.SectStoreMax = storemax_jsonobj.storemax;
 					response_msg(session, "NenpiCalc SectStoreMax Set to : " + storemax_jsonobj.storemax.ToString());
 					break;
 				default:
@@ -243,10 +278,10 @@ namespace FUELTRIP_Logger
 		private void send_momentum_value()
 		{
 			FUELTRIPJSONFormat fueltrip_json = new FUELTRIPJSONFormat ();
-			fueltrip_json.moment_gasmilage = _nenpi_trip_calc.MomentaryTripPerFuel;
-			fueltrip_json.total_gas = _nenpi_trip_calc.TotalFuelConsumption;
-			fueltrip_json.total_trip = _nenpi_trip_calc.TotalTrip;
-			fueltrip_json.total_gasmilage = _nenpi_trip_calc.TotalTripPerFuel;
+			fueltrip_json.moment_gasmilage = fuelTripCalc.MomentaryTripPerFuel;
+			fueltrip_json.total_gas = fuelTripCalc.TotalFuelConsumption;
+			fueltrip_json.total_trip = fuelTripCalc.TotalTrip;
+			fueltrip_json.total_gasmilage = fuelTripCalc.TotalTripPerFuel;
 
 
             broadcast_websocket_msg(fueltrip_json.Serialize());
@@ -255,10 +290,10 @@ namespace FUELTRIP_Logger
 		private void send_section_value_array()
 		{
 			SectFUELTRIPJSONFormat sectfueltrip_json = new SectFUELTRIPJSONFormat ();
-			sectfueltrip_json.sect_gas = _nenpi_trip_calc.SectFuelArray;
-			sectfueltrip_json.sect_trip = _nenpi_trip_calc.SectTripArray;
-			sectfueltrip_json.sect_gasmilage = _nenpi_trip_calc.SectTripPerFuelArray;
-			sectfueltrip_json.sect_span = _nenpi_trip_calc.SectSpan;
+			sectfueltrip_json.sect_gas = fuelTripCalc.SectFuelArray;
+			sectfueltrip_json.sect_trip = fuelTripCalc.SectTripArray;
+			sectfueltrip_json.sect_gasmilage = fuelTripCalc.SectTripPerFuelArray;
+			sectfueltrip_json.sect_span = fuelTripCalc.SectSpan;
 
             broadcast_websocket_msg(sectfueltrip_json.Serialize());
 
@@ -267,7 +302,7 @@ namespace FUELTRIP_Logger
         // Broadcast : Send message to all active sessions
         private void broadcast_websocket_msg(string message)
         {
-            var sessions = _appServer.GetAllSessions();
+            var sessions = appServer.GetAllSessions();
 
             foreach (var session in sessions)
             {
@@ -313,14 +348,14 @@ namespace FUELTRIP_Logger
 
 					if(ssm_defi_mode == SSM_DEFI_mode.Defi)
 					{
-						_current_tacho = double.Parse(val_json.val[DefiParameterCode.Engine_Speed.ToString()]);
+						currentEngineRev = double.Parse(val_json.val[DefiParameterCode.Engine_Speed.ToString()]);
 					}
 					else if(ssm_defi_mode == SSM_DEFI_mode.SSM)
 					{
                         //Console.WriteLine(jsonmsg);
                         try
                         {
-                            _current_speed = double.Parse(val_json.val[SSMParameterCode.Vehicle_Speed.ToString()]);
+                            currentVehicleSpeed = double.Parse(val_json.val[SSMParameterCode.Vehicle_Speed.ToString()]);
                         }
                         catch (KeyNotFoundException ex)
                         {
@@ -329,7 +364,7 @@ namespace FUELTRIP_Logger
                         }
                         try
                         {
-                            _current_injpulse_width = double.Parse(val_json.val[SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString()]);
+                            currentInjPulseWidth = double.Parse(val_json.val[SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString()]);
                         }
                         catch (KeyNotFoundException ex)
                         {
@@ -338,7 +373,7 @@ namespace FUELTRIP_Logger
                         }
                         try
                         {
-                            _nenpi_trip_calc.update(_current_tacho, _current_speed, _current_injpulse_width);
+                            fuelTripCalc.update(currentEngineRev, currentVehicleSpeed, currentInjPulseWidth,0,0,0);
                             send_momentum_value();
                         }
                         catch (TimeoutException ex)
@@ -393,8 +428,8 @@ namespace FUELTRIP_Logger
 			DefiWSIntervalJSONFormat definitervalcode = new DefiWSIntervalJSONFormat();
 			definitervalcode.interval=DEFIPACKET_INTERVAL;
 
-			_deficom_ws_client.Send(defisendcode.Serialize());
-			_deficom_ws_client.Send(definitervalcode.Serialize());
+			deficomWSClient.Send(defisendcode.Serialize());
+			deficomWSClient.Send(definitervalcode.Serialize());
 		}
 		private void _deficom_ws_client_Error(object sender, ErrorEventArgs e)
 		{
@@ -404,12 +439,12 @@ namespace FUELTRIP_Logger
 		{
             logger.Info("DefiCOM Websocket connection is Closed. Wait " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
 			Thread.Sleep (CONNECT_RETRY_SEC * 1000);
-            while (_deficom_ws_client.State != WebSocketState.Closed)
+            while (deficomWSClient.State != WebSocketState.Closed)
             {
                 logger.Info("DefiCOM Websocket is now closing, not closed completely. Wait more " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
                 Thread.Sleep(CONNECT_RETRY_SEC * 1000);
             }
-			_deficom_ws_client.Open ();
+			deficomWSClient.Open ();
 		}
 		private void _deficom_ws_client_MessageReceived(object sender, MessageReceivedEventArgs e)
 		{
@@ -426,33 +461,33 @@ namespace FUELTRIP_Logger
 
             SSMSLOWREADIntervalJSONFormat ssmcom_slowread_json = new SSMSLOWREADIntervalJSONFormat();
             ssmcom_slowread_json.interval = 20;
-            _ssmcom_ws_client.Send(ssmcom_slowread_json.Serialize());
+            ssmcomWSClient.Send(ssmcom_slowread_json.Serialize());
 
             SSMCOMReadJSONFormat ssmcom_read_json1 = new SSMCOMReadJSONFormat();
             ssmcom_read_json1.code = SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString();
             ssmcom_read_json1.read_mode = SSMCOMReadJSONFormat.SlowReadModeCOde;
             ssmcom_read_json1.flag = true;
-            _ssmcom_ws_client.Send(ssmcom_read_json1.Serialize());
+            ssmcomWSClient.Send(ssmcom_read_json1.Serialize());
 
             SSMCOMReadJSONFormat ssmcom_read_json2 = new SSMCOMReadJSONFormat();
 			ssmcom_read_json2.code = SSMParameterCode.Vehicle_Speed.ToString ();
 			ssmcom_read_json2.read_mode = SSMCOMReadJSONFormat.FastReadModeCode;
 			ssmcom_read_json2.flag = true;
-			_ssmcom_ws_client.Send(ssmcom_read_json2.Serialize());
+			ssmcomWSClient.Send(ssmcom_read_json2.Serialize());
 
             SSMCOMReadJSONFormat ssmcom_read_json3 = new SSMCOMReadJSONFormat();
             ssmcom_read_json3 = new SSMCOMReadJSONFormat();
             ssmcom_read_json3.code = SSMParameterCode.Vehicle_Speed.ToString();
             ssmcom_read_json3.read_mode = SSMCOMReadJSONFormat.SlowReadModeCOde;
             ssmcom_read_json3.flag = true;
-			_ssmcom_ws_client.Send (ssmcom_read_json3.Serialize ());
+			ssmcomWSClient.Send (ssmcom_read_json3.Serialize ());
 
             SSMCOMReadJSONFormat ssmcom_read_json4 = new SSMCOMReadJSONFormat();
             ssmcom_read_json4 = new SSMCOMReadJSONFormat();
             ssmcom_read_json4.code = SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString();
             ssmcom_read_json4.read_mode = SSMCOMReadJSONFormat.FastReadModeCode;
             ssmcom_read_json4.flag = true;
-            _ssmcom_ws_client.Send(ssmcom_read_json4.Serialize());
+            ssmcomWSClient.Send(ssmcom_read_json4.Serialize());
 
 		}
 		private void _ssmcom_ws_client_Error(object sender, ErrorEventArgs e)
@@ -463,12 +498,12 @@ namespace FUELTRIP_Logger
 		{
             logger.Info("SSMCOM Websocket connection is Closed. Wait " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
 			Thread.Sleep (CONNECT_RETRY_SEC * 1000);
-			while(_ssmcom_ws_client.State != WebSocketState.Closed)
+			while(ssmcomWSClient.State != WebSocketState.Closed)
             {
                 logger.Info("SSMCOM Websocket is now closing, not closed completely. Wait more" + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
                 Thread.Sleep(CONNECT_RETRY_SEC * 1000);
             }
-            _ssmcom_ws_client.Open ();
+            ssmcomWSClient.Open ();
 		}
 		private void _ssmcom_ws_client_MessageReceived(object sender, MessageReceivedEventArgs e)
 		{
