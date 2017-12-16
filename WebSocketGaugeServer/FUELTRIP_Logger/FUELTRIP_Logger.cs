@@ -11,6 +11,8 @@ using System.Collections.Generic;
 using DefiSSMCOM;
 using DefiSSMCOM.Defi;
 using DefiSSMCOM.SSM;
+using DefiSSMCOM.Arduino;
+using DefiSSMCOM.OBDII;
 using DefiSSMCOM.WebSocket.JSON;
 using DefiSSMCOM.WebSocket;
 using log4net;
@@ -20,41 +22,178 @@ namespace FUELTRIP_Logger
     class WebSocketClients
     {
     	private const int CONNECT_RETRY_SEC = 5;
-        private const int DEFIPACKET_INTERVAL = 2;
+        private const int DEFI_ARDUINO_PACKET_INTERVAL = 2;
         public WebSocket DefiCOMWSClient;
         public WebSocket SSMCOMWSClient;
         public WebSocket ArduinoWSClient;
         public WebSocket ELN327WSClient;
+
+        //log4net
+        private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         public WebSocketClients(AppSettings appSettings)
         {
 
         }
 
-        private WebSocket initializeDefiCOMWSClient(string url, List<DefiParameterCode> DefiCodes)
+        /// <summary>
+        /// Common method to log error message
+        /// </summary>
+        /// <param name="clientType">WS client type</param>
+        /// <param name="errorName">Error(exception name)</param>
+        /// <param name="errorMsg">Error message</param>
+        private void wsErrorMsg(string clientType, string errorName, string errorMsg)
         {
+            logger.Error(clientType + " Websocket connection error occurs. Exception : " + errorName + "\n Message : " + errorMsg);
+        }
+
+        /// <summary>
+        /// Common method to reconnect Websocket client on the client is closed.
+        /// </summary>
+        /// <param name="clientType">Websocket client type</param>
+        /// <param name="wsClient"> Websocket client object</param>
+        private void wsClosedReconnect(string clientType, WebSocket wsClient)
+		{
+            logger.Info(clientType + " Websocket connection is Closed. Wait " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
+			Thread.Sleep (CONNECT_RETRY_SEC * 1000);
+            while (wsClient.State != WebSocketState.Closed)
+            {
+                logger.Info(clientType + " Websocket is now closing, not closed completely. Wait more " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
+                Thread.Sleep(CONNECT_RETRY_SEC * 1000);
+            }
+			wsClient.Open ();
+		}
+
+        /// <summary>
+        /// Initialize DefiCOM websocket client
+        /// </summary>
+        /// <param name="url">URL of the server</param>
+        /// <param name="codes">parameter code list to activate</param>
+        /// <returns></returns>
+        private WebSocket initializeDefiCOMWSClient(string url, List<DefiParameterCode> codes)
+        {
+            const string WSType = "DEFI";
             WebSocket wsClient = new WebSocket(url);
             
             wsClient.Opened += (sender, e) => 
             {
-                foreach(DefiParameterCode code in DefiCodes)
+                foreach(DefiParameterCode code in codes)
                 {
-			        DefiWSSendJSONFormat defisendcode = new DefiWSSendJSONFormat ();
-			        defisendcode.code = code.ToString ();
-			        defisendcode.flag = true;
+			        DefiWSSendJSONFormat sendcode = new DefiWSSendJSONFormat ();
+			        sendcode.code = code.ToString ();
+			        sendcode.flag = true;
 
 			        DefiWSIntervalJSONFormat definitervalcode = new DefiWSIntervalJSONFormat();
-			        definitervalcode.interval=DEFIPACKET_INTERVAL;
+			        definitervalcode.interval=DEFI_ARDUINO_PACKET_INTERVAL;
 
-			        wsClient.Send(defisendcode.Serialize());
+			        wsClient.Send(sendcode.Serialize());
 			        wsClient.Send(definitervalcode.Serialize());
                 }
 		    };
-            //deficom ws
-			deficomWSClient.Error += new EventHandler<ErrorEventArgs>(_deficom_ws_client_Error);
-			deficomWSClient.Closed += new EventHandler(_deficom_ws_client_Closed);
-			deficomWSClient.MessageReceived += new EventHandler<MessageReceivedEventArgs>(_deficom_ws_client_MessageReceived);
+			wsClient.Error += (sender, e) => wsErrorMsg(WSType, e.Exception.ToString(), e.Exception.Message);
+			wsClient.Closed += (sender ,e) => wsClosedReconnect(WSType, wsClient);
+            wsClient.MessageReceived += (sender, e) => parseVALmessage(message);
 
+            return wsClient;
+	    }
+
+        /// <summary>
+        /// Initialize ArduinoCOM websocket client
+        /// </summary>
+        /// <param name="url">URL of the server</param>
+        /// <param name="codes">parameter code list to activate</param>
+        /// <returns></returns>
+        private WebSocket initializeArduinoCOMWSClient(string url, List<ArduinoParameterCode> codes)
+        {
+            const string WSType = "Arduino";
+            WebSocket wsClient = new WebSocket(url);
+
+            wsClient.Opened += (sender, e) =>
+            {
+                foreach (ArduinoParameterCode code in codes)
+                {
+                    ArduinoWSSendJSONFormat sendcode = new ArduinoWSSendJSONFormat();
+                    sendcode.code = code.ToString();
+                    sendcode.flag = true;
+
+                    ArduinoWSIntervalJSONFormat definitervalcode = new ArduinoWSIntervalJSONFormat();
+                    definitervalcode.interval = DEFI_ARDUINO_PACKET_INTERVAL;
+
+                    wsClient.Send(sendcode.Serialize());
+                    wsClient.Send(definitervalcode.Serialize());
+                }
+            };
+            wsClient.Error += (sender, e) => wsErrorMsg(WSType, e.Exception.ToString(), e.Exception.Message);
+            wsClient.Closed += (sender, e) => wsClosedReconnect(WSType, wsClient);
+            wsClient.MessageReceived += (sender, e) => parseVALmessage(message);
+
+            return wsClient;
+        }
+        
+        /// <summary>
+        /// Initialize SSMCOM websocket client.
+        /// </summary>
+        /// <param name="url">URL of the server.</param>
+        /// <param name="codes">Parameter code list</param>
+        /// <returns></returns>
+        private WebSocket initializeSSMCOMWSClient(string url, List<SSMParameterCode> codes)
+        {
+            const string WSType = "SSM";
+            WebSocket wsClient = new WebSocket(url);
+
+            wsClient.Opened += (sender, e) =>
+            {
+                foreach (SSMParameterCode code in codes)
+                {
+                    // Send read packet both slow and fast readmode.
+                    SSMCOMReadJSONFormat sendcode = new SSMCOMReadJSONFormat();
+                    sendcode.code = code.ToString();
+                    sendcode.read_mode = SSMCOMReadJSONFormat.SlowReadModeCode;
+                    sendcode.flag = true;
+                    wsClient.Send(sendcode.Serialize());
+
+                    sendcode.read_mode = SSMCOMReadJSONFormat.FastReadModeCode;
+                    wsClient.Send(sendcode.Serialize());
+                }
+            };
+            wsClient.Error += (sender, e) => wsErrorMsg(WSType, e.Exception.ToString(), e.Exception.Message);
+            wsClient.Closed += (sender, e) => wsClosedReconnect(WSType, wsClient);
+            wsClient.MessageReceived += (sender, e) => parseVALmessage(message);
+
+            return wsClient;
+        }
+
+        /// <summary>
+        /// Initialize ELM327COM websocket client.
+        /// </summary>
+        /// <param name="url">URL of the server.</param>
+        /// <param name="codes">Parameter code list</param>
+        /// <returns></returns>
+        private WebSocket initializeELM327COMWSClient(string url, List<OBDIIParameterCode> codes)
+        {
+            const string WSType = "ELM327";
+            WebSocket wsClient = new WebSocket(url);
+
+            wsClient.Opened += (sender, e) =>
+            {
+                foreach (OBDIIParameterCode code in codes)
+                {
+                    // Send read packet both slow and fast readmode.
+                    ELM327COMReadJSONFormat sendcode = new ELM327COMReadJSONFormat();
+                    sendcode.code = code.ToString();
+                    sendcode.read_mode = ELM327COMReadJSONFormat.SlowReadModeCode;
+                    sendcode.flag = true;
+                    wsClient.Send(sendcode.Serialize());
+
+                    sendcode.read_mode = ELM327COMReadJSONFormat.FastReadModeCode;
+                    wsClient.Send(sendcode.Serialize());
+                }
+            };
+            wsClient.Error += (sender, e) => wsErrorMsg(WSType, e.Exception.ToString(), e.Exception.Message);
+            wsClient.Closed += (sender, e) => wsClosedReconnect(WSType, wsClient);
+            wsClient.MessageReceived += (sender, e) => parseVALmessage(message);
+
+            return wsClient;
         }
 
     }
@@ -465,7 +604,7 @@ namespace FUELTRIP_Logger
 
             SSMCOMReadJSONFormat ssmcom_read_json1 = new SSMCOMReadJSONFormat();
             ssmcom_read_json1.code = SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString();
-            ssmcom_read_json1.read_mode = SSMCOMReadJSONFormat.SlowReadModeCOde;
+            ssmcom_read_json1.read_mode = SSMCOMReadJSONFormat.SlowReadModeCode;
             ssmcom_read_json1.flag = true;
             ssmcomWSClient.Send(ssmcom_read_json1.Serialize());
 
@@ -478,7 +617,7 @@ namespace FUELTRIP_Logger
             SSMCOMReadJSONFormat ssmcom_read_json3 = new SSMCOMReadJSONFormat();
             ssmcom_read_json3 = new SSMCOMReadJSONFormat();
             ssmcom_read_json3.code = SSMParameterCode.Vehicle_Speed.ToString();
-            ssmcom_read_json3.read_mode = SSMCOMReadJSONFormat.SlowReadModeCOde;
+            ssmcom_read_json3.read_mode = SSMCOMReadJSONFormat.SlowReadModeCode;
             ssmcom_read_json3.flag = true;
 			ssmcomWSClient.Send (ssmcom_read_json3.Serialize ());
 
