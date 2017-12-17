@@ -51,7 +51,7 @@ namespace FUELTRIP_Logger
             RequiredParameterCode codelist = appsetting.getRequiredParameterCodes();
 
 			FUELTRIPLogger fueltriplogger1 = new FUELTRIPLogger(appsetting);
-            fueltriplogger1.WebsocketServer_ListenPortNo = appsetting.websocket_port;
+            fueltriplogger1.WebsocketServerListenPortNo = appsetting.websocket_port;
             fueltriplogger1.KeepAliveInterval = appsetting.keepalive_interval;
 
 			Console.WriteLine("The server started successfully, press key 'q' to stop it!");

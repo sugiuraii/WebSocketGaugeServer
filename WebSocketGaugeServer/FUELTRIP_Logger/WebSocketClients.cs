@@ -17,10 +17,12 @@ namespace FUELTRIP_Logger
     {
         private const int CONNECT_RETRY_SEC = 5;
         private const int DEFI_ARDUINO_PACKET_INTERVAL = 2;
-        public readonly WebSocket DefiCOMWSClient;
-        public readonly WebSocket SSMCOMWSClient;
+        public readonly WebSocket DefiWSClient;
+        public readonly WebSocket SSMWSClient;
         public readonly WebSocket ArduinoWSClient;
-        public readonly WebSocket ELN327WSClient;
+        public readonly WebSocket ELM327WSClient;
+
+        private Boolean runningState;
 
         private double engineRev;
         public double EngineRev
@@ -75,14 +77,62 @@ namespace FUELTRIP_Logger
 
         //log4net
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
+        
+        /// <summary>
+        /// Construct WebsocketClients.
+        /// </summary>
+        /// <param name="appSettings">AppSettings</param>
         public WebSocketClients(AppSettings appSettings)
         {
             RequiredParameterCode requiredCodes = appSettings.getRequiredParameterCodes();
-            DefiCOMWSClient = initializeDefiCOMWSClient(appSettings.defiserver_url, requiredCodes.DefiCodes);
-            SSMCOMWSClient = initializeSSMCOMWSClient(appSettings.ssmserver_url, requiredCodes.SSMCodes);
+            DefiWSClient = initializeDefiCOMWSClient(appSettings.defiserver_url, requiredCodes.DefiCodes);
+            SSMWSClient = initializeSSMCOMWSClient(appSettings.ssmserver_url, requiredCodes.SSMCodes);
             ArduinoWSClient = initializeArduinoCOMWSClient(appSettings.arduinoserver_url, requiredCodes.ArduinoCodes);
-            ELN327WSClient = initializeELM327COMWSClient(appSettings.elm327server_url, requiredCodes.ELM327OBDCodes);
+            ELM327WSClient = initializeELM327COMWSClient(appSettings.elm327server_url, requiredCodes.ELM327OBDCodes);
+
+            runningState = false;
+        }
+
+        /// <summary>
+        /// Open websocket clients.
+        /// </summary>
+        public void start()
+        {
+            if (runningState)
+                throw new InvalidOperationException("Websocket clients are already started.");
+
+            if (DefiWSClient != null)
+                DefiWSClient.Open();
+            if (SSMWSClient != null)
+                SSMWSClient.Open();
+            if (ArduinoWSClient != null)
+                ArduinoWSClient.Open();
+            if (ELM327WSClient != null)
+                ELM327WSClient.Open();
+            
+            this.runningState = true;
+        }
+
+        /// <summary>
+        /// Stop(close) websocket clients.
+        /// </summary>
+        public void stop()
+        {
+            if (!runningState)
+                return;
+
+            if (DefiWSClient != null)
+                if (DefiWSClient.State == WebSocketState.Open)
+                    DefiWSClient.Close();
+            if (SSMWSClient != null)
+                if (SSMWSClient.State == WebSocketState.Open)
+                    SSMWSClient.Close();
+            if (ArduinoWSClient != null)
+                if (ArduinoWSClient.State == WebSocketState.Open)
+                    ArduinoWSClient.Close();
+            if (ELM327WSClient != null)
+                if (ELM327WSClient.State == WebSocketState.Open)
+                    ELM327WSClient.Close();
         }
 
         /// <summary>
@@ -121,6 +171,9 @@ namespace FUELTRIP_Logger
         /// <returns></returns>
         private WebSocket initializeDefiCOMWSClient(string url, List<DefiParameterCode> codes)
         {
+            if (codes.Count == 0)
+                return null;
+
             const WebSocketType WSType = WebSocketType.DEFI;
             WebSocket wsClient = new WebSocket(url);
 
@@ -154,6 +207,9 @@ namespace FUELTRIP_Logger
         /// <returns></returns>
         private WebSocket initializeArduinoCOMWSClient(string url, List<ArduinoParameterCode> codes)
         {
+            if (codes.Count == 0)
+                return null;
+
             const WebSocketType WSType = WebSocketType.ARDUINO;
             WebSocket wsClient = new WebSocket(url);
 
@@ -187,6 +243,9 @@ namespace FUELTRIP_Logger
         /// <returns></returns>
         private WebSocket initializeSSMCOMWSClient(string url, List<SSMParameterCode> codes)
         {
+            if (codes.Count == 0)
+                return null;
+
             const WebSocketType WSType = WebSocketType.SSM;
             WebSocket wsClient = new WebSocket(url);
 
@@ -220,6 +279,9 @@ namespace FUELTRIP_Logger
         /// <returns></returns>
         private WebSocket initializeELM327COMWSClient(string url, List<OBDIIParameterCode> codes)
         {
+            if (codes.Count == 0)
+                return null;
+
             const WebSocketType WSType = WebSocketType.ELM327;
             WebSocket wsClient = new WebSocket(url);
 
@@ -331,16 +393,18 @@ namespace FUELTRIP_Logger
                             foreach(string code in valJson.val.Keys)
                             {
                                 double value = double.Parse(valJson.val[code]);
-                                if(code == OBDIIParameterCode.Engine_Speed.ToString())
+                                if (code == OBDIIParameterCode.Engine_Speed.ToString())
                                     engineRev = value;
-                                else if(code == OBDIIParameterCode.Vehicle_Speed.ToString())
+                                else if (code == OBDIIParameterCode.Vehicle_Speed.ToString())
                                     vehicleSpeed = value;
-                                else if(code == OBDIIParameterCode.Mass_Air_Flow.ToString())
+                                else if (code == OBDIIParameterCode.Mass_Air_Flow.ToString())
                                     massAirFlow = value;
-                                else if(code == OBDIIParameterCode.Command_equivalence_ratio.ToString())
+                                else if (code == OBDIIParameterCode.Command_equivalence_ratio.ToString())
                                     afRatio = value;
+                                else if (code == OBDIIParameterCode.Engine_fuel_rate.ToString())
+                                    fuelRate = value;
                                 else
-                                    throw new InvalidOperationException("Unexpected parameter code is returned on parsing VAL. ServerType:" + wsClientType.ToString() + " Code:"  + code);
+                                    throw new InvalidOperationException("Unexpected parameter code is returned on parsing VAL. ServerType:" + wsClientType.ToString() + " Code:" + code);
                             }
                             break;
                     }
