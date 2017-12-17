@@ -72,10 +72,15 @@ namespace FUELTRIP_Logger
 
 			//Websocket clients setup
             this.websocketClients = new WebSocketClients(appSettings);
+            this.websocketClients.VALMessageParsed += (sender, e) =>
+            {
+                fuelTripCalc.update(websocketClients.EngineRev, websocketClients.VehicleSpeed, websocketClients.InjPulseWidth, websocketClients.MassAirFlow, websocketClients.AFRatio, websocketClients.FuelRate);
+                this.send_momentum_value();
+            };
 
 			running_state = false;
 
-            fuelTripCalc.SectFUELTRIPUpdated += new EventHandler(_nenpi_trip_calc_SectFUELTRIPUpdated);
+            fuelTripCalc.SectFUELTRIPUpdated += (sender, e) => send_section_value_array();
 		}
 
         /// <summary>
@@ -269,11 +274,6 @@ namespace FUELTRIP_Logger
                     continue;
                 session.Send(message);
             }
-        }
-
-        private void _nenpi_trip_calc_SectFUELTRIPUpdated(object sender, EventArgs e)
-        {
-            send_section_value_array();
         }
 	}
 }
