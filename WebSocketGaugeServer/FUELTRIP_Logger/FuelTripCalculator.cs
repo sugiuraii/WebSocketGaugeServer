@@ -318,7 +318,7 @@ namespace FUELTRIP_Logger
 
             //Calculate momentary trip from speed.
 			momentaryTrip = getMomentaryTrip(stopwatch_elapsed, speed, calculatorOption);
-			
+
             //Calculate momentart fuel consumption.
             switch(calculationMethod)
             {

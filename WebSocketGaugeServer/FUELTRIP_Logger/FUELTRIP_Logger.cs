@@ -36,13 +36,6 @@ namespace FUELTRIP_Logger
         private readonly WebSocketClients websocketClients;
 		private bool running_state = false;
 
-		private double currentEngineRev;
-		private double currentVehicleSpeed;
-		private double currentInjPulseWidth;
-        private double currentMassAirFlow;
-        private double currentAFRatio;
-        private double currentFuelRate;
-
         /// <summary>
         /// Interval of sending keep alive dummy message in millisecond.
         /// </summary>
@@ -74,8 +67,15 @@ namespace FUELTRIP_Logger
             this.websocketClients = new WebSocketClients(appSettings);
             this.websocketClients.VALMessageParsed += (sender, e) =>
             {
-                fuelTripCalc.update(websocketClients.EngineRev, websocketClients.VehicleSpeed, websocketClients.InjPulseWidth, websocketClients.MassAirFlow, websocketClients.AFRatio, websocketClients.FuelRate);
-                this.send_momentum_value();
+                try
+                {
+                    fuelTripCalc.update(websocketClients.EngineRev, websocketClients.VehicleSpeed, websocketClients.InjPulseWidth, websocketClients.MassAirFlow, websocketClients.AFRatio, websocketClients.FuelRate);
+                    this.send_momentum_value();
+                }
+                catch(TimeoutException ex)
+                {
+                    logger.Error(ex.Message);
+                }
             };
 
 			running_state = false;
@@ -88,6 +88,8 @@ namespace FUELTRIP_Logger
         /// </summary>
 		public void start()
 		{
+            if (running_state)
+                throw new InvalidOperationException("FUElTRIP_Logger.start() is called. However, FUELTRIP_Logger has already been started.");
 			running_state = true;
 
             SuperSocket.SocketBase.Config.ServerConfig appserverConfig = new SuperSocket.SocketBase.Config.ServerConfig();
@@ -109,7 +111,6 @@ namespace FUELTRIP_Logger
 
             this.websocketClients.start();
 
-            //Console.WriteLine("Websocket server is starting... DefiCOM_WS_URL:" + _deficom_WS_URL + " SSMCOM_WS_URL:" + _ssmcom_WS_URL + " ListenPort: " + this.WebsocketServer_ListenPortNo.ToString());
             logger.Info("Websocket server is starting... ListenPort: " + this.WebsocketServerListenPortNo.ToString());
         }
 
@@ -118,6 +119,9 @@ namespace FUELTRIP_Logger
         /// </summary>
 		public void stop ()
 		{
+            if (!running_state)
+                return;
+
 			running_state = false;
 			fuelTripCalc.saveTripFuel ();
 
@@ -127,7 +131,6 @@ namespace FUELTRIP_Logger
                 appServer.Stop ();
 
             logger.Info("Websocket server is stopped");
-
 		}
 
         /// <summary>

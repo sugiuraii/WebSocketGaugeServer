@@ -354,7 +354,7 @@ namespace FUELTRIP_Logger
                             {
                                 double value = double.Parse(valJson.val[code]);
                                 if(code == DefiParameterCode.Engine_Speed.ToString())
-                                    engineRev = value;
+                                    this.engineRev = value;
                                 else
                                     throw new InvalidOperationException("Unexpected parameter code is returned on parsing VAL. ServerType:" + wsClientType.ToString() + " Code:"  + code);
                             }
@@ -364,15 +364,15 @@ namespace FUELTRIP_Logger
                             {
                                 double value = double.Parse(valJson.val[code]);
                                 if(code == SSMParameterCode.Vehicle_Speed.ToString())
-                                    vehicleSpeed = value;
+                                    this.vehicleSpeed = value;
                                 else if (code == SSMParameterCode.Engine_Speed.ToString())
-                                    engineRev = value;
+                                    this.engineRev = value;
                                 else if (code == SSMParameterCode.Fuel_Injection_1_Pulse_Width.ToString())
-                                    injPulseWidth = value;
+                                    this.injPulseWidth = value;
                                 else if (code == SSMParameterCode.Mass_Air_Flow.ToString())
-                                    massAirFlow = value;
+                                    this.massAirFlow = value;
                                 else if (code == SSMParameterCode.Air_Fuel_Sensor_1.ToString())
-                                    afRatio = value;
+                                    this.afRatio = value;
                                 else
                                     throw new InvalidOperationException("Unexpected parameter code is returned on parsing VAL. ServerType:" + wsClientType.ToString() + " Code:"  + code);
                             }
@@ -382,9 +382,9 @@ namespace FUELTRIP_Logger
                             {
                                 double value = double.Parse(valJson.val[code]);
                                 if(code == ArduinoParameterCode.Engine_Speed.ToString())
-                                    engineRev = value;
+                                    this.engineRev = value;
                                 else if (code == ArduinoParameterCode.Vehicle_Speed.ToString())
-                                    vehicleSpeed = value;
+                                    this.vehicleSpeed = value;
                                 else
                                     throw new InvalidOperationException("Unexpected parameter code is returned on parsing VAL. ServerType:" + wsClientType.ToString() + " Code:"  + code);
                             }
@@ -394,15 +394,15 @@ namespace FUELTRIP_Logger
                             {
                                 double value = double.Parse(valJson.val[code]);
                                 if (code == OBDIIParameterCode.Engine_Speed.ToString())
-                                    engineRev = value;
+                                    this.engineRev = value;
                                 else if (code == OBDIIParameterCode.Vehicle_Speed.ToString())
-                                    vehicleSpeed = value;
+                                    this.vehicleSpeed = value;
                                 else if (code == OBDIIParameterCode.Mass_Air_Flow.ToString())
-                                    massAirFlow = value;
+                                    this.massAirFlow = value;
                                 else if (code == OBDIIParameterCode.Command_equivalence_ratio.ToString())
-                                    afRatio = value;
+                                    this.afRatio = value;
                                 else if (code == OBDIIParameterCode.Engine_fuel_rate.ToString())
-                                    fuelRate = value;
+                                    this.fuelRate = value;
                                 else
                                     throw new InvalidOperationException("Unexpected parameter code is returned on parsing VAL. ServerType:" + wsClientType.ToString() + " Code:" + code);
                             }
