@@ -46,6 +46,24 @@ namespace FUELTRIP_Logger
             RequiredParameterCode requiredCodes = new RequiredParameterCode();
             FuelCalculationMethod calcMethod = this.Calculation.FuelCalculationMethod;
             DataSource dataSource = this.Calculation.DataSource;
+            
+            // Decide parameter code for trip (vehicle speed)
+            switch(dataSource.VehicleSpeedSource)
+            {
+                case WebSocketType.SSM:
+                    requiredCodes.SSMCodes.Add(SSMParameterCode.Vehicle_Speed);
+                    break;
+                case WebSocketType.ARDUINO:
+                    requiredCodes.ArduinoCodes.Add(ArduinoParameterCode.Vehicle_Speed);
+                    break;
+                case WebSocketType.ELM327:
+                    requiredCodes.ELM327OBDCodes.Add(OBDIIParameterCode.Vehicle_Speed);
+                    break;
+                default:
+                    throw new ArgumentException("Vehicle speed is supported only on SSM, Arduino, ELM327.");
+            }
+            
+            // Decide parameter code for fuel consumption.
             switch (calcMethod)
             {
                 case FuelCalculationMethod.FUEL_RATE:
