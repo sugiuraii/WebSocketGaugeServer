@@ -26,7 +26,7 @@ namespace FUELTRIP_Logger
         /// <param name="injetctioPulseWidth">Injection pulse width</param>
         /// <param name="calculatorOption">Calculator option</param>
         /// <returns></returns>
-        public static double FuelCalcByRevInjPW(long elaspedMillisecond, double engineRev, double injectionPulseWidth, FuelTripCalculatorOption calculatorOption)
+        public static double FuelCalcByRevInjPW(double elaspedMillisecond, double engineRev, double injectionPulseWidth, FuelTripCalculatorOption calculatorOption)
         {
             double GasConsumptionCoefficient = calculatorOption.FuelCorrectionFactor;
             int NumCylinder = calculatorOption.NumCylinder;
@@ -54,7 +54,7 @@ namespace FUELTRIP_Logger
         /// <param name="AFRatio">AF ratio</param>
         /// <param name="calculatorOption">Calculator option</param>
         /// <returns></returns>
-        public static double FuelCalcByAFAndMassAir(long elapsedMillisecond, double massAirFlow, double AFRatio, FuelTripCalculatorOption calculatorOption)
+        public static double FuelCalcByAFAndMassAir(double elapsedMillisecond, double massAirFlow, double AFRatio, FuelTripCalculatorOption calculatorOption)
         {
             double GasConsumptionCoefficient = calculatorOption.FuelCorrectionFactor;
             double momentaryFuelConsumption = massAirFlow / AFRatio / DensityOfFuel / 1000;
@@ -69,7 +69,7 @@ namespace FUELTRIP_Logger
         /// <param name="massAirFlow">Mass air flow</param>
         /// <param name="calculatorOption">AF ratio</param>
         /// <returns></returns>
-        public static double FuelCalcByMassAir(long elapsedMillisecond, double massAirFlow, FuelTripCalculatorOption calculatorOption)
+        public static double FuelCalcByMassAir(double elapsedMillisecond, double massAirFlow, FuelTripCalculatorOption calculatorOption)
         {
             return FuelCalcByAFAndMassAir(elapsedMillisecond, massAirFlow, DefaultAFRatio, calculatorOption);
         }

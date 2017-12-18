@@ -38,12 +38,22 @@ namespace FUELTRIP_Logger
     /// Fuel and trip calculation class.
     /// </summary>
 	public class FuelTripCalculator
-	{		
+	{	
         private FuelTripCalculatorOption calculatorOption;
         private FuelCalculationMethod calculationMethod;
 
 		private Stopwatch stopWatch;
-		private const long stopwatchTimeout = 3000;
+        
+        /// <summary>
+        /// Maximum tick (in millisecond) between each stopwatch call.
+        /// Do not calculate trip and fuel consumption if the stopwatch tick over this value.
+        /// </summary>
+        private const long StopWatchTimeout = 3000;
+        /// <summary>
+        /// Minimum tick (in millisecond) between each stopwatch call.
+        /// Do not calculate trip and fuel consumption if the stopwatch tick is below this value.
+        /// </summary>
+        private const long StopWatchMinTick = 5;
 
 		/// <summary>
         /// Time span (in ms) to save fuel and trip to file.
@@ -306,15 +316,16 @@ namespace FUELTRIP_Logger
 
             //get elasped time
             long stopwatch_elapsed = stopWatch.ElapsedMilliseconds;
-
-			// Invoke timeout exception if the elapsed time over timeout
-			if (stopwatch_elapsed > stopwatchTimeout) {
-				stopWatch.Reset ();
-                stopWatch.Start();
-				throw new TimeoutException ("tacho/speed/injpulse/massAirFlow/AFRatio update span is too large (Timeout).");
-			}
             stopWatch.Reset();
-			stopWatch.Start ();
+            stopWatch.Start();
+
+            // Do nothing if the elapsed time below StopWatchMinTick
+            if (stopwatch_elapsed < StopWatchMinTick)
+                return;
+			// Invoke timeout exception if the elapsed time over timeout
+			if (stopwatch_elapsed > StopWatchTimeout)
+				throw new TimeoutException ("tacho/speed/injpulse/massAirFlow/AFRatio update span is too large (Timeout).");
+
 
             //Calculate momentary trip from speed.
 			momentaryTrip = getMomentaryTrip(stopwatch_elapsed, speed, calculatorOption);
