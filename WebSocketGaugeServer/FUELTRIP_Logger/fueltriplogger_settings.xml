@@ -14,7 +14,7 @@
       MASS_AIR_FLOW_AF : Calculate by "Mass air flow" and "A/F ratio"
       FUEL_RATE        : Calucluate by "Fuel Rate"
     -->
-    <FuelCalcMethod>RPM_INJECTION_PW</FuelCalcMethod>
+    <FuelCalculationMethod>RPM_INJECTION_PW</FuelCalculationMethod>
     <DataSource>
       <!-- Data source (Websocket server type) Candidate : 
         DEFI : Only "Engine RPM" is available
