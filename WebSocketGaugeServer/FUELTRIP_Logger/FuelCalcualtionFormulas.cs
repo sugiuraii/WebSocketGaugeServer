@@ -59,7 +59,7 @@ namespace FUELTRIP_Logger
             double GasConsumptionCoefficient = calculatorOption.FuelCorrectionFactor;
             double momentaryFuelConsumption = massAirFlow / AFRatio / DensityOfFuel / 1000;
 
-            return momentaryFuelConsumption * GasConsumptionCoefficient * elapsedMillisecond;
+            return momentaryFuelConsumption * GasConsumptionCoefficient * elapsedMillisecond/1000;
         }
 
         /// <summary>
