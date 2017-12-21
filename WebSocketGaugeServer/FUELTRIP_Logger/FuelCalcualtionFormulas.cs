@@ -14,9 +14,9 @@ namespace FUELTRIP_Logger
         public static double DensityOfFuel = 0.73;
 
         /// <summary>
-        /// Default A/F ratio.
+        /// Default A/F ratio(in lambda).
         /// </summary>
-        public static double DefaultAFRatio = 14.7;
+        public static double DefaultAFRatio = 1.0;
 
         /// <summary>
         /// Calculate and return momentary fuel consumption by rev and injection pulse width method.
@@ -51,13 +51,13 @@ namespace FUELTRIP_Logger
         /// </summary>
         /// <param name="elapsedMillisecond">Elapsed time</param>
         /// <param name="massAirFlow">Mass air flow (g/s)</param>
-        /// <param name="AFRatio">AF ratio</param>
+        /// <param name="AFRatio">AF ratio(lambda, Set 1 on stoichiometric mixture(Gas(gram):Air(gram)=14.7:1))</param>
         /// <param name="calculatorOption">Calculator option</param>
         /// <returns></returns>
         public static double FuelCalcByAFAndMassAir(double elapsedMillisecond, double massAirFlow, double AFRatio, FuelTripCalculatorOption calculatorOption)
         {
             double GasConsumptionCoefficient = calculatorOption.FuelCorrectionFactor;
-            double momentaryFuelConsumption = massAirFlow / AFRatio / DensityOfFuel / 1000;
+            double momentaryFuelConsumption = massAirFlow / (AFRatio * 14.7) / DensityOfFuel / 1000;
 
             return momentaryFuelConsumption * GasConsumptionCoefficient * elapsedMillisecond/1000;
         }
@@ -67,7 +67,7 @@ namespace FUELTRIP_Logger
         /// </summary>
         /// <param name="elapsedMillisecond">Elapsed time</param>
         /// <param name="massAirFlow">Mass air flow</param>
-        /// <param name="calculatorOption">AF ratio</param>
+        /// <param name="calculatorOption">Calculator option<</param>
         /// <returns></returns>
         public static double FuelCalcByMassAir(double elapsedMillisecond, double massAirFlow, FuelTripCalculatorOption calculatorOption)
         {
