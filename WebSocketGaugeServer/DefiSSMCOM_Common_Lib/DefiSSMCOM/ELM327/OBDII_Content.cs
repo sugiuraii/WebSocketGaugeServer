@@ -91,6 +91,11 @@ namespace DefiSSMCOM.OBDII
             _numeric_content_table.Add(OBDIIParameterCode.Time_run_with_MIL_on , new OBDIINumericContent(0x4D , 2 , A=> A ,"minutes"));
             _numeric_content_table.Add(OBDIIParameterCode.Time_since_trouble_codes_cleared , new OBDIINumericContent(0x4E , 2 , A=> A ,"minutes"));
             _numeric_content_table.Add(OBDIIParameterCode.Ethanol_fuel_percent , new OBDIINumericContent(0x52 , 1 , A=> A*100/255 ,"%"));
+
+            // Temporary added on 2017/12/14
+            _numeric_content_table.Add(OBDIIParameterCode.Engine_fuel_rate, new OBDIINumericContent(0x5E, 2, A => A / 20, "L/h"));
+            _numeric_content_table.Add(OBDIIParameterCode.Engine_oil_temperature, new OBDIINumericContent(0x5C, 1, A=>A-40, "degC"));
+            _numeric_content_table.Add(OBDIIParameterCode.Hybrid_battery_pack_remaining_life, new OBDIINumericContent(0x5B, 1, A=>100*A/255, "%"));
         }
     }
 }
