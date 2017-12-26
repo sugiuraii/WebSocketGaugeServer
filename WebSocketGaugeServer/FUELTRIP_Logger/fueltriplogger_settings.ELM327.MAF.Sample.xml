@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<AppSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <defiserver_url>ws://localhost:2012/</defiserver_url>
+  <ssmserver_url>ws://localhost:2013/</ssmserver_url>
+  <arduinoserver_url>ws://localhost:2015/</arduinoserver_url>
+  <elm327server_url>ws://localhost:2016/</elm327server_url>
+  <websocket_port>2014</websocket_port>
+  <keepalive_interval>60</keepalive_interval>
+  <Calculation>
+    <!-- 
+      Fuel calculation method. Candidates :
+      RPM_INJECTION_PW : Calculate by "Engine RPM" and "Fuel injection pulse width".
+      MASS_AIR_FLOW    : Calculate by "Mass air flow" (with assuming A/F ratio is 14.7)
+      MASS_AIR_FLOW_AF : Calculate by "Mass air flow" and "A/F ratio"
+      FUEL_RATE        : Calucluate by "Fuel Rate"
+    -->
+    <FuelCalculationMethod>MASS_AIR_FLOW</FuelCalculationMethod>
+    <DataSource>
+      <!-- Data source (Websocket server type) Candidate : 
+        DEFI : Only "Engine RPM" is available
+        SSM : "VehicleSpeed", "Engine RPM", "InjectionPW", "MassAirFlow" and "AF ratio" are available.
+        ARDUINO : "VehicleSpeed" and "Engine RPM" are available
+        ELN327 : "VehicleSpeed", "EngineRPM", "MassAirFlow", "A/F ratio" and "FuelRate" are available (depends on ECU model) 
+      -->
+      <VehicleSpeedSource>ELM327</VehicleSpeedSource>
+      <MassAirFlowSource>ELM327</MassAirFlowSource>
+      <!-- RPM, InjectionPW, AFratio, FuelRate are ignored in MASS_AIR_FLOW mode -->
+      <RPMSource>DEFI</RPMSource>
+      <InjectionPWSource>SSM</InjectionPWSource>
+      <AFRatioSource>SSM</AFRatioSource>
+      <FuelRateSource>ELM327</FuelRateSource>
+      <!-- RPM, InjectionPW, AFratio, FuelRate are ignored in MASS_AIR_FLOW mode -->
+    </DataSource>
+    <CalculationOption>
+      <FuelCorrectionFactor>1.0</FuelCorrectionFactor>
+      <TripCorrectionFactor>1.0</TripCorrectionFactor>
+      <!--
+        Follwoing 3 parmeters are considered only on "RPM_INJECTION_PW" mode.
+      -->
+      <NumCylinder>4</NumCylinder>
+      <InjectionLatency>0.76</InjectionLatency>
+      <InjectorCapacity>575</InjectorCapacity>
+    </CalculationOption>
+  </Calculation>
+</AppSettings>
