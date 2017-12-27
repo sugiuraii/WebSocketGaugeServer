@@ -189,22 +189,6 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="fueltriplogger_settings.ELM327.MAF.Sample.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="fueltriplogger_settings.ELM327.FUELRate.Sample.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="fueltriplogger_settings.SSM.MAF.Sample.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="fueltriplogger_settings.SSM.InjRPM.Sample.xml">
-      <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="FUELTRIP_Server.ico" />
     <Content Include="Log4net.Config.xml">
       <SubType>Designer</SubType>
@@ -214,6 +198,10 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
+    <Content Include="setting_examples\fueltriplogger_settings.ELM327.FUELRate.Sample.xml" />
+    <Content Include="setting_examples\fueltriplogger_settings.ELM327.MAF.Sample.xml" />
+    <Content Include="setting_examples\fueltriplogger_settings.SSM.InjRPM.Sample.xml" />
+    <Content Include="setting_examples\fueltriplogger_settings.SSM.MAF.Sample.xml" />
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -264,4 +252,5 @@
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>
+  <ItemGroup />
 </Project>
