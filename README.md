@@ -79,5 +79,10 @@ On windows, please doubleclick the exe file on explorer. On linux, run with mono
 > mono DefiCOM_WebSocket_Server.exe
 ```
 
+## <a name="client">Client</a>
+To get the graphical gauge client, please refer separated project of [sugiuraii/WebSocketGaugeClientNeo](https://github.com/sugiuraii/WebSocketGaugeClientNeo).
+
+And, trip and fuel consumption logger is also available. Please refer [FUELTRIPLogger.md](./FUELTRIPLogger.md)
+
 ## <a name="license">License</a>
 [Apache-2.0](https://github.com/sugiuraii/DefiSSMCOM_WebsocketServer/blob/master/LICENSE)
