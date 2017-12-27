@@ -1,4 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
+<!--
+FUELTRIP logger example setting file.
+Calculation method            : MASS_AIR_FLOW
+Get sensor data from          : SSM
+
+Copy and overwrite the ../fueltriplogger_settings.xml with this file.
+-->
 <AppSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <defiserver_url>ws://localhost:2012/</defiserver_url>
   <ssmserver_url>ws://localhost:2013/</ssmserver_url>

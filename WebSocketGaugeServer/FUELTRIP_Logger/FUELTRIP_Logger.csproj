@@ -192,16 +192,24 @@
     <Content Include="FUELTRIP_Server.ico" />
     <Content Include="Log4net.Config.xml">
       <SubType>Designer</SubType>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="fueltriplogger_settings.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
       <SubType>Designer</SubType>
     </Content>
-    <Content Include="setting_examples\fueltriplogger_settings.ELM327.FUELRate.Sample.xml" />
-    <Content Include="setting_examples\fueltriplogger_settings.ELM327.MAF.Sample.xml" />
-    <Content Include="setting_examples\fueltriplogger_settings.SSM.InjRPM.Sample.xml" />
-    <Content Include="setting_examples\fueltriplogger_settings.SSM.MAF.Sample.xml" />
+    <Content Include="setting_examples\fueltriplogger_settings.ELM327.FUELRate.Sample.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="setting_examples\fueltriplogger_settings.ELM327.MAF.Sample.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="setting_examples\fueltriplogger_settings.SSM.InjRPM.Sample.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="setting_examples\fueltriplogger_settings.SSM.MAF.Sample.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include=".NETFramework,Version=v4.0">
@@ -233,22 +241,62 @@
   <ItemGroup>
     <PublishFile Include="fueltriplogger_settings.xml">
       <Visible>False</Visible>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <Group>
       </Group>
       <TargetPath>
       </TargetPath>
-      <PublishState>Include</PublishState>
-      <IncludeHash>True</IncludeHash>
       <FileType>File</FileType>
     </PublishFile>
     <PublishFile Include="Log4net.Config.xml">
       <Visible>False</Visible>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
       <Group>
       </Group>
       <TargetPath>
       </TargetPath>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="setting_examples\fueltriplogger_settings.ELM327.FUELRate.Sample.xml">
+      <Visible>False</Visible>
       <PublishState>Include</PublishState>
       <IncludeHash>True</IncludeHash>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="setting_examples\fueltriplogger_settings.ELM327.MAF.Sample.xml">
+      <Visible>False</Visible>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="setting_examples\fueltriplogger_settings.SSM.InjRPM.Sample.xml">
+      <Visible>False</Visible>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
+      <FileType>File</FileType>
+    </PublishFile>
+    <PublishFile Include="setting_examples\fueltriplogger_settings.SSM.MAF.Sample.xml">
+      <Visible>False</Visible>
+      <PublishState>Include</PublishState>
+      <IncludeHash>True</IncludeHash>
+      <Group>
+      </Group>
+      <TargetPath>
+      </TargetPath>
       <FileType>File</FileType>
     </PublishFile>
   </ItemGroup>
