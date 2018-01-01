@@ -190,6 +190,11 @@ namespace DefiSSMCOM
             return serialPort.ReadLine();
         }
 
+        public string ReadExisting()
+        {
+            return serialPort.ReadExisting();
+        }
+
         public void DiscardInBuffer()
         {
             serialPort.DiscardInBuffer();
