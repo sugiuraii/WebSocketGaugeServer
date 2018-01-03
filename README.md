@@ -36,7 +36,10 @@ Operation are checked on following hardware...
 | DefiCOM_WebSocket_Server | Defi-Link Control Unit-I/II  | STi Genome sport single meter (boost) | Only "Engine_Speed (rpm)" and "Manifold_Absolute_Pressure(boost)" are checked. Other sensors are not checked .<br> Not compatible with Defi-Link ADVANCE Control Unit.<br> Comport simulator software is available [here](https://github.com/sugiuraii/DefiCOM_SSMCOM_Emulator)|
 | SSMCOM_WebSocket_Server | Subaru SSM capable ECU and OpenPort 1.2 compatible cable | monamona-cable and JDM Subaru Impreza WRX STI (GDBA, 2000 model) | Schematics seems to be open on [this OSDN site](https://ja.osdn.net/projects/ecuexplorer/docman/)<br> Comport simulator software is available [here](https://github.com/sugiuraii/DefiCOM_SSMCOM_Emulator) |
 | ArduinoCOM_WebSocket_Server | ArduinoUNO compatible board | Nobrand ArduinoUNO compatible board | Sketch is available on [this site](https://github.com/sugiuraii/ArduinoPulseSensorGeneratorReader).<br> This sketch is tuned for Autogauge boost sensor and temperature sensor. |
-| ELM327COM_WebSocket_Server | ELM327 compatible OBD-II cable | [ScanTool.net OBDLink SX USB cable](https://www.scantool.net/obdlink-sx/) and JDM Toyota Prius (ZVW30, 2009 model) | Operation is also tested on [OBDSim](https://icculus.org/obdgpslogger/obdsim.html) |
+| ELM327COM_WebSocket_Server | ELM327 compatible OBD-II cable | [ScanTool.net OBDLink SX USB cable](https://www.scantool.net/obdlink-sx/) and JDM Toyota Prius (ZVW30, 2009 model) | Default baud rate is set to 115200bps |
+| ELM327COM_WebSocket_Server | ELM327 compatible OBD-II cable | [Nobrand ELM327 bluetooth adaptor](https://www.amazon.co.jp/gp/product/B00IY4RKVG/) and JDM Toyota Prius (ZVW30, 2009 model) | Default baud rate is set to 115200bps. Tested on linux. Virtual COM port is creaetd by rfcomm. [(see here)](https://en.opensuse.org/SDB:ELM327_based_ODB2_scan_tool)  |
+
+ELM327COM_WebSocket_Server is also tested on [com0com](https://sourceforge.net/projects/com0com/) and [OBDSim](https://icculus.org/obdgpslogger/obdsim.html) (baudrate is set to 9600bps).
 
 ## <a name="dependency">Dependency</a>
 * [SuperWebSocket](https://github.com/kerryjiang/SuperWebSocket)
