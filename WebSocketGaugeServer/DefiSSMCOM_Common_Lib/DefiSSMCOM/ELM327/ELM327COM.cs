@@ -16,17 +16,16 @@ namespace DefiSSMCOM.OBDII
         private const int RECOMMENDED_BAUD_RATE = 115200;
 
         private const int INITIALIZE_FAILED_MAX = 30;
+        private const int PID_COMMUNICATE_RETRY_MAX = 5;
 
         //ELM327COM data received event
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
 
-        //コンストラクタ
+        //Constructor
         public ELM327COM()
         {
-            //シリアルポート設定
+            //Setup serial port
             DefaultBaudRate = 115200;
-            //Set baudrate to 9600 if you use obdsim.
-            //DefaultBaudRate = 9600;
 
             ResetBaudRate = 4800;
             ReadTimeout = 500;
@@ -34,7 +33,7 @@ namespace DefiSSMCOM.OBDII
             content_table = new OBDIIContentTable();
         }
 
-        //ELM327COMではDefaultBaudRateの変更を許可
+        //Changing DefaultBaudRate is allowed in ELM327COM
         public void overrideDefaultBaudRate(int baudRate)
         {
             DefaultBaudRate = baudRate;
@@ -110,6 +109,7 @@ namespace DefiSSMCOM.OBDII
 
         private void initializeELM327ATCommand()
         {
+            ReadExisting();
             DiscardInBuffer();
             bool initializeFinished = false;
             int initializeFailedCount = 0;
@@ -157,7 +157,7 @@ namespace DefiSSMCOM.OBDII
         {
             try
             {
-                //クエリするSSM_codeリストの作成
+                //Create PID list to query
                 List<OBDIIParameterCode> query_OBDII_code_list = new List<OBDIIParameterCode>();
                 foreach (OBDIIParameterCode code in Enum.GetValues(typeof(OBDIIParameterCode)))
                 {
@@ -180,8 +180,7 @@ namespace DefiSSMCOM.OBDII
                 //Exit loop if the PIDs to query are not exists.
                 if (query_OBDII_code_list.Count <= 0)
                 {
-                    //SSM_codeがない場合、すぐに抜けると直後にcommunicate_mainが呼び出されCPUを占有するので、500ms待つ
-                    //SlowReadの場合、この処理はしない
+                    //If no PIDs are in query list, return with waiting 500ms(wait is ignored if slow_read_flag = true).
                     if (!slow_read_flag)
                         Thread.Sleep(500);
                     return;
@@ -205,14 +204,21 @@ namespace DefiSSMCOM.OBDII
             }
         }
 
-        //Communication on 1PID
         private void communicateOnePID(OBDIIParameterCode code)
+        {
+            this.communicateOnePID(code, 0);
+        }
+
+        //Communication on 1PID
+        private void communicateOnePID(OBDIIParameterCode code, int errorRetryCount)
         {
             //Clean up serial port buffer
             DiscardInBuffer();
 
             String outMsg;
-            outMsg = MODECODE.ToString("X2") + content_table[code].PID.ToString("X2") + content_table[code].ReturnByteLength.ToString("X1");
+            String outPID = content_table[code].PID.ToString("X2");
+            int returnByteLength = content_table[code].ReturnByteLength;
+            outMsg = MODECODE.ToString("X2") + outPID + returnByteLength.ToString("X1");
             Write(outMsg + "\r");
             //logger.Debug("ELM327OUT:" + outMsg);
             String inMsg = "";
@@ -230,9 +236,24 @@ namespace DefiSSMCOM.OBDII
                 inMsg = discardStringAfterChar(inMsg, '\r');
 
                 //logger.Debug("ELM327IN:" + inMsg);
+                
+                // Get ECU data.
                 inMsg = inMsg.Replace(">","").Replace("\n","").Replace("\r","");
+                
+                // Check ECU data format.
                 if (inMsg.Equals(""))
+                    throw new FormatException("Return message at communicateOnePID() is empty.");
+                else if (inMsg.Contains("NO DATA"))
+                {
+                    logger.Warn("ELM327 returns NO DATA." + " OutPID :" + outPID + " Code : " + code.ToString());
                     return;
+                }
+
+                String inPID = inMsg.Substring(2, 2);
+                if (!inPID.Equals(outPID))
+                {
+                    throw new FormatException("PID return from ELM327 does not match with commanded PID." + "outPID : " + outPID + " inPID :" + inPID);
+                }
 
                 //logger.Debug("Filtered ELM327IN:" + inMsg);
                 returnValue = Convert.ToInt32(inMsg.Remove(0, 4), 16);
@@ -241,18 +262,36 @@ namespace DefiSSMCOM.OBDII
             }
             catch(TimeoutException ex)
             {
-                logger.Warn("ELM327COM timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                logger.Error("ELM327COM timeout. " + ex.GetType().ToString() + " " + ex.Message);
                 communicateRealtimeIsError = true;
             }
             catch(FormatException ex)
             {
-                logger.Warn("String conversion to Int32 was failed " + ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
-                //communicateRealtimeIsError = true;
+                logger.Warn(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
+                if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
+                {
+                    logger.Warn("Retry communication" + " OutPID :" + outPID + " Code : " + code.ToString());
+                    communicateOnePID(code, errorRetryCount + 1);
+                }
+                else
+                {
+                    logger.Error("PID communication retry count exceeds maximum (" + PID_COMMUNICATE_RETRY_MAX.ToString() + ")");
+                    communicateRealtimeIsError = true;
+                }
             }
             catch(ArgumentOutOfRangeException ex)
             {
-                logger.Warn("String conversion to Int32 was failed " + ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
-                //communicateRealtimeIsError = true;
+                logger.Warn(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
+                if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
+                {
+                    logger.Warn("Retry communication"  + " OutPID :" + outPID + " Code : " + code.ToString());
+                    communicateOnePID(code, errorRetryCount + 1);
+                }
+                else
+                {
+                    logger.Error("PID communication retry count exceeds maximum (" + PID_COMMUNICATE_RETRY_MAX.ToString() + ")");
+                    communicateRealtimeIsError = true;
+                }
             }
         }
 

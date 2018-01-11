@@ -51,6 +51,36 @@ namespace DefiSSMCOM.OBDII
         Commanded_throttle_actuator,
         Time_run_with_MIL_on,
         Time_since_trouble_codes_cleared,
-        Ethanol_fuel_percent
+        Ethanol_fuel_percent,
+
+        // Added on 2018/10/07-----------------
+        O2Sensor_1_Air_Fuel_Correction,
+        O2Sensor_2_Air_Fuel_Correction,
+        O2Sensor_3_Air_Fuel_Correction,
+        O2Sensor_4_Air_Fuel_Correction,
+        O2Sensor_5_Air_Fuel_Correction,
+        O2Sensor_6_Air_Fuel_Correction,
+        O2Sensor_7_Air_Fuel_Correction,
+        O2Sensor_8_Air_Fuel_Correction,
+
+        O2Sensor_1_Air_Fuel_Ratio,
+        O2Sensor_2_Air_Fuel_Ratio,
+        O2Sensor_3_Air_Fuel_Ratio,
+        O2Sensor_4_Air_Fuel_Ratio,
+        O2Sensor_5_Air_Fuel_Ratio,
+        O2Sensor_6_Air_Fuel_Ratio,
+        O2Sensor_7_Air_Fuel_Ratio,
+        O2Sensor_8_Air_Fuel_Ratio,
+
+        Evap_system_vapor_pressure,
+        Fuel_rail_absolute_pressure,
+        Relative_accelerator_pedal_position,
+        Hybrid_battery_pack_remaining_life,
+        Engine_oil_temperature,
+        Fuel_injection_timing,
+        Engine_fuel_rate,
+        Driver_demand_engine_percent_torque,
+        Actual_engine_percent_torque,
+        Engine_reference_torque
     };
 }

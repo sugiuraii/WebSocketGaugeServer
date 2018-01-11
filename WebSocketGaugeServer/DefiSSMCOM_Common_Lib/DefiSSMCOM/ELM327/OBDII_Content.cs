@@ -45,6 +45,22 @@ namespace DefiSSMCOM.OBDII
             }
         }
 
+        private double getValueOfUpperByte(double x)
+        {
+            int intX = (int)x;
+            byte upperByte = (byte)(intX >> 8);
+
+            return (double)upperByte;
+         }
+
+        private double getValueOfLowerByte(double x)
+        {
+            int intX = (int)x;
+            byte lowerByte = (byte)(intX & 0xFF);
+
+            return (double)lowerByte;
+        }
+
         protected override void setNumericContentTable()
         {
             _numeric_content_table.Add(OBDIIParameterCode.Engine_Load , new OBDIINumericContent(0x04 , 1 , A=> A*100/255 ,"%"));
@@ -91,6 +107,37 @@ namespace DefiSSMCOM.OBDII
             _numeric_content_table.Add(OBDIIParameterCode.Time_run_with_MIL_on , new OBDIINumericContent(0x4D , 2 , A=> A ,"minutes"));
             _numeric_content_table.Add(OBDIIParameterCode.Time_since_trouble_codes_cleared , new OBDIINumericContent(0x4E , 2 , A=> A ,"minutes"));
             _numeric_content_table.Add(OBDIIParameterCode.Ethanol_fuel_percent , new OBDIINumericContent(0x52 , 1 , A=> A*100/255 ,"%"));
+
+            // Added on 2018/01/07
+            _numeric_content_table.Add(OBDIIParameterCode.Evap_system_vapor_pressure, new OBDIINumericContent(0x54, 2, A => A - 32767, "Pa"));
+            _numeric_content_table.Add(OBDIIParameterCode.Fuel_rail_absolute_pressure, new OBDIINumericContent(0x59, 2, A => 10 * A, "kPa"));
+            _numeric_content_table.Add(OBDIIParameterCode.Relative_accelerator_pedal_position, new OBDIINumericContent(0x5A, 1, A => 100 * A / 255, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.Hybrid_battery_pack_remaining_life, new OBDIINumericContent(0x5B, 1, A => 100 * A / 255, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.Engine_oil_temperature, new OBDIINumericContent(0x5C, 1, A => A - 40, "degC"));
+            _numeric_content_table.Add(OBDIIParameterCode.Fuel_injection_timing, new OBDIINumericContent(0x5D, 2, A => A / 128 - 210, "degC"));
+            _numeric_content_table.Add(OBDIIParameterCode.Engine_fuel_rate, new OBDIINumericContent(0x5E, 2, A => A / 20, "L/h"));
+            _numeric_content_table.Add(OBDIIParameterCode.Driver_demand_engine_percent_torque, new OBDIINumericContent(0x61, 1, A => A - 125, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.Actual_engine_percent_torque, new OBDIINumericContent(0x62, 1, A => A - 125, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.Engine_reference_torque, new OBDIINumericContent(0x63, 2, A => A, "Nm"));
+
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_1_Air_Fuel_Correction, new OBDIINumericContent(0x14, 2, A => ((double)((int)A & 0xFF)) / 128 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_2_Air_Fuel_Correction, new OBDIINumericContent(0x15, 2, A => ((double)((int)A & 0xFF)) / 128 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_3_Air_Fuel_Correction, new OBDIINumericContent(0x16, 2, A => ((double)((int)A & 0xFF)) / 128 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_4_Air_Fuel_Correction, new OBDIINumericContent(0x17, 2, A => ((double)((int)A & 0xFF)) / 128 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_5_Air_Fuel_Correction, new OBDIINumericContent(0x18, 2, A => ((double)((int)A & 0xFF)) / 128 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_6_Air_Fuel_Correction, new OBDIINumericContent(0x19, 2, A => ((double)((int)A & 0xFF)) / 128 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_7_Air_Fuel_Correction, new OBDIINumericContent(0x1A, 2, A => ((double)((int)A & 0xFF)) / 128 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_8_Air_Fuel_Correction, new OBDIINumericContent(0x1B, 2, A => ((double)((int)A & 0xFF)) / 128 - 100, "%"));
+
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_1_Air_Fuel_Ratio, new OBDIINumericContent(0x24, 4, A => ((double)((int)A >> 16)) / 65536 * 2, "Lambda"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_2_Air_Fuel_Ratio, new OBDIINumericContent(0x25, 4, A => ((double)((int)A >> 16)) / 65536 * 2, "Lambda"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_3_Air_Fuel_Ratio, new OBDIINumericContent(0x26, 4, A => ((double)((int)A >> 16)) / 65536 * 2, "Lambda"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_4_Air_Fuel_Ratio, new OBDIINumericContent(0x27, 4, A => ((double)((int)A >> 16)) / 65536 * 2, "Lambda"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_5_Air_Fuel_Ratio, new OBDIINumericContent(0x28, 4, A => ((double)((int)A >> 16)) / 65536 * 2, "Lambda"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_6_Air_Fuel_Ratio, new OBDIINumericContent(0x29, 4, A => ((double)((int)A >> 16)) / 65536 * 2, "Lambda"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_7_Air_Fuel_Ratio, new OBDIINumericContent(0x2A, 4, A => ((double)((int)A >> 16)) / 65536 * 2, "Lambda"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_8_Air_Fuel_Ratio, new OBDIINumericContent(0x2B, 4, A => ((double)((int)A >> 16)) / 65536 * 2, "Lambda"));
+
         }
     }
 }

@@ -72,7 +72,7 @@ namespace DefiSSMCOM.WebSocket.JSON
     {
         private readonly string ModeCode;
         public const string FastReadModeCode = "FAST";
-        public const string SlowReadModeCOde = "SLOW";
+        public const string SlowReadModeCode = "SLOW";
         public SlowFastCOMReadJSONFormat(string modecode)
         {
             ModeCode = modecode;
@@ -94,7 +94,7 @@ namespace DefiSSMCOM.WebSocket.JSON
                 {
                     if (!(Enum.IsDefined(typeof(parameterCodeType), code)))
                         throw new JSONFormatsException(typeof(parameterCodeType).ToString() + " property of " + ModeCode + " packet is not valid.");
-                    if (read_mode != FastReadModeCode && read_mode != SlowReadModeCOde)
+                    if (read_mode != FastReadModeCode && read_mode != SlowReadModeCode)
                         throw new JSONFormatsException("read_mode of " + ModeCode +" packet is not valid (Should be SLOW or FAST).");
                     if (flag != true && flag != false)
                         throw new JSONFormatsException("flag of "+ ModeCode +" packet is not valid.");

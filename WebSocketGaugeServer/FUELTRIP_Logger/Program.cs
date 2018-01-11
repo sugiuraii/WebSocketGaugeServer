@@ -6,25 +6,18 @@ using System.Threading;
 
 namespace FUELTRIP_Logger
 {
-    public class AppSettings
-    {
-        public string defiserver_url;
-        public string ssmserver_url;
-        public int websocket_port;
-        public int keepalive_interval;
-    }
-
 	class MainClass
 	{
-
         //log4net
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-        private static AppSettings appsetting;
+
 		public static void Main (string[] args)
 		{
+            AppSettings appsetting;
             try
             {
-                load_setting_xml("fueltriplogger_settings.xml");
+                appsetting = LoadSettingXml("fueltriplogger_settings.xml");
+                appsetting.ValidateSettings();
             }
             catch (XmlException ex)
             {
@@ -50,9 +43,15 @@ namespace FUELTRIP_Logger
                 logger.Error(ex.Message);
                 return;
             }
+            catch(ArgumentException ex)
+            {
+                logger.Error(ex.Message);
+                return;
+            }
+            RequiredParameterCode codelist = appsetting.getRequiredParameterCodes();
 
-			FUELTRIP_Logger fueltriplogger1 = new FUELTRIP_Logger (appsetting.defiserver_url,appsetting.ssmserver_url);
-            fueltriplogger1.WebsocketServer_ListenPortNo = appsetting.websocket_port;
+			FUELTRIPLogger fueltriplogger1 = new FUELTRIPLogger(appsetting);
+            fueltriplogger1.WebsocketServerListenPortNo = appsetting.websocket_port;
             fueltriplogger1.KeepAliveInterval = appsetting.keepalive_interval;
 
 			Console.WriteLine("The server started successfully, press key 'q' to stop it!");
@@ -68,22 +67,18 @@ namespace FUELTRIP_Logger
 			fueltriplogger1.stop ();
 		}
 
-        private static void load_setting_xml(string filepath)
+        private static AppSettings LoadSettingXml(string filepath)
         {
-            //XmlSerializerオブジェクトの作成
+            //Construct XmlSerializer
             System.Xml.Serialization.XmlSerializer serializer =
                 new System.Xml.Serialization.XmlSerializer(typeof(AppSettings));
 
-            //ファイルを開く
             System.IO.FileStream fs =
                 new System.IO.FileStream(filepath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
 
             try
             {
-                //XMLファイルから読み込み、逆シリアル化する
-                appsetting =
-                    (AppSettings)serializer.Deserialize(fs);
-
+                return (AppSettings)serializer.Deserialize(fs);
             }
             catch (XmlException ex)
             {
