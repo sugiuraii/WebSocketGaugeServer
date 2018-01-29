@@ -3,48 +3,32 @@ Instruction manual of WebSocketGaugeServer pre-installed raspbian image.
 
 ## Contents
 - System requirement
-- Setup instruction
+- Write the image
+- Modify setting files
+- Boot the image
+- Access to WebSocketGaugeClient
+- Apendix
 
 ## System requirement
-- Raspberry pi 2 or 3
+- Raspberry pi 3
 - MicroSD card over 4GB.
-- Wifi interface compatible to hostapd
- - On RaspberryPi 3, internal wifi can be used.
- - On RaspberryPi 2, realtek USB Wifi dongle can be used.
- -- (Original hostapd is not compatible with realtek USB dongle. However installed hostapd is patched with [this patch](https://github.com/pritambaral/hostapd-rtl871xdrv)).
-- To know compatibe ECUs, cables and controllers, please refer [this site](https://github.com/sugiuraii/WebSocketGaugeServer).
+- One of following ECU or controller with communication cable
+	- ECU capable of Subaru select monitor(SSM), cable (OpenPort 1.2 compatible).
+	- ELM327 or compatible cable (USB cable)
+		- If you want to use ELM327 bluetooth adaptor, you have to setup rfcomm by yourself.
+    - Defi Link and UART-USB convertt cable.
+    - Arduino with sensor.
+    	- Please note that the fuelrate (Nenpi, in Japanese) and trip are supported only on SSM and ELM327.
+- To know about details, please refer [this site](https://github.com/sugiuraii/WebSocketGaugeServer).
 
 ## Writes the image
+**Image is available on [this site](https://1drv.ms/f/s!ABvK9JwSE9xVkkc).**
+
 This image can be written on microSD card by dd command or compatible program.
 This image contains FAT32 partition (boot files and some setting files), btrfs partition (to store log), and ext4 (raspbian system).
 Since websocket server related settings are stored on FAT32 partition, you can modifi the settings from Windows.
 
 ## Modify setting files.
-### Select the version of hostapd(software Wifi accesspoint)
-This image contains two version of hostapd.
-- Ver.2.3 installed from standard raspbian package.
-	- This is for interbal Wifi controller of RaspberryPi3.
-- Ver.2.6 patch for realtek lan card is applied.
-	- This is for cheap USB Wifi dongle with realtek chip.
-
-These two versions of hostapd can be switched by modifying ``[FAT32 partition drive:]\etc\hostapd_choose.conf``.
-```
-# Uncomment following 4 lines to use default version of hostapd(2.3)
-# This setting may be prefereable on Raspberry Pi 3 internal wifi controller
-#PATH=/sbin:/bin:/usr/sbin:/usr/bin
-#DAEMON_SBIN=/usr/sbin/hostapd
-#DAEMON_DEFS=/etc/default/hostapd
-#DAEMON_CONF=/etc/hostapd.conf
-
-# Uncomment following 4 lines to use special version of Reltek driver pached hostapd(2.6+patch)
-# This setting may be prefereable to use Realtek USB wifi dongle
-PATH=/sbin:/bin:/usr/sbin:/usr/bin:/usr/local/sbin/hostapd-2.6-realtek
-DAEMON_SBIN=/usr/local/sbin/hostapd-2.6-realtek/hostapd
-DAEMON_DEFS=/etc/default/hostapd
-DAEMON_CONF=/etc/hostapd-realtek.conf
-```
-As mentioned on the comment of ```hostapd_choose.oonf```, uncomment line 3 to 6 (and comment out line 10 to 13) to use standard(2.3) version of hostapd, uncomment line 10 to 13 (and comment out line 3 to 6) to use realtek-patched(2.6) version of hostapd.
-
 ### <font color="red">[Highly recommend] Modify wifi SSID and password.</font>
 For security reason, <font color="red">**it is highly recommended to modify Wifi SSID and password before you launch the image.**</font>
 
@@ -75,23 +59,35 @@ rsn_pairwise=CCMP
 At least, it is better to modify SSID and WPA_passphrase(password) by ```ssid=``` and ```wpa_passphrase=``` section.
 If you have some connection issue, you may be able to solve by changing the channel by ```channel=``` section.
 
-### Enable WebSocketGaugeServer programs
-In this raspbian image, WebSocketGaugeServer (Defi/SSM/Arduino/ELM327) can be started at bootup by supervisor. However, all of these programs are disabled by default. To enable the programs, rename configuration files at ``[FAT32 partition drive:]\supervisor_conf_extra``
+### Enable (one of) WebSocketGaugeServer programs
+**The image file is set to use SSM (Subaru select monitor) to communicate with ECU by default. If you use this program with SSM, you do not have to change the setting.**
+
+In this raspbian image, WebSocketGaugeServer (Defi/SSM/Arduino/ELM327) can be started at bootup by supervisor.
+SSM websocket server is enabled by default.
+To use other websocket server program
+* Open ``[FAT32 partition drive:]\supervisor_conf_extra``.
+* Rename ``ssm_websocket.conf`` to ``ssm_websocket.conf.sample`` (to disable SSM websocket server).
+* And remove the ``.sample`` extension of one of following configuration files.
 ```
 arduino_websocket.conf.sample
 defi_websocket.conf.sample
 elm327_websocket.conf.sample
 ssm_websocket.conf.sample
 ```
-by removing ``.sample`` extension. For example, to enable ELM327COM_WebSocketServer, rename ``elm327_websocket.conf.sample`` to ``elm327_websocket.conf``.
+For example, to enable ELM327COM_WebSocketServer, rename ``elm327_websocket.conf.sample`` to ``elm327_websocket.conf``.
 
-You can enable more than one WebSocketServer programs at the same time. But in that case, please take care not to overlap comport device name.
+Please note that you can enable only one websocket program at the same time (this is because all of these 4 websocket server program try to access the same COM port (of /dev/ttyUSB0). If you enable multiple websocket programs, each websocket programs conflict to occupy the COM port. (In order to use multiple websocket server programs, you can change COM port name by setting websocket server config file. See  [this site](https://github.com/sugiuraii/WebSocketGaugeServer).)
 
-### Change settion of WebSocketGaugeServer programs
-WebSocketGaugeServer programs are stored in c with configuration xml files.
-Nommally, the setting xml files need not to be modified (the serial port device is set to default USB serialport device name of /dev/ttyUSB0). If you connect some other serial port device, you may have to change com port setting.
+### Setup FUEL and TRIP logger program.
+If you use **SSM or ELM327** for ECU communication, you can use ``FUELTRIP_Logger.exe`` program to calculate trip distance and fuel consumption (and get fuel rate (Nenpi)). (To know the detail of ``FUELTRIP_Logger.exe``, please see [FUELTRIPLogger.md](./FUELTRIPLogger.md)).
 
-To know the detail of this xml setting files, please refer README.md of WebSocketGaugeServer.
+``FUELTRIP_Logger.exe`` uses **SSM websocket server by default (Thus, you do not have to change the setting if you use SSM.)**. If you use this program with ELM327, delete ``[FAT32 partition drive:]\websocket_programs\FUELTRIP\fueltriplogger_settings.xml``, and copy one of following xml files to ``[FAT32 partition drive:]\websocket_programs\FUELTRIP\fueltriplogger_settings.xml``.
+```
+(Sample config file 1 : Get fuel consumption rate from 'Engine fuel rate' OBDII PID.)
+[FAT32 partition drive:]\websocket_programs\FUELTRIP\setting_examples\fueltriplogger_settings.ELM327.FUELRate.Sample.xml
+(Sample config file 2 : Calcualte fuel consumption from mass air flow.)
+[FAT32 partition drive:]\websocket_programs\FUELTRIP\setting_examples\fueltriplogger_settings.ELM327.MAF.Sample.xml
+```
 
 ## Boot the image
 After modifying setting files, insert the MicroSD card to RaspberryPi and connect power cable. Raspbian shold boot and you may find the SSID of the raspberry pi (as you made the seeting on above section).
@@ -101,7 +97,7 @@ DHCP server is already setup on the raspbian image, and IP addresses of 192.168.
 ## Access to WebSocketGaugeClient
 The sample files of [WebSocketGaugeClientNeo](https://github.com/sugiuraii/WebSocketGaugeClientNeo) programs are installed this raspbian image file. [Nginx](https://nginx.org/) web server program is also installed. Thus, you can access to WebGL/[pixi.js](http://www.pixijs.com/) based gauges to view the ECU/sensor information.
 
-To access sample dashboard gauge, open ``http://192.168.56.1/`` on web browser.
+To access sample dashboard gauge, open **``http://192.168.56.1/``** on web browser.
 
 The client html/javascript files are stored in ``[FAT32 partition drive:]\public_html``. You can replase the web server contents by modifing this directory.
 
