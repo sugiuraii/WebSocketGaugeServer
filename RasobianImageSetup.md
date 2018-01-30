@@ -32,11 +32,8 @@ Since websocket server related settings are stored on FAT32 partition, you can m
 ### <font color="red">[Highly recommend] Modify wifi SSID and password.</font>
 For security reason, <font color="red">**it is highly recommended to modify Wifi SSID and password before you launch the image.**</font>
 
-To modify the SSID and password, you have to modify hostapd cnfiguration file. 
-Please note that the path of hostapd configuration file is different by the version of hostapd(you choosed at previous section).
-
-For standard Ver.2.3, the configuration file path is ``[FAT32 partition drive:]\etc\hostapd.conf``.
-For realtek-patched Ver.2.6, the configuration file path is ``[FAT32 partition drive:]\etc\hostapd-realtek.conf``.
+To modify the SSID and password, you have to modify hostapd cnfiguration file.
+Configuration file path is ``[FAT32 partition drive:]\etc\hostapd.conf``.
 
 ```
 interface=wlan0
