@@ -84,37 +84,38 @@ ssm_websocket.conf.sample
 4つのサーバープログラムはどれも同一のCOMポート(``/dev/ttyUSB0``)を占有しようとするので、複数種類のサーバープログラムを同時に起動することはできません（COMポートの占有が衝突します）。ただし、サーバープログラムによって使用するCOMポートを変えれば同時に起動させることがは可能です。[参照](https://github.com/sugiuraii/WebSocketGaugeServer).)
 
 ### 燃料消費、トリップ、燃費計算プログラムの設定.
-If you use **SSM or ELM327** for ECU communication, you can use ``FUELTRIP_Logger.exe`` program to calculate trip distance and fuel consumption (and get fuel rate (Nenpi)). (To know the detail of ``FUELTRIP_Logger.exe``, please see [FUELTRIPLogger.md](./FUELTRIPLogger.md)).
+**SSMまたはELM327でECUとの通信を行っている場合** 、``FUELTRIP_Logger.exe`` プログラムでトリップ、燃料消費量、燃費を取得しWebsocket経由で配信することが可能です。 (``FUELTRIP_Logger.exe``の詳細は[FUELTRIPLogger.md](./FUELTRIPLogger.md)を参照してください).
 
-``FUELTRIP_Logger.exe`` uses **SSM websocket server by default (Thus, you do not have to change the setting if you use SSM.)**. If you use this program with ELM327, delete ``[FAT32 partition drive:]\websocket_programs\FUELTRIP\fueltriplogger_settings.xml``, and copy one of following xml files to ``[FAT32 partition drive:]\websocket_programs\FUELTRIP\fueltriplogger_settings.xml``.
+``FUELTRIP_Logger.exe``は標準で **SSM websocket server を使用するように設定されています**. もしELM327で燃費計算を行う場合は, ``[FAT32 partition drive:]\websocket_programs\FUELTRIP\fueltriplogger_settings.xml``を削除し、下記2つのファイルのうちどれか一つを``[FAT32 partition drive:]\websocket_programs\FUELTRIP\fueltriplogger_settings.xml``へ上書きコピーしてください。
 ```
-(Sample config file 1 : Get fuel consumption rate from 'Engine fuel rate' OBDII PID.)
+(Sample config file 1 : OBDII PIDのうち 'Engine fuel rate'のPIDから直接燃料消費量を取得.)
 [FAT32 partition drive:]\websocket_programs\FUELTRIP\setting_examples\fueltriplogger_settings.ELM327.FUELRate.Sample.xml
-(Sample config file 2 : Calcualte fuel consumption from mass air flow.)
+(Sample config file 2 : エアフローメーター値から燃料消費量を換算（A/F比は14.7を仮定.)
 [FAT32 partition drive:]\websocket_programs\FUELTRIP\setting_examples\fueltriplogger_settings.ELM327.MAF.Sample.xml
 ```
+SSMでの標準設定ではインジェクターパルス幅と回転数から燃料消費量を計算していますが、燃料消費量は気筒数とインジェクタ容量によって異なります。さらに、計算されたトリップ・燃料消費量と実際の値のズレを補正するための補正係数（スケーリング）を設定することも可能です。これら設定については[FUELTRIPLogger.md](./FUELTRIPLogger.md)および``fueltriplogger_settings.xml``内のコメントを参照ください。
 
-## Boot the image
-After modifying setting files, insert the MicroSD card to RaspberryPi and connect power cable. Raspbian shold boot and you may find the SSID of the raspberry pi (as you made the seeting on above section).
+## MicroSDカードからの起動
+設定ファイル編集後は、PCからSDカードをアンマウント・取り外しをしてRaspberryPiへ挿入、電源ケーブルをつなげれば起動します。Raspbian起動後数分で、設定されたSSIDによるWifiアクセスポイントが作成されます。
 
-DHCP server is already setup on the raspbian image, and IP addresses of 192.168.56.xxx shold be assigned automatically to the Wifi connected devices.
+DHCPサーバーもRaspbianにて組み込まれており、上記SSIDへ接続すると192.168.56.xxxのIPアドレスが自動的に割り振られます.
 
-## Access to WebSocketGaugeClient
-The sample files of [WebSocketGaugeClientNeo](https://github.com/sugiuraii/WebSocketGaugeClientNeo) programs are installed this raspbian image file. [Nginx](https://nginx.org/) web server program is also installed. Thus, you can access to WebGL/[pixi.js](http://www.pixijs.com/) based gauges to view the ECU/sensor information.
+## メーターパネル（Webベースクライアント）への接続
+このRaspbianイメージにはWebサーバ(nginx)も組み込まれており、ここへアクセスすることでECU->Websocketへ配信された車両情報をメーターとして表示させることが可能になります。クライアントの詳細・対応Webブラウザは[WebSocketGaugeClientNeo](https://github.com/sugiuraii/WebSocketGaugeClientNeo)を参考にしてください。WebGLまたはHTML5 canvasに対応したブラウザにて表示可能です。
 
-To access sample dashboard gauge, open **``http://192.168.56.1/``** on web browser.
+クライアントへアクセスする際は、スマホ・PC等で上記SSIDにWifiを接続させた上で Webブラウザにて**``http://192.168.56.1/``**のURLへアクセスしてください。
 
-The client html/javascript files are stored in ``[FAT32 partition drive:]\public_html``. You can replase the web server contents by modifing this directory.
+クライアントとなるメーターパネルのhtmlファイル、javascriptファイル等は ``[FAT32 partition drive:]\public_html``に格納されています. 自分でメーターパネルを書き換える等クライアントプログラムを改造・修正した際は上記パスへ上書きしてください。
 
-And it is possible to view WebSocketGaugeServer logs by accessing ``http://192.168.56.1/supervisor_log`` (This URL export ``/var/log/supervisor`` of raspian filesystem. If you face some issues, please refer this URL at first.
+またサーバープログラムのログは ``http://192.168.56.1/supervisor_log`` でアクセスできます。(このURLはRaspbianディレクトリツリーの ``/var/log/supervisor`` をエクスポートしています）
 
 ## Appendix
-### Unlock raspbian root partition (change readonly to write enable)
-In this image, root and /boot partition are set read-only (to avoid system partition crash by power-off without shutdown). All of the modification of these partition are actually write to ram drive (by overlayFS), and will be flushed after shutdown or reboot.
+### Raspbianパーティション(ext4)のリードオンリー解除
+このイメージファイルは車載を想定しているため、Raspbianを起動した際に突然の電源断に対応できるように（ログを格納するbtrfsパーティションを除いて）リードオンリーマウントされるように設定されています（ファイルシステムへの変更はOverlayFS経由でramドライブに書き込まれます）。Raspbian起動中にファイルシステムへ行われた変更は、次回起動時にすべてリセットされます。
 
-You can disable overlayFS and make root and /boot partition writable by renaming ``[FAT32 partition drive:]\noprotect.bak`` to ``[FAT32 partition drive:]\noprotect``. The raspbian system checks the existence of this ``noprotect`` files, and disable overlayFS if this file is found.
+このリードオンリー状態は``[FAT32 partition drive:]\noprotect.bak`` を ``[FAT32 partition drive:]\noprotect``へリネームすることで解除可能です（Raspbian起動時にこのファイルの存在をチェックして、存在していたらリードオンリーマウントをスキップします）.ただし、リードオンリーマウントがされているRaspbian上でこの変更を行っても、次回変更時に無効にされてしまいますので、この変更は別のPCなどで行ってください（FAT32上のファイルなのでWindows上からも変更可能です）。あるいは書き込み可能状態で再度マウントしてください。
 
-### Partitions of this image
+### このイメージのパーティション構成
 - Primay partition 1
 	- FAT32, will be mounted on /boot (readonly, overlayFS will be applied)
 	- Store raspbian bootup files, WebSocketServer programs, html files, and some setting files.
