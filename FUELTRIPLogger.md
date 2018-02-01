@@ -37,6 +37,10 @@ On windows, please doubleclick the exe file on explorer. On linux, run with mono
 > mono FUELTRIP_Logger.exe
 ```
 
+## Log file of fuel and trip
+To recall total trip and fuel on program restart, FUELTRIP_Logger.exe save total trip and fuel on the file (by every 5 seconds).
+On windows, total trip and fuel will be saved to `C:\Users\(username)\AppData\Roaming\.FUELTRIP_Logger`.
+On linux, the file path is `/home/(username)/.config/.FUELTRIP_Logger`.
 * * *
 
 

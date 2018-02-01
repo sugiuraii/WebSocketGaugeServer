@@ -5,6 +5,7 @@ WebSocketGaugeServer
 * [Description](#description)
 * [Requirement](#requirement)
 * [Dependency](#dependency)
+* [Try pre-installed image with raspberry pi](#raspi_trial)
 * [How to build](#howToBuild)
 * [Install and setup](#installAndSetup)
 * [Run](#run)
@@ -46,6 +47,9 @@ ELM327COM_WebSocket_Server is also tested on [com0com](https://sourceforge.net/p
 * [WebSocket4Net](https://github.com/kerryjiang/WebSocket4Net)
 * [log4net](https://logging.apache.org/log4net/)
 * [Json.NET](http://www.newtonsoft.com/json)
+
+## <a name="raspi_trial">Try pre-installed image with raspberry pi</a>
+**Pre-installed raspbian image is available. Please refer [RasobianImageSetup.md](./RasobianImageSetup.md).**
 
 ## <a name="howToBuild">How to build</a>
 The source code is written on Visual Studio 2013 Community. Open the DefiSSMCOM_Websocket.sln and select build. Required libraries shold be downloaded automatically by NuGet.
