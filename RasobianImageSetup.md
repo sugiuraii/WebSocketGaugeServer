@@ -1,5 +1,7 @@
-Instruction manual of WebSocketGaugeServer pre-installed raspbian image.
+Instruction of WebSocketGaugeServer pre-installed raspbian image.
 ===
+
+Japanese version of this document is [here](./RasobianImageSetup.ja.md)
 
 ## Contents
 - System requirement
@@ -7,30 +9,30 @@ Instruction manual of WebSocketGaugeServer pre-installed raspbian image.
 - Modify setting files
 - Boot the image
 - Access to WebSocketGaugeClient
-- Apendix
+- Appendix
 
 ## System requirement
 - Raspberry pi 3
 - MicroSD card over 4GB.
 - One of following ECU or controller with communication cable
-	- ECU capable of Subaru select monitor(SSM), cable (OpenPort 1.2 compatible).
+	- ECU capable of Subaru select monitor(SSM), and cable (OpenPort 1.2 compatible).
 	- ELM327 or compatible cable (USB cable)
-		- If you want to use ELM327 bluetooth adaptor, you have to setup rfcomm by yourself.
-    - Defi Link and UART-USB convertt cable.
+		- If you want to use ELM327 bluetooth adapter, you have to setup rfcomm by yourself.
+    - Defi Link and UART-USB converter cable.
     - Arduino with sensor.
     	- Please note that the fuelrate (Nenpi, in Japanese) and trip are supported only on SSM and ELM327.
-- To know about details, please refer [this site](https://github.com/sugiuraii/WebSocketGaugeServer).
+- To know about the details, please refer [this site](https://github.com/sugiuraii/WebSocketGaugeServer).
 
 ## Writes the image
 **Image is available on [this site](https://1drv.ms/f/s!ABvK9JwSE9xVkkc).**
 
 This image can be written on microSD card by dd command or compatible program.
 This image contains FAT32 partition (boot files and some setting files), btrfs partition (to store log), and ext4 (raspbian system).
-Since websocket server related settings are stored on FAT32 partition, you can modifi the settings from Windows.
+Since websocket server related settings are stored on FAT32 partition, you can modify the settings from Windows.
 
 ## Modify setting files.
 ### <font color="red">[Highly recommend] Modify wifi SSID and password.</font>
-For security reason, <font color="red">**it is highly recommended to modify Wifi SSID and password before you launch the image.**</font>
+For security, <font color="red">**it is highly recommended to modify Wifi SSID and password before you launch the image.**</font>
 
 To modify the SSID and password, you have to modify hostapd cnfiguration file.
 Configuration file path is ``[FAT32 partition drive:]\etc\hostapd.conf``.
@@ -54,14 +56,13 @@ wpa_passphrase=raspberry
 rsn_pairwise=CCMP
 ```
 At least, it is better to modify SSID and WPA_passphrase(password) by ```ssid=``` and ```wpa_passphrase=``` section.
-If you have some connection issue, you may be able to solve by changing the channel by ```channel=``` section.
 
 ### Enable (one of) WebSocketGaugeServer programs
 **The image file is set to use SSM (Subaru select monitor) to communicate with ECU by default. If you use this program with SSM, you do not have to change the setting.**
 
-In this raspbian image, WebSocketGaugeServer (Defi/SSM/Arduino/ELM327) can be started at bootup by supervisor.
+In this raspbian image, WebSocketGaugeServer (Defi/SSM/Arduino/ELM327) can be started on the bootup by [supervisor](http://supervisord.org/).
 SSM websocket server is enabled by default.
-To use other websocket server program
+To use other websocket server programs
 * Open ``[FAT32 partition drive:]\supervisor_conf_extra``.
 * Rename ``ssm_websocket.conf`` to ``ssm_websocket.conf.sample`` (to disable SSM websocket server).
 * And remove the ``.sample`` extension of one of following configuration files.
@@ -87,7 +88,7 @@ If you use **SSM or ELM327** for ECU communication, you can use ``FUELTRIP_Logge
 ```
 
 ## Boot the image
-After modifying setting files, insert the MicroSD card to RaspberryPi and connect power cable. Raspbian shold boot and you may find the SSID of the raspberry pi (as you made the seeting on above section).
+After modifying setting files, insert the MicroSD card to RaspberryPi and connect power cable. Raspbian should starts and you may find the SSID of the raspberry pi (as you made the seeting on above section).
 
 DHCP server is already setup on the raspbian image, and IP addresses of 192.168.56.xxx shold be assigned automatically to the Wifi connected devices.
 
@@ -114,4 +115,4 @@ You can disable overlayFS and make root and /boot partition writable by renaming
 	- Btrfs, will be mounted on /var/log (read/write, overlayFS will NOT be applied)
 	- Store logs.
 - Primary partition 3
-	- Ext4, will be mouned on / (readonly, overlayfS will be applied)
+	- Ext4, will be mouned on / (readonly, overlayFS will be applied)

@@ -1,6 +1,8 @@
 WebSocketGaugeServerプリインストール済みRaspbianイメージファイル
 ===
 
+English version of this document is [here](./RasobianImageSetup.ja.md)
+
 ## Contents
 - 必要なもの
 - イメージの書き込み
@@ -20,7 +22,7 @@ Websocketを使ったHTML5(WebGL)ベースのメーターパネルを簡単に�
 	- Subaru select monitor(SSM)で車両情報をOBDIIコネクタ経由で通信可能なスバル車、及びOpenPort 1.2互換ケーブル.
 	- ELM327にてOBDIIコネクタ経由で通信可能な車両と、ELM327搭載OBDケーブル(USB接続)
 		- 技術的にはELM327搭載Bluetoothアダプタも使用可能ですが、その場合はrfcommの設定を行ってください.
-    - DefiLink(advanceではない)コントロールユニット、センサとDefiLink-シリアル(UART）変換ケーブル
+    - DefiLink(advanceではない)コントロールユニット、センサとDefiLink-シリアル(UART)変換ケーブル
     	- [参考](http://kaele.com/~kashima/car/defigate/)
     - Arduino UNOとAutogauge　圧力・温度センサ
     	- [Ardunoスケッチはこちら](https://github.com/sugiuraii/ArduinoPulseSensorGeneratorReader)
