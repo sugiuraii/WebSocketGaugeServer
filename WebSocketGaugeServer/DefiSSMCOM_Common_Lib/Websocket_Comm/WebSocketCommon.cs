@@ -2,7 +2,7 @@
 using DefiSSMCOM.WebSocket.JSON;
 using SuperSocket.SocketBase;
 using System.Net;
-using SuperWebSocket;
+using SuperSocket.WebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using log4net;

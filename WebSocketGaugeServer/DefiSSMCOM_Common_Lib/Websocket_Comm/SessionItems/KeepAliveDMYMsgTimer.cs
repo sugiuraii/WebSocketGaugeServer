@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
-using SuperWebSocket;
+using SuperSocket.WebSocket;
 using System.Net;
 
 namespace DefiSSMCOM.WebSocket
