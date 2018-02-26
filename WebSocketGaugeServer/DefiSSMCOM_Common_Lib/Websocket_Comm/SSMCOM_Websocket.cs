@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Threading;
 using DefiSSMCOM.WebSocket.JSON;
-using SuperWebSocket;
+using SuperSocket.WebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using DefiSSMCOM.SSM;

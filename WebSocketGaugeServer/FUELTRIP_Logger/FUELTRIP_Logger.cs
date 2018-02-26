@@ -2,7 +2,7 @@
 using System.Threading;
 using SuperSocket.SocketBase;
 using SuperSocket.ClientEngine;
-using SuperWebSocket;
+using SuperSocket.WebSocket;
 using System.Net;
 using WebSocket4Net;
 using Newtonsoft.Json;
