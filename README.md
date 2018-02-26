@@ -52,9 +52,37 @@ ELM327COM_WebSocket_Server is also tested on [com0com](https://sourceforge.net/p
 **Pre-installed raspbian image is available. Please refer [RasobianImageSetup.md](./RasobianImageSetup.md).**
 
 ## <a name="howToBuild">How to build</a>
-The source code is written on Visual Studio 2013 Community. Open the DefiSSMCOM_Websocket.sln and select build. Required libraries shold be downloaded automatically by NuGet.
+### Build on Windows + VisualStudio 2013
+The source code is written on Visual Studio 2013 Community. Open the DefiSSMCOM_Websocket.sln and select build on menu. Required libraries shold be downloaded automatically by NuGet.
+Please note that one of the dependent package (log4net) needs nuget newer than 2.12.
+After finishing the build, binary shuld be build at `Debug_Distribution` directory under `WebSocketGaugeServer/`.
 
-Please note that current source code cannot be built properly on "Release" or "Release_Distribution" configration. Please use "Debug_Distribution" configuration.
+And please note that current source code cannot be built properly on "Release" or "Release_Distribution" configration. Please use "Debug_Distribution" configuration.
+
+### Build on Linux + mono
+The source code can also be built under mono, with using `xbuild` command.
+
+First, install mono package (needs mono-complete). On debian based distribution (such as ubuntu), install mono by
+```
+> sudo apt-get install mono-complete
+```
+
+And dependent nuget packages need to be installed. Get the recent version of nuget by,
+```
+> wget https://dist.nuget.org/win-x86-commandline/latest/nuget.exe
+```
+Please note that one of dependent package (log4net) needs nuget newer than 2.12. However, nuget distributed by debian apt repository seems to be older than this verison (2.8.7.0, on Feb 2018). If you have trouble on installing nuget packages, please try the latest version.
+
+After downloading nuget.exe, download and install dependent nuget packages by,
+```
+> mono nuget.exe restore WebsocketGaugeServer.sln
+```
+
+Finally, build the source code by `xbuild`.Plese use the build configuration of "Debug_Distribution".
+```
+> xbuild /p:Configuration=Debug_Distribution WebsocketGaugeServer.sln
+```
+After finishing the build, the binary should be created at `Debug_Distribution` directory.
 
 ## <a name="installAndSetup">Install and setup</a>
 
