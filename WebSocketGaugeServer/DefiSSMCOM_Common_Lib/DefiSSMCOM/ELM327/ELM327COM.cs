@@ -109,7 +109,14 @@ namespace DefiSSMCOM.OBDII
 
         private void initializeELM327ATCommand()
         {
-            ReadExisting();
+            // Ignore Timeout on ReadExisting
+            try
+            {
+                ReadExisting();
+            }
+            catch (TimeoutException ex)
+            {
+            }
             DiscardInBuffer();
             bool initializeFinished = false;
             int initializeFailedCount = 0;
