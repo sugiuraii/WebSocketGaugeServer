@@ -28,7 +28,7 @@ Copy and overwrite the ../fueltriplogger_settings.xml with this file.
         DEFI : Only "Engine RPM" is available
         SSM : "VehicleSpeed", "Engine RPM", "InjectionPW", "MassAirFlow" and "AF ratio" are available.
         ARDUINO : "VehicleSpeed" and "Engine RPM" are available
-        ELN327 : "VehicleSpeed", "EngineRPM", "MassAirFlow", "A/F ratio" and "FuelRate" are available (depends on ECU model) 
+        ELM327 : "VehicleSpeed", "EngineRPM", "MassAirFlow", "A/F ratio" and "FuelRate" are available (depends on ECU model) 
       -->
       <VehicleSpeedSource>SSM</VehicleSpeedSource>
       <RPMSource>DEFI</RPMSource>
