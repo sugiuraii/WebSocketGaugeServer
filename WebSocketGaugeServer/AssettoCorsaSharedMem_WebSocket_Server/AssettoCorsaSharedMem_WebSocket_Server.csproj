@@ -41,11 +41,22 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AssettoCorsaSharedMemoryJSONFormat.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AsettoCorsa_SharedMemory_Library\AssettoCorsaSharedMemory.csproj">
+      <Project>{020af3ed-0a4c-4215-9b1d-1d41dd26f8bb}</Project>
+      <Name>AssettoCorsaSharedMemory</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\DefiSSMCOM_Common_Lib\WebSocketGaugeServer_Common_Lib.csproj">
+      <Project>{898d1578-b886-48f0-8a17-253548c67b3f}</Project>
+      <Name>WebSocketGaugeServer_Common_Lib</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
