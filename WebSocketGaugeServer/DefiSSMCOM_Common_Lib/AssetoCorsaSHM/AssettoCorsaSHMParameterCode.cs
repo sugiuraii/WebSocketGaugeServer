@@ -1,8 +1,8 @@
-﻿using System,
-using System.Collections.Generic,
-using System.Linq,
-using System.Text,
-using System.Threading.Tasks,
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace DefiSSMCOM_Common_Lib.AssetoCorsaSHM
 {
@@ -109,5 +109,57 @@ namespace DefiSSMCOM_Common_Lib.AssetoCorsaSHM
         SurfaceGrip,
     
         MandatoryPitDone,
+    }
+
+    public enum AssettoCorsaSHMStaticInfoParameterCode
+    {
+        SMVersion,
+        ACVersion,
+
+        NumberOfSessions,
+        NumCars,
+        CarModel,
+        Track,
+        PlayerName,
+        PlayerSurname,
+        PlayerNick,
+
+        SectorCount,
+
+        MaxTorque,
+        MaxPower,
+        MaxRpm,
+        MaxFuel,
+        SuspensionMaxTravel,
+        TyreRadius,
+
+        MaxTurboBoost,
+        PenaltiesEnabled,
+        AidFuelRate,
+        AidTireRate,
+        AidMechanicalDamage,
+        AidAllowTyreBlankets,
+        AidStability,
+        AidAutoClutch,
+        AidAutoBlip,
+
+        HasDRS,
+        HasERS,
+        HasKERS,
+        KersMaxJoules,
+        EngineBrakeSettingsCount,
+        ErsPowerControllerCount,
+
+        TrackSPlineLength,
+        TrackConfiguration,
+
+        ErsMaxJ,
+
+        IsTimedRace,
+        HasExtraLap,
+        CarSkin,
+        ReversedGridPositions,
+        PitWindowStart,
+        PitWindowEnd
     }
 }
