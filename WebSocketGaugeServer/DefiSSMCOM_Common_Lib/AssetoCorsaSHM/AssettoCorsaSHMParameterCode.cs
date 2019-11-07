@@ -1,8 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System,
+using System.Collections.Generic,
+using System.Linq,
+using System.Text,
+using System.Threading.Tasks,
 
 namespace DefiSSMCOM_Common_Lib.AssetoCorsaSHM
 {
@@ -73,5 +73,41 @@ namespace DefiSSMCOM_Common_Lib.AssetoCorsaSHM
         BrakeBias,
 
         LocalVelocity
+    }
+
+    public enum AssettoCorsaSHMGraphicsParameterCode
+    {
+        PacketId,
+        Status,
+        Session,
+        CurrentTime,
+        LastTime,
+        BestTime,
+        Split,
+        CompletedLaps,
+        Position,
+        iCurrentTime,
+        iLastTime,
+        iBestTime,
+        SessionTimeLeft,
+        DistanceTraveled,
+        IsInPit,
+        CurrentSectorIndex,
+        LastSectorTime,
+        NumberOfLaps,
+        TyreCompound,
+
+        ReplayTimeMultiplier,
+        NormalizedCarPosition,
+        CarCoordinates,
+
+        PenaltyTime,
+        Flag,
+        IdealLineOn,
+
+        IsInPitLane,
+        SurfaceGrip,
+    
+        MandatoryPitDone,
     }
 }
