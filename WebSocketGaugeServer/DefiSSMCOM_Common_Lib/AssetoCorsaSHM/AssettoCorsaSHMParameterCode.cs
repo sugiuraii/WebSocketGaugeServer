@@ -8,7 +8,6 @@ namespace DefiSSMCOM_Common_Lib.AssetoCorsaSHM
 {
     public enum AssettoCorsaSHMPhysicsParameterCode
     {
-        PacketId,
         Gas,
         Brake,
         Fuel,
@@ -77,7 +76,6 @@ namespace DefiSSMCOM_Common_Lib.AssetoCorsaSHM
 
     public enum AssettoCorsaSHMGraphicsParameterCode
     {
-        PacketId,
         Status,
         Session,
         CurrentTime,
