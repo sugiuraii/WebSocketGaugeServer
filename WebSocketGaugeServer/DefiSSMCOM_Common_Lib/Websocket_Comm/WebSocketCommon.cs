@@ -6,6 +6,7 @@ using SuperSocket.WebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using log4net;
+using DefiSSMCOM_Common_Lib.DefiSSMCOM;
 
 namespace DefiSSMCOM.WebSocket
 {
@@ -13,6 +14,7 @@ namespace DefiSSMCOM.WebSocket
     {
         protected readonly WebSocketServer appServer;
         protected bool running_state = false;
+        protected IBackgroundCommunicate backgroundCommunicate;
 
         /// <summary>
         /// Log4Net logger.
@@ -33,6 +35,14 @@ namespace DefiSSMCOM.WebSocket
         /// Interval of sending keep alive dummy message in millisecond.
         /// </summary>
         public int KeepAliveInterval { get; set; }
+
+        public bool IsCommunicationThreadAlive
+        {
+            get
+            {
+                return backgroundCommunicate.IsCommunitateThreadAlive;
+            }
+        }
 
         /// <summary>
         /// Constructor of WebSocketCommon.
@@ -72,9 +82,9 @@ namespace DefiSSMCOM.WebSocket
                 return;
             }
 
-            logger.Info("Websocket server is started. WebsocketPort:" + this.WebsocketPortNo.ToString() + " COMPort: " + this.COMPortName + "Keep alive dummy message interval:" + this.KeepAliveInterval.ToString()+"ms");
+            logger.Info("Websocket server is started. WebsocketPort:" + this.WebsocketPortNo.ToString() + "Keep alive dummy message interval:" + this.KeepAliveInterval.ToString()+"ms");
 
-            com1.CommunicateRealtimeStart();
+            backgroundCommunicate.BackgroundCommunicateStart();
 
             this.running_state = true;
         }
@@ -98,7 +108,7 @@ namespace DefiSSMCOM.WebSocket
             //Console.WriteLine("The server was stopped!");
             logger.Info("Websocket server is stopped");
 
-            com1.CommunicateRealtimeStop();
+            backgroundCommunicate.BackGroundCommunicateStop();
         }
 
         /// <summary>
@@ -215,7 +225,13 @@ namespace DefiSSMCOM.WebSocket
 
     public abstract class COMPortBasedWebSocketServerCommon : WebSocketServerCommon
     {
-        protected COMCommon com1;
+        private COMCommon _com1;
+
+        protected COMCommon com1
+        {
+            get { return _com1; }
+            set { _com1 = value; }
+        }
 
         /// <summary>
         /// COM port name to communicate sensors.
@@ -224,24 +240,12 @@ namespace DefiSSMCOM.WebSocket
         {
             get
             {
-                return com1.PortName;
+                return _com1.PortName;
             }
             set
             {
-                com1.PortName = value;
+                _com1.PortName = value;
             }
         }
-
-        /// <summary>
-        /// Get the status of communication thread.
-        /// </summary>
-        public bool IsCommunicationThreadAlive
-        {
-            get
-            {
-                return com1.IsCommunitateThreadAlive;
-            }
-        }
-
     }
 }
