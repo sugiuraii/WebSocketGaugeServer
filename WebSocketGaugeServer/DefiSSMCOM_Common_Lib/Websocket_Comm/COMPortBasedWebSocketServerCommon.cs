@@ -14,7 +14,11 @@ namespace DefiSSMCOM.WebSocket
         protected COMCommon com1
         {
             get { return _com1; }
-            set { _com1 = value; }
+            set 
+            {
+                _com1 = value;
+                backgroundCommunicate = value;
+            }
         }
 
         /// <summary>
