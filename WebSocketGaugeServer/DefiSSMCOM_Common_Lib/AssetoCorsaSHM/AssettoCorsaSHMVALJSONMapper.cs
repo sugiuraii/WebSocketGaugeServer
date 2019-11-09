@@ -6,9 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
-using DefiSSMCOM_Common_Lib.Websocket_Comm.AssettoCorsaSHM;
+using DefiSSMCOM.Websocket.AssettoCorsaSHM;
 
-namespace DefiSSMCOM_Common_Lib.AssetoCorsaSHM
+namespace DefiSSMCOM.AssetoCorsaSHM
 {
     public class AssettoCorsaSHMVALJSONMapper
     {

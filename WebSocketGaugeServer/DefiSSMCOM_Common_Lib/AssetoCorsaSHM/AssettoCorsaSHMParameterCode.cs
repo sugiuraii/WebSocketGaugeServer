@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DefiSSMCOM_Common_Lib.AssetoCorsaSHM
+namespace DefiSSMCOM.AssetoCorsaSHM
 {
     public enum AssettoCorsaSHMPhysicsParameterCode
     {

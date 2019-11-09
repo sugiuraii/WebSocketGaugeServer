@@ -1,11 +1,11 @@
-﻿using DefiSSMCOM_Common_Lib.AssetoCorsaSHM;
+﻿using DefiSSMCOM.AssetoCorsaSHM;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DefiSSMCOM_Common_Lib.Websocket_Comm.AssettoCorsaSHM
+namespace DefiSSMCOM.Websocket.AssettoCorsaSHM
 {
     /// <summary>
     /// Property data for AssettoCorsaWebsocket sessions.
