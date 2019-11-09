@@ -35,7 +35,7 @@ namespace DefiSSMCOM
 
         }
 
-        public void CommunicateRealtimeStart()
+        public void BackgroundCommunicateStart()
         {
             // Set serialport1.BaudRate to default baud rate
             serialPort.BaudRate = DefaultBaudRate;
@@ -48,7 +48,7 @@ namespace DefiSSMCOM
             logger.Info("Communication Started.");
         }
 
-        public void CommunicateRealtimeStop()
+        public void BackGroundCommunicateStop()
         {
             //通信スレッドを終了させる(フラグをfalseに)
             communicateRealtimeIsRunning = false;

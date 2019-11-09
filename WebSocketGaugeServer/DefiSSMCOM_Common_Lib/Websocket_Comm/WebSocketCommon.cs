@@ -9,11 +9,10 @@ using log4net;
 
 namespace DefiSSMCOM.WebSocket
 {
-    public abstract class COMPortBasedWebSocketServerCommon
+    public abstract class WebSocketServerCommon
     {
         protected readonly WebSocketServer appServer;
         protected bool running_state = false;
-        protected COMCommon com1;
 
         /// <summary>
         /// Log4Net logger.
@@ -30,33 +29,6 @@ namespace DefiSSMCOM.WebSocket
         /// Port number to listen websocket connection.
         /// </summary>
         public int WebsocketPortNo { get; set; }
-
-        /// <summary>
-        /// COM port name to communicate sensors.
-        /// </summary>
-        public string COMPortName
-        {
-            get
-            {
-                return com1.PortName;
-            }
-            set
-            {
-                com1.PortName = value;
-            }
-        }
-
-        /// <summary>
-        /// Get the status of communication thread.
-        /// </summary>
-        public bool IsCommunicationThreadAlive
-        {
-            get
-            {
-                return com1.IsCommunitateThreadAlive;
-            }
-        }
-
         /// <summary>
         /// Interval of sending keep alive dummy message in millisecond.
         /// </summary>
@@ -65,7 +37,7 @@ namespace DefiSSMCOM.WebSocket
         /// <summary>
         /// Constructor of WebSocketCommon.
         /// </summary>
-        public COMPortBasedWebSocketServerCommon()
+        public WebSocketServerCommon()
         {
             // Default KeepAliveInterval : 60ms
             this.KeepAliveInterval = 60;
@@ -237,6 +209,37 @@ namespace DefiSSMCOM.WebSocket
                     send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
                 }
 
+            }
+        }
+    }
+
+    public abstract class COMPortBasedWebSocketServerCommon : WebSocketServerCommon
+    {
+        protected COMCommon com1;
+
+        /// <summary>
+        /// COM port name to communicate sensors.
+        /// </summary>
+        public string COMPortName
+        {
+            get
+            {
+                return com1.PortName;
+            }
+            set
+            {
+                com1.PortName = value;
+            }
+        }
+
+        /// <summary>
+        /// Get the status of communication thread.
+        /// </summary>
+        public bool IsCommunicationThreadAlive
+        {
+            get
+            {
+                return com1.IsCommunitateThreadAlive;
             }
         }
 
