@@ -13,7 +13,7 @@ namespace DefiSSMCOM.WebSocket
 	}
 
 
-	public class SSMCOMWebsocket : WebSocketCommon
+	public class SSMCOMWebsocket : COMPortBasedWebSocketServerCommon
 	{
 		private readonly SSMCOM ssmcom1;
 

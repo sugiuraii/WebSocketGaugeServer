@@ -1,5 +1,4 @@
-﻿using DefiSSMCOM.WebSocket.JSON;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -7,8 +6,10 @@ using System.Threading.Tasks;
 
 namespace AssettoCorsaSharedMem_WebSocket_Server
 {
+    /*
     public class AssettoCorsaSharedMemoryJSONFormat : JSONFormat
     {
 
     }
+     * */
 }
