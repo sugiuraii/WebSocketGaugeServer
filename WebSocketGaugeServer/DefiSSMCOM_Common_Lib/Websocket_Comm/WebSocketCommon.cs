@@ -6,7 +6,6 @@ using SuperSocket.WebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using log4net;
-using DefiSSMCOM_Common_Lib.DefiSSMCOM;
 
 namespace DefiSSMCOM.WebSocket
 {
@@ -219,32 +218,6 @@ namespace DefiSSMCOM.WebSocket
                     send_error_msg(session, ex.GetType().ToString() + " " + ex.Message);
                 }
 
-            }
-        }
-    }
-
-    public abstract class COMPortBasedWebSocketServerCommon : WebSocketServerCommon
-    {
-        private COMCommon _com1;
-
-        protected COMCommon com1
-        {
-            get { return _com1; }
-            set { _com1 = value; }
-        }
-
-        /// <summary>
-        /// COM port name to communicate sensors.
-        /// </summary>
-        public string COMPortName
-        {
-            get
-            {
-                return _com1.PortName;
-            }
-            set
-            {
-                _com1.PortName = value;
             }
         }
     }

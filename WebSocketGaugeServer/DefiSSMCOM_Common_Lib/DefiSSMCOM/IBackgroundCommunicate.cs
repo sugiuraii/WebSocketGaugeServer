@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DefiSSMCOM_Common_Lib.DefiSSMCOM
+namespace DefiSSMCOM
 {
     public interface IBackgroundCommunicate
     {

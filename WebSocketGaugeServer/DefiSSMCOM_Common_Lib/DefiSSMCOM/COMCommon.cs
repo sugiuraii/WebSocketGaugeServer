@@ -1,7 +1,6 @@
 ﻿using System.IO.Ports;
 using System.Threading;
 using log4net;
-using DefiSSMCOM_Common_Lib.DefiSSMCOM;
 
 namespace DefiSSMCOM
 {
