@@ -132,7 +132,7 @@ namespace DefiSSMCOM.Application
     public class ApplicationCommon
     {
         private AppSettings appsetting;
-        private WebSocketCommon websocketServerObj;
+        private COMPortBasedWebSocketServerCommon websocketServerObj;
         private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
 
         protected void setAppSettings(AppSettings appsetting)
@@ -140,7 +140,7 @@ namespace DefiSSMCOM.Application
             this.appsetting = appsetting;
         }
 
-        protected void setWebSocketServerObj(WebSocketCommon websocketServerObj)
+        protected void setWebSocketServerObj(COMPortBasedWebSocketServerCommon websocketServerObj)
         {
             this.websocketServerObj = websocketServerObj;
         }

@@ -12,7 +12,7 @@ namespace DefiSSMCOM.WebSocket
         //主要な機能はDefi/ArduinoWebsocketSessionParamは共通につき、SimpleWebsocketSessionParamに実装
     }
 
-    public class DefiCOMWebsocket : WebSocketCommon
+    public class DefiCOMWebsocket : COMPortBasedWebSocketServerCommon
     {
         private readonly DefiCOM deficom1;
 

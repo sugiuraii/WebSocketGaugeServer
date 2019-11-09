@@ -9,7 +9,7 @@ using log4net;
 
 namespace DefiSSMCOM.WebSocket
 {
-    public abstract class WebSocketCommon
+    public abstract class COMPortBasedWebSocketServerCommon
     {
         protected readonly WebSocketServer appServer;
         protected bool running_state = false;
@@ -65,7 +65,7 @@ namespace DefiSSMCOM.WebSocket
         /// <summary>
         /// Constructor of WebSocketCommon.
         /// </summary>
-        public WebSocketCommon()
+        public COMPortBasedWebSocketServerCommon()
         {
             // Default KeepAliveInterval : 60ms
             this.KeepAliveInterval = 60;

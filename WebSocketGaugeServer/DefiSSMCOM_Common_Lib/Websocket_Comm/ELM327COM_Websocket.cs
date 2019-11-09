@@ -12,7 +12,7 @@ namespace DefiSSMCOM.WebSocket
     {
     }
 
-    public class ELM327COM_Websocket : WebSocketCommon
+    public class ELM327COM_Websocket : COMPortBasedWebSocketServerCommon
     {
         private readonly ELM327COM elm327com;
 
