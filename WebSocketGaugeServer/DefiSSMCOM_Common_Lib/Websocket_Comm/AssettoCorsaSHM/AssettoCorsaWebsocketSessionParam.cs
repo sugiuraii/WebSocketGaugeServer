@@ -16,9 +16,14 @@ namespace DefiSSMCOM.Websocket.AssettoCorsaSHM
         public readonly Dictionary<AssettoCorsaSHMGraphicsParameterCode, bool> GraphicsDataSendList;
         public readonly Dictionary<AssettoCorsaSHMStaticInfoParameterCode, bool> StaticInfoDataSendList;
 
-        public uint PhysicsDataSendInterval = 0;
-        public uint GraphicsDataSendInterval = 0;
-        public uint StaticInfoDataSendInterval = 0;
+        public int PhysicsDataSendInterval = 0;
+        public int GraphicsDataSendInterval = 0;
+        public int StaticInfoDataSendInterval = 0;
+
+        public int PhysicsDataSendCount = 0;
+        public int GraphicsDataSendCount = 0;
+        public int StaticInfoDataSendCount = 0;
+
 
         public AssettoCorsaWebsocketSessionParam()
         {
