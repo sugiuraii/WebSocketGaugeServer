@@ -1,4 +1,5 @@
 ﻿using DefiSSMCOM.AssetoCorsaSHM;
+using DefiSSMCOM.WebSocket;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,7 +11,7 @@ namespace DefiSSMCOM.Websocket.AssettoCorsaSHM
     /// <summary>
     /// Property data for AssettoCorsaWebsocket sessions.
     /// </summary>
-    public class AssettoCorsaWebsocketSessionParam
+    public class AssettoCorsaWebsocketSessionParam : WebsocketSessionParam
     {
         public readonly Dictionary<AssettoCorsaSHMPhysicsParameterCode, bool> PhysicsDataSendList;
         public readonly Dictionary<AssettoCorsaSHMGraphicsParameterCode, bool> GraphicsDataSendList;
@@ -24,6 +25,23 @@ namespace DefiSSMCOM.Websocket.AssettoCorsaSHM
         public int GraphicsDataSendCount = 0;
         public int StaticInfoDataSendCount = 0;
 
+        public override void reset()
+        {
+            PhysicsDataSendInterval = 0;
+            GraphicsDataSendInterval = 0;
+            StaticInfoDataSendInterval = 0;
+
+            PhysicsDataSendCount = 0;
+            GraphicsDataSendCount = 0;
+            StaticInfoDataSendCount = 0;
+
+            foreach (var x in PhysicsDataSendList.Keys)
+                PhysicsDataSendList[x] = false;
+            foreach (var x in GraphicsDataSendList.Keys)
+                GraphicsDataSendList[x] = false;
+            foreach (var x in StaticInfoDataSendList.Keys)
+                StaticInfoDataSendList[x] = false;
+        }
 
         public AssettoCorsaWebsocketSessionParam()
         {
