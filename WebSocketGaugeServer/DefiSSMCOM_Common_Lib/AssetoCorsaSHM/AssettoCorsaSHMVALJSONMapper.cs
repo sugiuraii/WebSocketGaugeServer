@@ -23,9 +23,9 @@ namespace DefiSSMCOM.AssetoCorsaSHM
                                      Physics physicsSHM, Graphics graphicsSHM, StaticInfo staticInfoSHM)
         {
             ValueJSONFormat valJSON = new ValueJSONFormat();
-            valJSON = CreatePhysicsParamterValueJSON(valJSON, physicsSendList, physicsSHM);
-            valJSON = CreateGraphicsParamterValueJSON(valJSON, graphicsSendList, graphicsSHM);
-            valJSON = CreateStaticInfoParamterValueJSON(valJSON, staticInfoSendList, staticInfoSHM);
+            valJSON = CreatePhysicsParameterValueJSON(valJSON, physicsSendList, physicsSHM);
+            valJSON = CreateGraphicsParameterValueJSON(valJSON, graphicsSendList, graphicsSHM);
+            valJSON = CreateStaticInfoParameterValueJSON(valJSON, staticInfoSendList, staticInfoSHM);
 
             return valJSON;
         }
@@ -80,7 +80,12 @@ namespace DefiSSMCOM.AssetoCorsaSHM
             return val.ToString();
         }
 
-        private ValueJSONFormat CreatePhysicsParamterValueJSON(ValueJSONFormat valJSONsrc, Dictionary<AssettoCorsaSHMPhysicsParameterCode, bool> physicsSendList, Physics physicsSHM)
+        public ValueJSONFormat CreatePhysicsParameterValueJSON(Dictionary<AssettoCorsaSHMPhysicsParameterCode, bool> physicsSendList, Physics physicsSHM)
+        {
+            return CreatePhysicsParameterValueJSON(new ValueJSONFormat(), physicsSendList, physicsSHM);
+        }
+
+        private ValueJSONFormat CreatePhysicsParameterValueJSON(ValueJSONFormat valJSONsrc, Dictionary<AssettoCorsaSHMPhysicsParameterCode, bool> physicsSendList, Physics physicsSHM)
         {
             foreach (AssettoCorsaSHMPhysicsParameterCode cd in physicsSendList.Keys)
             {
@@ -155,7 +160,13 @@ namespace DefiSSMCOM.AssetoCorsaSHM
             }
             return valJSONsrc;
         }
-        private ValueJSONFormat CreateGraphicsParamterValueJSON(ValueJSONFormat valJSONsrc, Dictionary<AssettoCorsaSHMGraphicsParameterCode, bool> graphicsSendList, Graphics graphicsSHM)
+
+        public ValueJSONFormat CreateGraphicsParameterValueJSON(Dictionary<AssettoCorsaSHMGraphicsParameterCode, bool> graphicsSendList, Graphics graphicsSHM)
+        {
+            return CreateGraphicsParameterValueJSON(new ValueJSONFormat(), graphicsSendList, graphicsSHM);
+        }
+
+        private ValueJSONFormat CreateGraphicsParameterValueJSON(ValueJSONFormat valJSONsrc, Dictionary<AssettoCorsaSHMGraphicsParameterCode, bool> graphicsSendList, Graphics graphicsSHM)
         {
             foreach (AssettoCorsaSHMGraphicsParameterCode cd in graphicsSendList.Keys)
             {
@@ -198,7 +209,13 @@ namespace DefiSSMCOM.AssetoCorsaSHM
             }
             return valJSONsrc;
         }
-        private ValueJSONFormat CreateStaticInfoParamterValueJSON(ValueJSONFormat valJSONsrc, Dictionary<AssettoCorsaSHMStaticInfoParameterCode, bool> staticInfoSendList, StaticInfo staticInfoSHM)
+
+        public ValueJSONFormat CreateStaticInfoParameterValueJSON(Dictionary<AssettoCorsaSHMStaticInfoParameterCode, bool> staticInfoSendList, StaticInfo staticInfoSHM)
+        {
+            return CreateStaticInfoParameterValueJSON(new ValueJSONFormat(), staticInfoSendList, staticInfoSHM);
+        }
+
+        private ValueJSONFormat CreateStaticInfoParameterValueJSON(ValueJSONFormat valJSONsrc, Dictionary<AssettoCorsaSHMStaticInfoParameterCode, bool> staticInfoSendList, StaticInfo staticInfoSHM)
         {
             foreach (AssettoCorsaSHMStaticInfoParameterCode cd in staticInfoSendList.Keys)
             {
