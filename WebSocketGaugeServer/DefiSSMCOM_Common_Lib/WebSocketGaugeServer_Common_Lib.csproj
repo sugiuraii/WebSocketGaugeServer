@@ -111,6 +111,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Websocket_Comm\ArduinoCOM_Websocket.cs" />
     <Compile Include="Websocket_Comm\AssettoCorsaSHM\AssettoCorsaWebsocketSessionParam.cs" />
+    <Compile Include="Websocket_Comm\COMPortBasedWebSocketServerCommon.cs" />
     <Compile Include="Websocket_Comm\DefiCOM_Websocket.cs" />
     <Compile Include="Websocket_Comm\ELM327COM_Websocket.cs" />
     <Compile Include="Websocket_Comm\JSONFormat\ArduinoJSONFormat.cs" />
