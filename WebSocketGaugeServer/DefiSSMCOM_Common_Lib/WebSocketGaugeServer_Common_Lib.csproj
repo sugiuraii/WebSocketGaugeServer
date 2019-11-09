@@ -116,6 +116,7 @@
     <Compile Include="Websocket_Comm\DefiCOM_Websocket.cs" />
     <Compile Include="Websocket_Comm\ELM327COM_Websocket.cs" />
     <Compile Include="Websocket_Comm\JSONFormat\ArduinoJSONFormat.cs" />
+    <Compile Include="Websocket_Comm\JSONFormat\AssettoCorsaSHMJSONFormat.cs" />
     <Compile Include="Websocket_Comm\JSONFormat\DefiJSONFormat.cs" />
     <Compile Include="Websocket_Comm\JSONFormat\ELM327JSONFormat.cs" />
     <Compile Include="Websocket_Comm\JSONFormat\JSONFormat.cs" />
