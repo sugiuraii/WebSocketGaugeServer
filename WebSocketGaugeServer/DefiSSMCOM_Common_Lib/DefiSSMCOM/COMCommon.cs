@@ -1,10 +1,11 @@
 ﻿using System.IO.Ports;
 using System.Threading;
 using log4net;
+using DefiSSMCOM_Common_Lib.DefiSSMCOM;
 
 namespace DefiSSMCOM
 {
-    public abstract class COMCommon
+    public abstract class COMCommon : IBackgroundCommunicate
     {
         private SerialPort serialPort;
 
