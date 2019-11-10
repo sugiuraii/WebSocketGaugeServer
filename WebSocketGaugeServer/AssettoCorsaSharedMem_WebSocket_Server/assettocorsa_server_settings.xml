@@ -1,8 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
-<AppSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+<AssettoCorsaSHMApplicationSetting xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <websocket_port>2017</websocket_port>
   <keepalive_interval>60</keepalive_interval>
   <physicsInterval>16.6</physicsInterval>
   <graphicsInterval>1000</graphicsInterval>
   <staticInfoInterval>1000</staticInfoInterval>
-</AppSettings>
+</AssettoCorsaSHMApplicationSetting>

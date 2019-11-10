@@ -20,7 +20,7 @@ namespace AssettoCorsaSharedMem_WebSocket_Server
         }
     }
 
-    class AssettoCorsaSHMApplicationSetting
+    public class AssettoCorsaSHMApplicationSetting
     {
         public int websocket_port = 2017;
         public int keepalive_interval = 60;
@@ -37,7 +37,7 @@ namespace AssettoCorsaSharedMem_WebSocket_Server
         {
             //Construct XmlSerializer
             System.Xml.Serialization.XmlSerializer serializer =
-                new System.Xml.Serialization.XmlSerializer(typeof(AppSettings));
+                new System.Xml.Serialization.XmlSerializer(typeof(AssettoCorsaSHMApplicationSetting));
 
             System.IO.FileStream fs =
                 new System.IO.FileStream(filepath, System.IO.FileMode.Open, System.IO.FileAccess.Read);
