@@ -50,6 +50,7 @@ namespace DefiSSMCOM.WebSocket
         {
             WebsocketPortNo = 2017;
             acBackComm = new AssetoCorsaSHMBackgroundCommunicator(physicaInterval, graphicsInterval, staticInfoInterval);
+            backgroundCommunicate = acBackComm;
             acBackComm.AssettoCorsaSharedMemory.PhysicsUpdated += acBackComm_PhysicsUpdated;
             acBackComm.AssettoCorsaSharedMemory.GraphicsUpdated += acBackComm_GraphicsUpdated;
             acBackComm.AssettoCorsaSharedMemory.StaticInfoUpdated += acBackComm_StaticInfoUpdated;
