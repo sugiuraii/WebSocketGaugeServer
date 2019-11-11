@@ -67,7 +67,7 @@ namespace AssettoCorsaSharedMem_WebSocket_Server
 
             while (true)
             {
-                Thread.Sleep(500);
+                Thread.Sleep(5000);
                 if (!websocketServerObj.IsCommunicationThreadAlive)
                     break;
 
