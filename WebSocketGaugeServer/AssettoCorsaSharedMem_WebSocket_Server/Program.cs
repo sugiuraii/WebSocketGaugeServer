@@ -64,17 +64,15 @@ namespace AssettoCorsaSharedMem_WebSocket_Server
             websocketServerObj.WebsocketPortNo = appSetting.websocket_port;
 
             websocketServerObj.start();
-
             while (true)
             {
                 Thread.Sleep(5000);
-                if (!websocketServerObj.IsCommunicationThreadAlive)
-                    break;
-
-                continue;
+                //if (!websocketServerObj.IsCommunicationThreadAlive)
+                //    break;
+                //continue;
             }
 
-            websocketServerObj.stop();
+            //websocketServerObj.stop();
         }
     }
 
