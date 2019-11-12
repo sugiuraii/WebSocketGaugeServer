@@ -106,7 +106,7 @@ namespace DefiSSMCOM.AssetoCorsaSHM
         IsInPitLane,
         SurfaceGrip,
     
-        MandatoryPitDone,
+        MandatoryPitDone
     }
 
     public enum AssettoCorsaSHMStaticInfoParameterCode
