@@ -161,14 +161,16 @@ namespace DefiSSMCOM.AssetoCorsaSHM
                                 float throttleClose = 1 - physicsSHM.Gas;
                                 float rpm = (physicsSHM.Rpms>10000)?10000:physicsSHM.Rpms;
 
-                                float throttleVacuum = (float)0.8 * throttleClose * throttleClose;
-                                float pumpingVacuum = (float)0.15 * rpm / (float)10000;
+                                float throttleVacuum = 0.8F * throttleClose * throttleClose;
+                                float pumpingVacuum = 0.15F * rpm / 10000F;
                                 float vacuum = throttleVacuum + pumpingVacuum;
 
-                                if (boost > 0.05)
+                                const float boostClip = 0.2F;
+
+                                if (boost > boostClip)
                                     manifoldPres = boost;
                                 else
-                                    manifoldPres = boost - vacuum;
+                                    manifoldPres = boost*(boost/boostClip) - vacuum*(1-boost/boostClip);
                             }
                             valJSONsrc.val.Add(cd.ToString(), ValStrConv(manifoldPres));
                             break;
