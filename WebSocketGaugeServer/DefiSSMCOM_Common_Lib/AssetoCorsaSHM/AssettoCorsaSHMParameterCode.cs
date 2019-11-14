@@ -71,7 +71,10 @@ namespace DefiSSMCOM.AssetoCorsaSHM
         TyreContactHeading,
         BrakeBias,
 
-        LocalVelocity
+        LocalVelocity,
+
+        // Custom parameter
+        ManifoldPressure
     }
 
     public enum AssettoCorsaSHMGraphicsParameterCode

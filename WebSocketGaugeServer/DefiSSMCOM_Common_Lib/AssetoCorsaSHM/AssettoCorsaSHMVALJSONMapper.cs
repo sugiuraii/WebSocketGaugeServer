@@ -152,6 +152,23 @@ namespace DefiSSMCOM.AssetoCorsaSHM
                         case AssettoCorsaSHMPhysicsParameterCode.TyreContactHeading: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TyreContactHeading)); break;
                         case AssettoCorsaSHMPhysicsParameterCode.BrakeBias: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.BrakeBias)); break;
                         case AssettoCorsaSHMPhysicsParameterCode.LocalVelocity: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.LocalVelocity)); break;
+                        
+                        //Custom calced physics parameters
+                        case AssettoCorsaSHMPhysicsParameterCode.ManifoldPressure:
+                            float manifoldPres;
+                            {
+                                float boost = physicsSHM.TurboBoost;
+                                float throttleClose = 1 - physicsSHM.Gas;
+                                float rpm = (physicsSHM.Rpms>10000)?10000:physicsSHM.Rpms;
+
+                                float throttleVacuum = (float)0.8 * throttleClose * throttleClose;
+                                float pumpingVacuum = (float)0.15 * rpm / (float)10000;
+                                float vacuum = throttleVacuum + pumpingVacuum;
+
+                                manifoldPres = (boost > 0)?boost:-vacuum;
+                            }
+                            valJSONsrc.val.Add(cd.ToString(), ValStrConv(manifoldPres));
+                            break;
 
                         default:
                             throw new InvalidProgramException("Cannot map Physics parameter code.");
