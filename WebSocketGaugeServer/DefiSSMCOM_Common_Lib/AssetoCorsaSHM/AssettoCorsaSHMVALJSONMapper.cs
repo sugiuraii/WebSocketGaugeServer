@@ -165,7 +165,10 @@ namespace DefiSSMCOM.AssetoCorsaSHM
                                 float pumpingVacuum = (float)0.15 * rpm / (float)10000;
                                 float vacuum = throttleVacuum + pumpingVacuum;
 
-                                manifoldPres = (boost > 0)?boost:-vacuum;
+                                if (boost > 0.05)
+                                    manifoldPres = boost;
+                                else
+                                    manifoldPres = boost - vacuum;
                             }
                             valJSONsrc.val.Add(cd.ToString(), ValStrConv(manifoldPres));
                             break;
