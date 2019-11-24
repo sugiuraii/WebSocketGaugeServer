@@ -15,6 +15,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArduinoCOM_WebSocket_Server
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELM327COM_WebSocket_Server", "ELM327COM_WebSocket_Server\ELM327COM_WebSocket_Server.csproj", "{7D43AFE5-3228-48F7-B44D-B4FAF70E5C02}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssettoCorsaSharedMemory", "AsettoCorsa_SharedMemory_Library\AssettoCorsaSharedMemory.csproj", "{020AF3ED-0A4C-4215-9B1D-1D41DD26F8BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssettoCorsaSharedMem_WebSocket_Server", "AssettoCorsaSharedMem_WebSocket_Server\AssettoCorsaSharedMem_WebSocket_Server.csproj", "{C6065294-2D60-4698-9E53-73617B3DCABA}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug_Distribution|Any CPU = Debug_Distribution|Any CPU
@@ -72,6 +76,22 @@ Global
 		{7D43AFE5-3228-48F7-B44D-B4FAF70E5C02}.Release_Distribution|Any CPU.Build.0 = Release_Distribution|Any CPU
 		{7D43AFE5-3228-48F7-B44D-B4FAF70E5C02}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7D43AFE5-3228-48F7-B44D-B4FAF70E5C02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{020AF3ED-0A4C-4215-9B1D-1D41DD26F8BB}.Debug_Distribution|Any CPU.ActiveCfg = Debug_Distribution|Any CPU
+		{020AF3ED-0A4C-4215-9B1D-1D41DD26F8BB}.Debug_Distribution|Any CPU.Build.0 = Debug_Distribution|Any CPU
+		{020AF3ED-0A4C-4215-9B1D-1D41DD26F8BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{020AF3ED-0A4C-4215-9B1D-1D41DD26F8BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{020AF3ED-0A4C-4215-9B1D-1D41DD26F8BB}.Release_Distribution|Any CPU.ActiveCfg = Release|Any CPU
+		{020AF3ED-0A4C-4215-9B1D-1D41DD26F8BB}.Release_Distribution|Any CPU.Build.0 = Release|Any CPU
+		{020AF3ED-0A4C-4215-9B1D-1D41DD26F8BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{020AF3ED-0A4C-4215-9B1D-1D41DD26F8BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6065294-2D60-4698-9E53-73617B3DCABA}.Debug_Distribution|Any CPU.ActiveCfg = Debug_Distribution|Any CPU
+		{C6065294-2D60-4698-9E53-73617B3DCABA}.Debug_Distribution|Any CPU.Build.0 = Debug_Distribution|Any CPU
+		{C6065294-2D60-4698-9E53-73617B3DCABA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6065294-2D60-4698-9E53-73617B3DCABA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6065294-2D60-4698-9E53-73617B3DCABA}.Release_Distribution|Any CPU.ActiveCfg = Release|Any CPU
+		{C6065294-2D60-4698-9E53-73617B3DCABA}.Release_Distribution|Any CPU.Build.0 = Release|Any CPU
+		{C6065294-2D60-4698-9E53-73617B3DCABA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6065294-2D60-4698-9E53-73617B3DCABA}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
