@@ -30,54 +30,63 @@ namespace DefiSSMCOM.AssetoCorsaSHM
             return valJSON;
         }
  
-        private string ValStrConv(int val)
+        private void putVal(ValueJSONFormat valJSON, string code, int val)
         {
-            return val.ToString();
+            valJSON.val.Add(code, val.ToString());
         }
 
-        private string ValStrConv(float val)
+        private void putVal(ValueJSONFormat valJSON, string code, float val)
         {
-            return val.ToString();
+            valJSON.val.Add(code, val.ToString());
         }
 
-        private string ValStrConv(int[] val)
+        private void putVal(ValueJSONFormat valJSON, string code, int[] valArray)
         {
-            return JsonConvert.SerializeObject(val);
+            for (int i = 0; i < valArray.Length; i++)
+                valJSON.val.Add(code + "_" + i.ToString("00"), valArray[i].ToString());
         }
 
-        private string ValStrConv(float[] val)
+        private void putVal(ValueJSONFormat valJSON, string code, float[] valArray)
         {
-            return JsonConvert.SerializeObject(val);
+            for (int i = 0; i < valArray.Length; i++)
+                valJSON.val.Add(code + "_" + i.ToString("00"), valArray[i].ToString());
         }
 
-        private string ValStrConv(string val)
+        private void putVal(ValueJSONFormat valJSON, string code, string val)
         {
-            return JsonConvert.SerializeObject(val);
+            valJSON.val.Add(code, val.ToString());
         }
 
-        private string ValStrConv(Coordinates val)
+        private void putVal(ValueJSONFormat valJSON, string code, Coordinates val)
         {
-            return JsonConvert.SerializeObject(val);
+            valJSON.val.Add(code + "_" + "X", val.X.ToString());
+            valJSON.val.Add(code + "_" + "Y", val.Y.ToString());
+            valJSON.val.Add(code + "_" + "Z", val.Z.ToString());
         }
 
-        private string ValStrConv(Coordinates[] val)
+        private void putVal(ValueJSONFormat valJSON, string code, Coordinates[] val)
         {
-            return JsonConvert.SerializeObject(val);
+            for (int i = 0; i < val.Length; i++)
+            {
+                valJSON.val.Add(code + "_" + i.ToString("00") + "_" + "X", val[i].X.ToString());
+                valJSON.val.Add(code + "_" + i.ToString("00") + "_" + "Y", val[i].Y.ToString());
+                valJSON.val.Add(code + "_" + i.ToString("00") + "_" + "Z", val[i].Z.ToString());
+            }
         }
 
-        private string ValStrConv(AC_STATUS val)
+        private void putVal(ValueJSONFormat valJSON, string code, AC_STATUS val)
         {
-            return val.ToString();
+            valJSON.val.Add(code, val.ToString());
         }
 
-        private string ValStrConv(AC_SESSION_TYPE val)
+        private void putVal(ValueJSONFormat valJSON, string code, AC_SESSION_TYPE val)
         {
-            return val.ToString();
+            valJSON.val.Add(code, val.ToString());
         }
 
-        private string ValStrConv(AC_FLAG_TYPE val)
+        private void putVal(ValueJSONFormat valJSON, string code, AC_FLAG_TYPE val)
         {
-            return val.ToString();
+            valJSON.val.Add(code, val.ToString());
         }
 
         public ValueJSONFormat CreatePhysicsParameterValueJSON(Dictionary<AssettoCorsaSHMPhysicsParameterCode, bool> physicsSendList, Physics physicsSHM)
@@ -93,65 +102,65 @@ namespace DefiSSMCOM.AssetoCorsaSHM
                 {
                     switch (cd)
                     {
-                        case AssettoCorsaSHMPhysicsParameterCode.Gas: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Gas)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Brake: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Brake)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Fuel: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Fuel)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Gear: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Gear)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Rpms: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Rpms)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.SteerAngle: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.SteerAngle)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.SpeedKmh: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.SpeedKmh)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Velocity: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Velocity)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.AccG: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.AccG)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.WheelSlip: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.WheelSlip)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.WheelLoad: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.WheelLoad)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.WheelsPressure: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.WheelsPressure)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.WheelAngularSpeed: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.WheelAngularSpeed)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.TyreWear: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TyreWear)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.TyreDirtyLevel: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TyreDirtyLevel)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.TyreCoreTemperature: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TyreCoreTemperature)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.CamberRad: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.CamberRad)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.SuspensionTravel: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.SuspensionTravel)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Drs: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Drs)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.TC: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TC)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Heading: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Heading)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Pitch: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Pitch)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Roll: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Roll)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.CgHeight: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.CgHeight)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.CarDamage: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.CarDamage)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.NumberOfTyresOut: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.NumberOfTyresOut)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.PitLimiterOn: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.PitLimiterOn)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Abs: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Abs)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.KersCharge: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.KersCharge)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.KersInput: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.KersInput)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.AutoShifterOn: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.AutoShifterOn)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.RideHeight: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.RideHeight)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.TurboBoost: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TurboBoost)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Ballast: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Ballast)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.AirDensity: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.AirDensity)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.AirTemp: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.AirTemp)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.RoadTemp: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.RoadTemp)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.LocalAngularVelocity: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.LocalAngularVelocity)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.FinalFF: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.FinalFF)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.PerformanceMeter: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.PerformanceMeter)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.EngineBrake: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.EngineBrake)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.ErsRecoveryLevel: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.ErsRecoveryLevel)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.ErsPowerLevel: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.ErsPowerLevel)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.ErsHeatCharging: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.ErsHeatCharging)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.ErsisCharging: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.ErsisCharging)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.KersCurrentKJ: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.KersCurrentKJ)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.DrsAvailable: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.DrsAvailable)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.DrsEnabled: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.DrsEnabled)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.BrakeTemp: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.BrakeTemp)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.Clutch: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.Clutch)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.TyreTempI: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TyreTempI)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.TyreTempM: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TyreTempM)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.TyreTempO: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TyreTempO)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.IsAIControlled: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.IsAIControlled)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.TyreContactPoint: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TyreContactPoint)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.TyreContactNormal: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TyreContactNormal)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.TyreContactHeading: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.TyreContactHeading)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.BrakeBias: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.BrakeBias)); break;
-                        case AssettoCorsaSHMPhysicsParameterCode.LocalVelocity: valJSONsrc.val.Add(cd.ToString(), ValStrConv(physicsSHM.LocalVelocity)); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Gas: putVal(valJSONsrc, cd.ToString(), physicsSHM.Gas); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Brake: putVal(valJSONsrc, cd.ToString(), physicsSHM.Brake); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Fuel: putVal(valJSONsrc, cd.ToString(), physicsSHM.Fuel); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Gear: putVal(valJSONsrc, cd.ToString(), physicsSHM.Gear); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Rpms: putVal(valJSONsrc, cd.ToString(), physicsSHM.Rpms); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.SteerAngle: putVal(valJSONsrc, cd.ToString(), physicsSHM.SteerAngle); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.SpeedKmh: putVal(valJSONsrc, cd.ToString(), physicsSHM.SpeedKmh); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Velocity: putVal(valJSONsrc, cd.ToString(), physicsSHM.Velocity); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.AccG: putVal(valJSONsrc, cd.ToString(), physicsSHM.AccG); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.WheelSlip: putVal(valJSONsrc, cd.ToString(), physicsSHM.WheelSlip); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.WheelLoad: putVal(valJSONsrc, cd.ToString(), physicsSHM.WheelLoad); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.WheelsPressure: putVal(valJSONsrc, cd.ToString(), physicsSHM.WheelsPressure); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.WheelAngularSpeed: putVal(valJSONsrc, cd.ToString(), physicsSHM.WheelAngularSpeed); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.TyreWear: putVal(valJSONsrc, cd.ToString(), physicsSHM.TyreWear); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.TyreDirtyLevel: putVal(valJSONsrc, cd.ToString(), physicsSHM.TyreDirtyLevel); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.TyreCoreTemperature: putVal(valJSONsrc, cd.ToString(), physicsSHM.TyreCoreTemperature); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.CamberRad: putVal(valJSONsrc, cd.ToString(), physicsSHM.CamberRad); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.SuspensionTravel: putVal(valJSONsrc, cd.ToString(), physicsSHM.SuspensionTravel); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Drs: putVal(valJSONsrc, cd.ToString(), physicsSHM.Drs); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.TC: putVal(valJSONsrc, cd.ToString(), physicsSHM.TC); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Heading: putVal(valJSONsrc, cd.ToString(), physicsSHM.Heading); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Pitch: putVal(valJSONsrc, cd.ToString(), physicsSHM.Pitch); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Roll: putVal(valJSONsrc, cd.ToString(), physicsSHM.Roll); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.CgHeight: putVal(valJSONsrc, cd.ToString(), physicsSHM.CgHeight); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.CarDamage: putVal(valJSONsrc, cd.ToString(), physicsSHM.CarDamage); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.NumberOfTyresOut: putVal(valJSONsrc, cd.ToString(), physicsSHM.NumberOfTyresOut); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.PitLimiterOn: putVal(valJSONsrc, cd.ToString(), physicsSHM.PitLimiterOn); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Abs: putVal(valJSONsrc, cd.ToString(), physicsSHM.Abs); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.KersCharge: putVal(valJSONsrc, cd.ToString(), physicsSHM.KersCharge); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.KersInput: putVal(valJSONsrc, cd.ToString(), physicsSHM.KersInput); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.AutoShifterOn: putVal(valJSONsrc, cd.ToString(), physicsSHM.AutoShifterOn); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.RideHeight: putVal(valJSONsrc, cd.ToString(), physicsSHM.RideHeight); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.TurboBoost: putVal(valJSONsrc, cd.ToString(), physicsSHM.TurboBoost); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Ballast: putVal(valJSONsrc, cd.ToString(), physicsSHM.Ballast); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.AirDensity: putVal(valJSONsrc, cd.ToString(), physicsSHM.AirDensity); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.AirTemp: putVal(valJSONsrc, cd.ToString(), physicsSHM.AirTemp); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.RoadTemp: putVal(valJSONsrc, cd.ToString(), physicsSHM.RoadTemp); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.LocalAngularVelocity: putVal(valJSONsrc, cd.ToString(), physicsSHM.LocalAngularVelocity); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.FinalFF: putVal(valJSONsrc, cd.ToString(), physicsSHM.FinalFF); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.PerformanceMeter: putVal(valJSONsrc, cd.ToString(), physicsSHM.PerformanceMeter); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.EngineBrake: putVal(valJSONsrc, cd.ToString(), physicsSHM.EngineBrake); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.ErsRecoveryLevel: putVal(valJSONsrc, cd.ToString(), physicsSHM.ErsRecoveryLevel); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.ErsPowerLevel: putVal(valJSONsrc, cd.ToString(), physicsSHM.ErsPowerLevel); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.ErsHeatCharging: putVal(valJSONsrc, cd.ToString(), physicsSHM.ErsHeatCharging); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.ErsisCharging: putVal(valJSONsrc, cd.ToString(), physicsSHM.ErsisCharging); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.KersCurrentKJ: putVal(valJSONsrc, cd.ToString(), physicsSHM.KersCurrentKJ); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.DrsAvailable: putVal(valJSONsrc, cd.ToString(), physicsSHM.DrsAvailable); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.DrsEnabled: putVal(valJSONsrc, cd.ToString(), physicsSHM.DrsEnabled); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.BrakeTemp: putVal(valJSONsrc, cd.ToString(), physicsSHM.BrakeTemp); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.Clutch: putVal(valJSONsrc, cd.ToString(), physicsSHM.Clutch); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.TyreTempI: putVal(valJSONsrc, cd.ToString(), physicsSHM.TyreTempI); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.TyreTempM: putVal(valJSONsrc, cd.ToString(), physicsSHM.TyreTempM); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.TyreTempO: putVal(valJSONsrc, cd.ToString(), physicsSHM.TyreTempO); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.IsAIControlled: putVal(valJSONsrc, cd.ToString(), physicsSHM.IsAIControlled); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.TyreContactPoint: putVal(valJSONsrc, cd.ToString(), physicsSHM.TyreContactPoint); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.TyreContactNormal: putVal(valJSONsrc, cd.ToString(), physicsSHM.TyreContactNormal); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.TyreContactHeading: putVal(valJSONsrc, cd.ToString(), physicsSHM.TyreContactHeading); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.BrakeBias: putVal(valJSONsrc, cd.ToString(), physicsSHM.BrakeBias); break;
+                        case AssettoCorsaSHMPhysicsParameterCode.LocalVelocity: putVal(valJSONsrc, cd.ToString(), physicsSHM.LocalVelocity); break;
                         
                         //Custom calced physics parameters
                         case AssettoCorsaSHMPhysicsParameterCode.ManifoldPressure:
@@ -172,7 +181,7 @@ namespace DefiSSMCOM.AssetoCorsaSHM
                                 else
                                     manifoldPres = boost*(boost/boostClip) - vacuum*(1-boost/boostClip);
                             }
-                            valJSONsrc.val.Add(cd.ToString(), ValStrConv(manifoldPres));
+                            putVal(valJSONsrc, cd.ToString(), manifoldPres);
                             break;
 
                         default:
@@ -196,33 +205,33 @@ namespace DefiSSMCOM.AssetoCorsaSHM
                 {
                     switch (cd)
                     {
-                        case AssettoCorsaSHMGraphicsParameterCode.Status: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.Status)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.Session: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.Session)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.CurrentTime: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.CurrentTime)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.LastTime: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.LastTime)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.BestTime: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.BestTime)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.Split: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.Split)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.CompletedLaps: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.CompletedLaps)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.Position: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.Position)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.iCurrentTime: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.iCurrentTime)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.iLastTime: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.iLastTime)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.iBestTime: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.iBestTime)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.SessionTimeLeft: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.SessionTimeLeft)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.DistanceTraveled: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.DistanceTraveled)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.IsInPit: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.IsInPit)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.CurrentSectorIndex: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.CurrentSectorIndex)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.LastSectorTime: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.LastSectorTime)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.NumberOfLaps: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.NumberOfLaps)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.TyreCompound: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.TyreCompound)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.ReplayTimeMultiplier: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.ReplayTimeMultiplier)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.NormalizedCarPosition: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.NormalizedCarPosition)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.CarCoordinates: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.CarCoordinates)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.PenaltyTime: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.PenaltyTime)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.Flag: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.Flag)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.IdealLineOn: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.IdealLineOn)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.IsInPitLane: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.IsInPitLane)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.SurfaceGrip: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.SurfaceGrip)); break;
-                        case AssettoCorsaSHMGraphicsParameterCode.MandatoryPitDone: valJSONsrc.val.Add(cd.ToString(), ValStrConv(graphicsSHM.MandatoryPitDone)); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.Status: putVal(valJSONsrc, cd.ToString(), graphicsSHM.Status); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.Session: putVal(valJSONsrc, cd.ToString(), graphicsSHM.Session); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.CurrentTime: putVal(valJSONsrc, cd.ToString(), graphicsSHM.CurrentTime); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.LastTime: putVal(valJSONsrc, cd.ToString(), graphicsSHM.LastTime); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.BestTime: putVal(valJSONsrc, cd.ToString(), graphicsSHM.BestTime); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.Split: putVal(valJSONsrc, cd.ToString(), graphicsSHM.Split); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.CompletedLaps: putVal(valJSONsrc, cd.ToString(), graphicsSHM.CompletedLaps); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.Position: putVal(valJSONsrc, cd.ToString(), graphicsSHM.Position); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.iCurrentTime: putVal(valJSONsrc, cd.ToString(), graphicsSHM.iCurrentTime); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.iLastTime: putVal(valJSONsrc, cd.ToString(), graphicsSHM.iLastTime); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.iBestTime: putVal(valJSONsrc, cd.ToString(), graphicsSHM.iBestTime); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.SessionTimeLeft: putVal(valJSONsrc, cd.ToString(), graphicsSHM.SessionTimeLeft); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.DistanceTraveled: putVal(valJSONsrc, cd.ToString(), graphicsSHM.DistanceTraveled); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.IsInPit: putVal(valJSONsrc, cd.ToString(), graphicsSHM.IsInPit); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.CurrentSectorIndex: putVal(valJSONsrc, cd.ToString(), graphicsSHM.CurrentSectorIndex); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.LastSectorTime: putVal(valJSONsrc, cd.ToString(), graphicsSHM.LastSectorTime); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.NumberOfLaps: putVal(valJSONsrc, cd.ToString(), graphicsSHM.NumberOfLaps); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.TyreCompound: putVal(valJSONsrc, cd.ToString(), graphicsSHM.TyreCompound); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.ReplayTimeMultiplier: putVal(valJSONsrc, cd.ToString(), graphicsSHM.ReplayTimeMultiplier); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.NormalizedCarPosition: putVal(valJSONsrc, cd.ToString(), graphicsSHM.NormalizedCarPosition); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.CarCoordinates: putVal(valJSONsrc, cd.ToString(), graphicsSHM.CarCoordinates); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.PenaltyTime: putVal(valJSONsrc, cd.ToString(), graphicsSHM.PenaltyTime); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.Flag: putVal(valJSONsrc, cd.ToString(), graphicsSHM.Flag); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.IdealLineOn: putVal(valJSONsrc, cd.ToString(), graphicsSHM.IdealLineOn); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.IsInPitLane: putVal(valJSONsrc, cd.ToString(), graphicsSHM.IsInPitLane); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.SurfaceGrip: putVal(valJSONsrc, cd.ToString(), graphicsSHM.SurfaceGrip); break;
+                        case AssettoCorsaSHMGraphicsParameterCode.MandatoryPitDone: putVal(valJSONsrc, cd.ToString(), graphicsSHM.MandatoryPitDone); break;
 
                         default:
                             throw new InvalidProgramException("Cannot map Graphics parameter code.");
@@ -245,46 +254,46 @@ namespace DefiSSMCOM.AssetoCorsaSHM
                 {
                     switch (cd)
                     {
-                        case AssettoCorsaSHMStaticInfoParameterCode.SMVersion: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.SMVersion)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.ACVersion: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.ACVersion)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.NumberOfSessions: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.NumberOfSessions)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.NumCars: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.NumCars)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.CarModel: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.CarModel)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.Track: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.Track)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.PlayerName: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.PlayerName)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.PlayerSurname: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.PlayerSurname)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.PlayerNick: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.PlayerNick)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.SectorCount: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.SectorCount)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.MaxTorque: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.MaxTorque)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.MaxPower: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.MaxPower)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.MaxRpm: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.MaxRpm)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.MaxFuel: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.MaxFuel)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.SuspensionMaxTravel: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.SuspensionMaxTravel)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.TyreRadius: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.TyreRadius)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.MaxTurboBoost: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.MaxTurboBoost)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.PenaltiesEnabled: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.PenaltiesEnabled)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.AidFuelRate: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.AidFuelRate)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.AidTireRate: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.AidTireRate)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.AidMechanicalDamage: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.AidMechanicalDamage)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.AidAllowTyreBlankets: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.AidAllowTyreBlankets)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.AidStability: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.AidStability)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.AidAutoClutch: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.AidAutoClutch)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.AidAutoBlip: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.AidAutoBlip)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.HasDRS: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.HasDRS)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.HasERS: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.HasERS)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.HasKERS: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.HasKERS)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.KersMaxJoules: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.KersMaxJoules)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.EngineBrakeSettingsCount: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.EngineBrakeSettingsCount)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.ErsPowerControllerCount: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.ErsPowerControllerCount)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.TrackSPlineLength: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.TrackSPlineLength)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.TrackConfiguration: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.TrackConfiguration)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.ErsMaxJ: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.ErsMaxJ)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.IsTimedRace: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.IsTimedRace)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.HasExtraLap: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.HasExtraLap)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.CarSkin: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.CarSkin)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.ReversedGridPositions: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.ReversedGridPositions)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.PitWindowStart: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.PitWindowStart)); break;
-                        case AssettoCorsaSHMStaticInfoParameterCode.PitWindowEnd: valJSONsrc.val.Add(cd.ToString(), ValStrConv(staticInfoSHM.PitWindowEnd)); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.SMVersion: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.SMVersion); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.ACVersion: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.ACVersion); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.NumberOfSessions: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.NumberOfSessions); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.NumCars: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.NumCars); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.CarModel: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.CarModel); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.Track: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.Track); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.PlayerName: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.PlayerName); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.PlayerSurname: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.PlayerSurname); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.PlayerNick: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.PlayerNick); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.SectorCount: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.SectorCount); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.MaxTorque: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.MaxTorque); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.MaxPower: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.MaxPower); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.MaxRpm: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.MaxRpm); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.MaxFuel: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.MaxFuel); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.SuspensionMaxTravel: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.SuspensionMaxTravel); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.TyreRadius: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.TyreRadius); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.MaxTurboBoost: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.MaxTurboBoost); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.PenaltiesEnabled: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.PenaltiesEnabled); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.AidFuelRate: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.AidFuelRate); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.AidTireRate: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.AidTireRate); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.AidMechanicalDamage: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.AidMechanicalDamage); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.AidAllowTyreBlankets: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.AidAllowTyreBlankets); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.AidStability: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.AidStability); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.AidAutoClutch: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.AidAutoClutch); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.AidAutoBlip: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.AidAutoBlip); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.HasDRS: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.HasDRS); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.HasERS: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.HasERS); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.HasKERS: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.HasKERS); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.KersMaxJoules: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.KersMaxJoules); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.EngineBrakeSettingsCount: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.EngineBrakeSettingsCount); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.ErsPowerControllerCount: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.ErsPowerControllerCount); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.TrackSPlineLength: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.TrackSPlineLength); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.TrackConfiguration: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.TrackConfiguration); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.ErsMaxJ: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.ErsMaxJ); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.IsTimedRace: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.IsTimedRace); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.HasExtraLap: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.HasExtraLap); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.CarSkin: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.CarSkin); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.ReversedGridPositions: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.ReversedGridPositions); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.PitWindowStart: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.PitWindowStart); break;
+                        case AssettoCorsaSHMStaticInfoParameterCode.PitWindowEnd: putVal(valJSONsrc, cd.ToString(), staticInfoSHM.PitWindowEnd); break;
 
                         default:
                             throw new InvalidProgramException("Cannot map Graphics parameter code.");
