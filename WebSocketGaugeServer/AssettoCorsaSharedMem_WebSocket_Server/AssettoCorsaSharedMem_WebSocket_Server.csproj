@@ -1,157 +1,20 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{C6065294-2D60-4698-9E53-73617B3DCABA}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>AssettoCorsaSharedMem_WebSocket_Server</RootNamespace>
-    <AssemblyName>AssettoCorsaSharedMem_WebSocket_Server</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFramework>net45</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug_Distribution|AnyCPU'">
-    <DebugSymbols>true</DebugSymbols>
-    <OutputPath>..\Debug_Distribution\AsettoCorsaSHM\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <DebugType>full</DebugType>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <ErrorReport>prompt</ErrorReport>
-    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
-    <Prefer32Bit>true</Prefer32Bit>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <HintPath>..\packages\Newtonsoft.Json.12.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SuperSocket.Common, Version=1.6.6.1, Culture=neutral, PublicKeyToken=6c80000676988ebb, processorArchitecture=MSIL">
-      <HintPath>..\packages\SuperSocket.1.6.6.1\lib\net45\SuperSocket.Common.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SuperSocket.Facility, Version=1.6.6.1, Culture=neutral, PublicKeyToken=6c80000676988ebb, processorArchitecture=MSIL">
-      <HintPath>..\packages\SuperSocket.1.6.6.1\lib\net45\SuperSocket.Facility.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SuperSocket.SocketBase, Version=1.6.6.1, Culture=neutral, PublicKeyToken=6c80000676988ebb, processorArchitecture=MSIL">
-      <HintPath>..\packages\SuperSocket.1.6.6.1\lib\net45\SuperSocket.SocketBase.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SuperSocket.SocketEngine, Version=1.6.6.1, Culture=neutral, PublicKeyToken=6c80000676988ebb, processorArchitecture=MSIL">
-      <HintPath>..\packages\SuperSocket.Engine.1.6.6.1\lib\net45\SuperSocket.SocketEngine.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SuperSocket.SocketService, Version=1.6.6.1, Culture=neutral, PublicKeyToken=6c80000676988ebb, processorArchitecture=MSIL">
-      <HintPath>..\packages\SuperSocket.Engine.1.6.6.1\lib\net45\SuperSocket.SocketService.exe</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="SuperSocket.WebSocket, Version=1.6.6.1, Culture=neutral, PublicKeyToken=6c80000676988ebb, processorArchitecture=MSIL">
-      <HintPath>..\packages\SuperSocket.WebSocket.1.6.6.1\lib\net45\SuperSocket.WebSocket.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
+    <PackageReference Include="log4net" Version="2.0.8" />
+    <ProjectReference Include="../DefiSSMCOM_Common_Lib/DefiSSMCOM_Common_Lib.csproj" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="SuperSocket" Version="1.6.6.1" />
+    <PackageReference Include="SuperSocket.Engine" Version="1.6.6.1" />
+    <PackageReference Include="SuperSocket.WebSocket" Version="1.6.6.1" />
   </ItemGroup>
-  <ItemGroup>
-    <Compile Include="Program.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="Config\log4net.config" />
-    <None Include="Config\log4net.unix.config" />
-    <None Include="packages.config" />
-    <None Include="supersocket.cmd" />
-    <None Include="supersocket.sh" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\AsettoCorsa_SharedMemory_Library\AssettoCorsaSharedMemory.csproj">
-      <Project>{020af3ed-0a4c-4215-9b1d-1d41dd26f8bb}</Project>
-      <Name>AssettoCorsaSharedMemory</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\DefiSSMCOM_Common_Lib\WebSocketGaugeServer_Common_Lib.csproj">
-      <Project>{898d1578-b886-48f0-8a17-253548c67b3f}</Project>
-      <Name>WebSocketGaugeServer_Common_Lib</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="assettocorsa_server_settings.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="Log4net.Config.xml">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <BootstrapperPackage Include=".NETFramework,Version=v4.5">
-      <Visible>False</Visible>
-      <ProductName>Microsoft .NET Framework 4.5 %28x86 and x64%29</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>false</Install>
-    </BootstrapperPackage>
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>
