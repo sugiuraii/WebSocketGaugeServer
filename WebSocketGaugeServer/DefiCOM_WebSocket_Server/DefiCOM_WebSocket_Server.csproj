@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net45</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="../DefiSSMCOM_Common_Lib/DefiSSMCOM_Common_Lib.csproj" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="SuperSocket" Version="1.6.6.1" />
+    <PackageReference Include="SuperSocket.Engine" Version="1.6.6.1" />
+    <PackageReference Include="SuperSocket.WebSocket" Version="1.6.6.1" />
+  </ItemGroup>
+</Project>
