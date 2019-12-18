@@ -452,8 +452,6 @@ namespace DefiSSMCOM.SSM
     public class SSMNumericContent : NumericContent
     {
         private byte[] _read_address;
-        private bool _slow_read_enable;
-        private bool _fast_read_enable;
 
         public SSMNumericContent(byte[] address, Func<double, double> conversion_function, String unit)
         {

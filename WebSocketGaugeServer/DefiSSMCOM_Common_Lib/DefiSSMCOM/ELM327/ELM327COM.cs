@@ -116,6 +116,7 @@ namespace DefiSSMCOM.OBDII
             }
             catch (TimeoutException ex)
             {
+                logger.Debug("TimeoutException in initializeELM327ATCommand() (Ignored) . Message : " + ex.Message);
             }
             DiscardInBuffer();
             bool initializeFinished = false;
