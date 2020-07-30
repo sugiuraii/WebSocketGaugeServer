@@ -1,17 +1,20 @@
 ﻿using System;
 using DefiSSMCOM.WebSocket.JSON;
 using SuperSocket.SocketBase;
+using SuperSocket.WebSocket.Server;
 using System.Net;
 using SuperSocket.WebSocket;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using log4net;
+using Microsoft.Extensions.Hosting;
+using System.Threading.Tasks;
 
 namespace DefiSSMCOM.WebSocket
 {
     public abstract class WebSocketServerCommon
     {
-        protected readonly WebSocketServer appServer;
+        protected readonly IHost appServer;
         protected bool running_state = false;
         protected IBackgroundCommunicate backgroundCommunicate;
 
@@ -48,6 +51,13 @@ namespace DefiSSMCOM.WebSocket
         /// </summary>
         public WebSocketServerCommon()
         {
+            var host = WebSocketHostBuilder.Create().UseWebSocketMessageHandler(
+                async (session, message) =>
+                    {
+                        await appServer_NewMessageReceived(session, message.Message);
+                    } 
+                )
+                .UseSession()
             // Default KeepAliveInterval : 60ms
             this.KeepAliveInterval = 60;
             // Create Websocket server
@@ -174,7 +184,7 @@ namespace DefiSSMCOM.WebSocket
         /// <param name="session">Wesocket session.</param>
         protected abstract void processReceivedJSONMessage(string receivedJSONmode, string message, WebSocketSession session);
 
-        private void appServer_NewMessageReceived(WebSocketSession session, string message)
+        private async Task appServer_NewMessageReceived(WebSocketSession session, string message)
         {
             lock (create_session_busy_lock_obj)//Websocketセッション作成処理が終わるまで、後続のパケット処理を待つ
             {

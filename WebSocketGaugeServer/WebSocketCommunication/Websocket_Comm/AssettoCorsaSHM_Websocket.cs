@@ -3,7 +3,7 @@ using DefiSSMCOM.AssetoCorsaSHM;
 using DefiSSMCOM.Websocket.AssettoCorsaSHM;
 using DefiSSMCOM.WebSocket.JSON;
 using Newtonsoft.Json;
-using SuperSocket.WebSocket;
+using SuperSocket.WebSocket.Server;
 using System;
 using System.Collections.Generic;
 using System.Linq;

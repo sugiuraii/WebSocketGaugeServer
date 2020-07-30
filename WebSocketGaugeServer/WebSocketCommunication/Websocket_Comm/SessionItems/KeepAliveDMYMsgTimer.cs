@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
-using SuperSocket.WebSocket;
+using SuperSocket.WebSocket.Server;
 using System.Net;
 
 namespace DefiSSMCOM.WebSocket
@@ -39,7 +39,7 @@ namespace DefiSSMCOM.WebSocket
             {
                 KeepAliveDMYMsgTimer timerObj = (KeepAliveDMYMsgTimer)obj;
                 WebSocketSession targetSession = timerObj.webSocketSession;
-
+                
                 targetSession.Send(DUMMY_MESSAGE);
 
             },this,Timeout.Infinite, KeepAliveInterval);
