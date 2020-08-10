@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FUELTRIP_Logger", "FUELTRIP
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsettoCorsa_SharedMemory_Library", "AsettoCorsa_SharedMemory_Library\AsettoCorsa_SharedMemory_Library.csproj", "{D445C5E6-6F5F-4555-8A52-7237B86CFE8F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASPNetWebSocket", "ASPNetWebSocket\ASPNetWebSocket.csproj", "{D95F5401-5777-4FA5-8448-E5BEA00930F3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -128,5 +130,17 @@ Global
 		{D445C5E6-6F5F-4555-8A52-7237B86CFE8F}.Release|x64.Build.0 = Release|Any CPU
 		{D445C5E6-6F5F-4555-8A52-7237B86CFE8F}.Release|x86.ActiveCfg = Release|Any CPU
 		{D445C5E6-6F5F-4555-8A52-7237B86CFE8F}.Release|x86.Build.0 = Release|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Debug|x64.Build.0 = Debug|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Debug|x86.Build.0 = Debug|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Release|x64.ActiveCfg = Release|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Release|x64.Build.0 = Release|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Release|x86.ActiveCfg = Release|Any CPU
+		{D95F5401-5777-4FA5-8448-E5BEA00930F3}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
