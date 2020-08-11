@@ -62,47 +62,56 @@ namespace ASPNetWebSocket
         private async Task Handle(HttpContext context, WebSocket webSocket)
         {
             var service = (DefiCOMService)context.RequestServices.GetRequiredService(typeof(DefiCOMService));
-
-            var buffer = new byte[1024 * 4];
-            var result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
             var connectionID = Guid.NewGuid();
             service.AddWebSocket(connectionID, webSocket);
-            while (!result.CloseStatus.HasValue)
-            {
-                await webSocket.SendAsync(new ArraySegment<byte>(buffer, 0, result.Count), result.MessageType, result.EndOfMessage, CancellationToken.None);
+            var sessionParam = service.GetSessionParam(connectionID);
 
-                result = await webSocket.ReceiveAsync(new ArraySegment<byte>(buffer), CancellationToken.None);
+            while (webSocket.State == WebSocketState.Open)
+            {
             }
             service.RemoveWebSocket(connectionID);
             await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
             await tickTask;
         }
 
-        private async Task processReceivedJSONMessage(string receivedJSONmode, string message, DefiCOMWebsocketSessionParam sessionParam, WebSocket ws)
+        private async Task processReceivedMessage(WebSocket ws, DefiCOMWebsocketSessionParam sessionParam)
         {
-            switch (receivedJSONmode)
+            string message = await ReceiveWebSocketTextAsync(ws);
+
+            // Get mode code
+            try
             {
-                case (ResetJSONFormat.ModeCode):
-                    sessionParam.reset();
-                    await send_response_msg(ws, "Defi Websocket all parameter reset.");
-                    break;
-                case (DefiWSSendJSONFormat.ModeCode):
-                    DefiWSSendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<DefiWSSendJSONFormat>(message);
-                    msg_obj_wssend.Validate();
-                    sessionParam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
+                var msg_dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(message);
+                string receivedJSONmode = msg_dict["mode"];
 
-                    await send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
-                    break;
+                switch (receivedJSONmode)
+                {
+                    case (ResetJSONFormat.ModeCode):
+                        sessionParam.reset();
+                        await send_response_msg(ws, "Defi Websocket all parameter reset.");
+                        break;
+                    case (DefiWSSendJSONFormat.ModeCode):
+                        DefiWSSendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<DefiWSSendJSONFormat>(message);
+                        msg_obj_wssend.Validate();
+                        sessionParam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
-                case (DefiWSIntervalJSONFormat.ModeCode):
-                    DefiWSIntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<DefiWSIntervalJSONFormat>(message);
-                    msg_obj_interval.Validate();
-                    sessionParam.SendInterval = msg_obj_interval.interval;
+                        await send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
+                        break;
 
-                    await send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
-                    break;
-                default:
-                    throw new JSONFormatsException("Unsuppoted mode property.");
+                    case (DefiWSIntervalJSONFormat.ModeCode):
+                        DefiWSIntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<DefiWSIntervalJSONFormat>(message);
+                        msg_obj_interval.Validate();
+                        sessionParam.SendInterval = msg_obj_interval.interval;
+
+                        await send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
+                        break;
+                    default:
+                        throw new JSONFormatsException("Unsuppoted mode property.");
+                }
+            }
+            catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException)
+            {
+                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message);
             }
         }
 
