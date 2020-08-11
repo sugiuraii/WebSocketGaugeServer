@@ -68,10 +68,10 @@ namespace ASPNetWebSocket
 
             while (webSocket.State == WebSocketState.Open)
             {
+                await processReceivedMessage(webSocket, sessionParam);
             }
             service.RemoveWebSocket(connectionID);
-            await webSocket.CloseAsync(result.CloseStatus.Value, result.CloseStatusDescription, CancellationToken.None);
-            await tickTask;
+            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed normally", CancellationToken.None);
         }
 
         private async Task processReceivedMessage(WebSocket ws, DefiCOMWebsocketSessionParam sessionParam)
