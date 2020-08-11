@@ -78,20 +78,20 @@ namespace ASPNetWebSocket
             await tickTask;
         }
 
-        private void processReceivedJSONMessage(string receivedJSONmode, string message, DefiCOMWebsocketSessionParam sessionParam, WebSocket ws)
+        private async Task processReceivedJSONMessage(string receivedJSONmode, string message, DefiCOMWebsocketSessionParam sessionParam, WebSocket ws)
         {
             switch (receivedJSONmode)
             {
                 case (ResetJSONFormat.ModeCode):
                     sessionParam.reset();
-                    send_response_msg(ws, "Defi Websocket all parameter reset.");
+                    await send_response_msg(ws, "Defi Websocket all parameter reset.");
                     break;
                 case (DefiWSSendJSONFormat.ModeCode):
                     DefiWSSendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<DefiWSSendJSONFormat>(message);
                     msg_obj_wssend.Validate();
                     sessionParam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
-                    send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
+                    await send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
                     break;
 
                 case (DefiWSIntervalJSONFormat.ModeCode):
@@ -99,7 +99,7 @@ namespace ASPNetWebSocket
                     msg_obj_interval.Validate();
                     sessionParam.SendInterval = msg_obj_interval.interval;
 
-                    send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
+                    await send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
                     break;
                 default:
                     throw new JSONFormatsException("Unsuppoted mode property.");
@@ -111,19 +111,23 @@ namespace ASPNetWebSocket
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
             
-            await ws.SendAsync(json_error_msg.Serialize());
+            await SendWebSocketTextAsync(ws, json_error_msg.Serialize());
+            /*
             IPAddress destinationAddress = session.RemoteEndPoint.Address;
             logger.Error("Send Error message to " + destinationAddress.ToString() + " : " + message);
+            */
         }
 
-        protected async Task send_response_msg(WebSocket Ws, string message)
+        protected async Task send_response_msg(WebSocket ws, string message)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
-            ws.SendAsync(json_response_msg.Serialize());
-
+            
+            /*
             IPAddress destinationAddress = session.RemoteEndPoint.Address;
             logger.Info("Send Response message to " + destinationAddress.ToString() + " : " + message);
+            */
+            await SendWebSocketTextAsync(ws, json_response_msg.Serialize());
         }
 
         private async Task SendWebSocketTextAsync(WebSocket webSocket, string text)
