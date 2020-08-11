@@ -12,6 +12,10 @@ using System.Net.WebSockets;
 using System.Threading;
 using DefiSSMCOM.WebSocket;
 using DefiSSMCOM.WebSocket.JSON;
+using Newtonsoft.Json;
+using DefiSSMCOM.Defi;
+using System.Text;
+using System.IO;
 
 namespace ASPNetWebSocket
 {
@@ -80,46 +84,79 @@ namespace ASPNetWebSocket
             {
                 case (ResetJSONFormat.ModeCode):
                     sessionParam.reset();
-                    send_response_msg(session, "Defi Websocket all parameter reset.");
+                    send_response_msg(ws, "Defi Websocket all parameter reset.");
                     break;
                 case (DefiWSSendJSONFormat.ModeCode):
                     DefiWSSendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<DefiWSSendJSONFormat>(message);
                     msg_obj_wssend.Validate();
                     sessionParam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
-                    send_response_msg(session, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
+                    send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
                     break;
 
                 case (DefiWSIntervalJSONFormat.ModeCode):
                     DefiWSIntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<DefiWSIntervalJSONFormat>(message);
                     msg_obj_interval.Validate();
-                    sessionparam.SendInterval = msg_obj_interval.interval;
+                    sessionParam.SendInterval = msg_obj_interval.interval;
 
-                    send_response_msg(session, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
+                    send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
                     break;
                 default:
                     throw new JSONFormatsException("Unsuppoted mode property.");
             }
         }
 
-        protected void send_error_msg(WebSocket ws, string message)
+        protected async Task send_error_msg(WebSocket ws, string message)
         {
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
             
-            session.Send(json_error_msg.Serialize());
+            await ws.SendAsync(json_error_msg.Serialize());
             IPAddress destinationAddress = session.RemoteEndPoint.Address;
             logger.Error("Send Error message to " + destinationAddress.ToString() + " : " + message);
         }
 
-        protected void send_response_msg(WebSocket Ws, string message)
+        protected async Task send_response_msg(WebSocket Ws, string message)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
-            session.Send(json_response_msg.Serialize());
+            ws.SendAsync(json_response_msg.Serialize());
 
             IPAddress destinationAddress = session.RemoteEndPoint.Address;
             logger.Info("Send Response message to " + destinationAddress.ToString() + " : " + message);
+        }
+
+        private async Task SendWebSocketTextAsync(WebSocket webSocket, string text)
+        {
+            byte[] sendBuf = Encoding.UTF8.GetBytes(text);
+            await webSocket.SendAsync(new ArraySegment<byte>(sendBuf, 0, sendBuf.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+        }
+
+        private async Task<string> ReceiveWebSocketTextAsync(WebSocket webSocket)
+        {
+            var buffer = new ArraySegment<byte>(new byte[1024 * 4]);
+            WebSocketReceiveResult result= null;
+            
+            using (var ms = new MemoryStream())
+            {
+                do
+                {
+                    result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+                    ms.Write(buffer.Array, buffer.Offset, result.Count);
+                } while(!result.EndOfMessage);
+                
+                ms.Seek(0, SeekOrigin.Begin);
+                if (result.MessageType == WebSocketMessageType.Text)
+                {
+                    using (var reader = new StreamReader(ms, Encoding.UTF8))
+                    {
+                        return reader.ReadToEnd();
+                    }
+                }
+                else
+                    throw new InvalidOperationException("WebSocket received message is not text.");
+
+            }
         }
     }
 }
