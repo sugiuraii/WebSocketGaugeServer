@@ -70,6 +70,8 @@ namespace ASPNetWebSocket.Service
                     }
                 }
             };
+
+            this.DefiCOM.BackgroundCommunicateStart();
         }
     }
 }
