@@ -15,7 +15,7 @@ namespace ASPNetWebSocket
     public class Program
     {
         static ILog logger = LogManager.GetLogger(typeof(Program));
-        public static async void Main(string[] args)
+        public static void Main(string[] args)
         {
             logger.Info("Start");
             var host =  CreateHostBuilder(args).Build();
