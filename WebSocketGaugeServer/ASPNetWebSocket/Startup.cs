@@ -76,40 +76,43 @@ namespace ASPNetWebSocket
 
         private async Task processReceivedMessage(WebSocket ws, DefiCOMWebsocketSessionParam sessionParam)
         {
-            string message = await ReceiveWebSocketTextAsync(ws);
-
             // Get mode code
             try
             {
-                var msg_dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(message);
-                string receivedJSONmode = msg_dict["mode"];
-
-                switch (receivedJSONmode)
+                var wsmessage = await ReceiveWebSocketTextAsync(ws);
+                if(wsmessage.MessageType == WebSocketMessageType.Text)
                 {
-                    case (ResetJSONFormat.ModeCode):
-                        sessionParam.reset();
-                        await send_response_msg(ws, "Defi Websocket all parameter reset.");
-                        break;
-                    case (DefiWSSendJSONFormat.ModeCode):
-                        DefiWSSendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<DefiWSSendJSONFormat>(message);
-                        msg_obj_wssend.Validate();
-                        sessionParam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
+                    string message = wsmessage.TextContent;
+                    var msg_dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(message);
+                    string receivedJSONmode = msg_dict["mode"];
 
-                        await send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
-                        break;
+                    switch (receivedJSONmode)
+                    {
+                        case (ResetJSONFormat.ModeCode):
+                            sessionParam.reset();
+                            await send_response_msg(ws, "Defi Websocket all parameter reset.");
+                            break;
+                        case (DefiWSSendJSONFormat.ModeCode):
+                            DefiWSSendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<DefiWSSendJSONFormat>(message);
+                            msg_obj_wssend.Validate();
+                            sessionParam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
-                    case (DefiWSIntervalJSONFormat.ModeCode):
-                        DefiWSIntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<DefiWSIntervalJSONFormat>(message);
-                        msg_obj_interval.Validate();
-                        sessionParam.SendInterval = msg_obj_interval.interval;
+                            await send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
+                            break;
 
-                        await send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
-                        break;
-                    default:
-                        throw new JSONFormatsException("Unsuppoted mode property.");
+                        case (DefiWSIntervalJSONFormat.ModeCode):
+                            DefiWSIntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<DefiWSIntervalJSONFormat>(message);
+                            msg_obj_interval.Validate();
+                            sessionParam.SendInterval = msg_obj_interval.interval;
+
+                            await send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
+                            break;
+                        default:
+                            throw new JSONFormatsException("Unsuppoted mode property.");
+                    }
                 }
             }
-            catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException)
+            catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
                 await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message);
             }
@@ -145,7 +148,7 @@ namespace ASPNetWebSocket
             await webSocket.SendAsync(new ArraySegment<byte>(sendBuf, 0, sendBuf.Length), WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
-        private async Task<string> ReceiveWebSocketTextAsync(WebSocket webSocket)
+        private async Task<WebSocketMessage> ReceiveWebSocketTextAsync(WebSocket webSocket)
         {
             var buffer = new ArraySegment<byte>(new byte[1024 * 4]);
             WebSocketReceiveResult result= null;
@@ -159,16 +162,22 @@ namespace ASPNetWebSocket
                 } while(!result.EndOfMessage);
                 
                 ms.Seek(0, SeekOrigin.Begin);
-                if (result.MessageType == WebSocketMessageType.Text)
+                switch(result.MessageType)
                 {
-                    using (var reader = new StreamReader(ms, Encoding.UTF8))
-                    {
-                        return reader.ReadToEnd();
-                    }
+                    case WebSocketMessageType.Text:
+                        string returnStr;
+                        using (var reader = new StreamReader(ms, Encoding.UTF8))
+                        {
+                            returnStr = reader.ReadToEnd();
+                        }
+                        return WebSocketMessage.CreateTextMessage(returnStr);
+                    case WebSocketMessageType.Binary:
+                        throw new NotSupportedException("Binary mode websocketmessage is curently not supprted.");
+                    case WebSocketMessageType.Close:
+                        return WebSocketMessage.CreateCloseMessage();
+                    default:
+                        throw new InvalidProgramException();
                 }
-                else
-                    throw new InvalidOperationException("WebSocket received message is not text.");
-
             }
         }
     }
