@@ -25,7 +25,7 @@ namespace ASPNetWebSocket
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<DefiCOMService>(new DefiCOMService("COM3"));
+            services.AddSingleton<DefiCOMService>(_ => new DefiCOMService("COM3"));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -79,7 +79,7 @@ namespace ASPNetWebSocket
             // Get mode code
             try
             {
-                var wsmessage = await ReceiveWebSocketTextAsync(ws);
+                var wsmessage = await ReceiveWebSocketMessageAsync(ws);
                 if(wsmessage.MessageType == WebSocketMessageType.Text)
                 {
                     string message = wsmessage.TextContent;
@@ -112,7 +112,7 @@ namespace ASPNetWebSocket
                     }
                 }
             }
-            catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
+            catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException || ex is OperationCanceledException)
             {
                 await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message);
             }
@@ -148,7 +148,7 @@ namespace ASPNetWebSocket
             await webSocket.SendAsync(new ArraySegment<byte>(sendBuf, 0, sendBuf.Length), WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
-        private async Task<WebSocketMessage> ReceiveWebSocketTextAsync(WebSocket webSocket)
+        private async Task<WebSocketMessage> ReceiveWebSocketMessageAsync(WebSocket webSocket)
         {
             var buffer = new ArraySegment<byte>(new byte[1024 * 4]);
             WebSocketReceiveResult result= null;

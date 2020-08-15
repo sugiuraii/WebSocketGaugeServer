@@ -8,10 +8,11 @@ using DefiSSMCOM.WebSocket.JSON;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
+using Microsoft.Extensions.Hosting;
 
 namespace ASPNetWebSocket.Service
 {
-    public class DefiCOMService
+    public class DefiCOMService : IDisposable
     {
         private readonly DefiCOM defiCOM;
         private readonly Dictionary<Guid, WebSocket> WebSockets = new Dictionary<Guid, WebSocket>();
@@ -70,8 +71,13 @@ namespace ASPNetWebSocket.Service
                     }
                 }
             };
-
             this.DefiCOM.BackgroundCommunicateStart();
+        }
+
+        public void Dispose()
+        {
+            var stopTask = Task.Run(() => this.DefiCOM.BackGroundCommunicateStop());
+            Task.WhenAny(stopTask, Task.Delay(10000));
         }
     }
 }
