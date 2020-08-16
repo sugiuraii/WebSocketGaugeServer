@@ -9,11 +9,13 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
 using Microsoft.Extensions.Hosting;
+using log4net;
 
 namespace ASPNetWebSocket.Service
 {
     public class DefiCOMService : IDisposable
     {
+        static ILog logger = LogManager.GetLogger(typeof(Program));
         private readonly DefiCOM defiCOM;
         private readonly Dictionary<Guid, WebSocket> WebSockets = new Dictionary<Guid, WebSocket>();
         private readonly Dictionary<Guid, DefiCOMWebsocketSessionParam> SessionParams = new Dictionary<Guid, DefiCOMWebsocketSessionParam>();
@@ -44,31 +46,39 @@ namespace ASPNetWebSocket.Service
             // Register websocket broad cast
             this.defiCOM.DefiPacketReceived += async (sender, args) =>
             {
-                foreach (var session in WebSockets)
+                try
                 {
-                    var guid = session.Key;
-                    var websocket = session.Value;
-                    var sessionparam = GetSessionParam(guid);
-
-                    var msg_data = new ValueJSONFormat();        
-                    if (sessionparam.SendCount < sessionparam.SendInterval)
-                        sessionparam.SendCount++;
-                    else
+                    foreach (var session in WebSockets)
                     {
-                        foreach (DefiParameterCode deficode in Enum.GetValues(typeof(DefiParameterCode)))
-                        {
-                            if (sessionparam.Sendlist[deficode])
-                                msg_data.val.Add(deficode.ToString(), defiCOM.get_value(deficode).ToString());
-                        }
+                        var guid = session.Key;
+                        var websocket = session.Value;
+                        var sessionparam = GetSessionParam(guid);
 
-                        if (msg_data.val.Count > 0)
+                        var msg_data = new ValueJSONFormat();        
+                        if (sessionparam.SendCount < sessionparam.SendInterval)
+                            sessionparam.SendCount++;
+                        else
                         {
-                            string msg = JsonConvert.SerializeObject(msg_data);
-                            byte[] buf = Encoding.UTF8.GetBytes(msg);
-                            await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                            foreach (DefiParameterCode deficode in Enum.GetValues(typeof(DefiParameterCode)))
+                            {
+                                if (sessionparam.Sendlist[deficode])
+                                    msg_data.val.Add(deficode.ToString(), defiCOM.get_value(deficode).ToString());
+                            }
+
+                            if (msg_data.val.Count > 0)
+                            {
+                                string msg = JsonConvert.SerializeObject(msg_data);
+                                byte[] buf = Encoding.UTF8.GetBytes(msg);
+                                await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                            }
+                            sessionparam.SendCount = 0;
                         }
-                        sessionparam.SendCount = 0;
                     }
+                }
+                catch(WebSocketException ex)
+                {
+                    logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                    logger.Warn(ex.StackTrace);
                 }
             };
             this.DefiCOM.BackgroundCommunicateStart();
