@@ -50,7 +50,7 @@ namespace ASPNetWebSocket
                 if (context.WebSockets.IsWebSocketRequest)
                 {
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await Handle(context, webSocket);
+                    await HandleHttpConnection(context, webSocket);
                 }
                 else
                 {
@@ -59,7 +59,7 @@ namespace ASPNetWebSocket
             });
         }
 
-        private async Task Handle(HttpContext context, WebSocket webSocket)
+        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket)
         {
             var service = (DefiCOMService)context.RequestServices.GetRequiredService(typeof(DefiCOMService));
             var connectionID = Guid.NewGuid();
