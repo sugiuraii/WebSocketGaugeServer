@@ -25,6 +25,7 @@ namespace ASPNetWebSocket
             }
             catch(OperationCanceledException ex)
             {                
+                logger.Info(ex.Message);                
             }
         }
 
