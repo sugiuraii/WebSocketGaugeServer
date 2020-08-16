@@ -24,7 +24,7 @@ namespace ASPNetWebSocket
                 host.Run();
             }
             catch(OperationCanceledException ex)
-            {                
+            {
                 logger.Info(ex.Message);                
             }
         }
@@ -33,6 +33,7 @@ namespace ASPNetWebSocket
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
+                    webBuilder.UseUrls("http://*:5000");
                     webBuilder.UseStartup<Startup>();
                 });
     }
