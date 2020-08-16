@@ -16,11 +16,14 @@ using Newtonsoft.Json;
 using DefiSSMCOM.Defi;
 using System.Text;
 using System.IO;
+using System.Net;
+using log4net;
 
 namespace ASPNetWebSocket
 {
     public class Startup
     {
+        static ILog logger = LogManager.GetLogger(typeof(Program));
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -63,18 +66,22 @@ namespace ASPNetWebSocket
         {
             var service = (DefiCOMService)context.RequestServices.GetRequiredService(typeof(DefiCOMService));
             var connectionID = Guid.NewGuid();
+            var destAddress = context.Connection.RemoteIpAddress;
+
             service.AddWebSocket(connectionID, webSocket);
             var sessionParam = service.GetSessionParam(connectionID);
+            logger.Info("Session is connected from : " + destAddress.ToString());
 
             while (webSocket.State == WebSocketState.Open)
             {
-                await processReceivedMessage(webSocket, sessionParam);
+                await processReceivedMessage(webSocket, sessionParam, destAddress);
             }
             service.RemoveWebSocket(connectionID);
             await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed normally", CancellationToken.None);
+            logger.Info("Session is disconnected from : " + destAddress.ToString());
         }
 
-        private async Task processReceivedMessage(WebSocket ws, DefiCOMWebsocketSessionParam sessionParam)
+        private async Task processReceivedMessage(WebSocket ws, DefiCOMWebsocketSessionParam sessionParam, IPAddress destAddress)
         {
             // Get mode code
             try
@@ -90,14 +97,14 @@ namespace ASPNetWebSocket
                     {
                         case (ResetJSONFormat.ModeCode):
                             sessionParam.reset();
-                            await send_response_msg(ws, "Defi Websocket all parameter reset.");
+                            await send_response_msg(ws, "Defi Websocket all parameter reset.", destAddress);
                             break;
                         case (DefiWSSendJSONFormat.ModeCode):
                             DefiWSSendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<DefiWSSendJSONFormat>(message);
                             msg_obj_wssend.Validate();
                             sessionParam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
-                            await send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString());
+                            await send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress);
                             break;
 
                         case (DefiWSIntervalJSONFormat.ModeCode):
@@ -105,7 +112,7 @@ namespace ASPNetWebSocket
                             msg_obj_interval.Validate();
                             sessionParam.SendInterval = msg_obj_interval.interval;
 
-                            await send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString());
+                            await send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString(), destAddress);
                             break;
                         default:
                             throw new JSONFormatsException("Unsuppoted mode property.");
@@ -114,31 +121,25 @@ namespace ASPNetWebSocket
             }
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException || ex is OperationCanceledException)
             {
-                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message);
+                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress);
             }
         }
 
-        protected async Task send_error_msg(WebSocket ws, string message)
+        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress)
         {
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
             
-            await SendWebSocketTextAsync(ws, json_error_msg.Serialize());
-            /*
-            IPAddress destinationAddress = session.RemoteEndPoint.Address;
-            logger.Error("Send Error message to " + destinationAddress.ToString() + " : " + message);
-            */
+            await SendWebSocketTextAsync(ws, json_error_msg.Serialize());           
+            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);
         }
 
-        protected async Task send_response_msg(WebSocket ws, string message)
+        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
             
-            /*
-            IPAddress destinationAddress = session.RemoteEndPoint.Address;
-            logger.Info("Send Response message to " + destinationAddress.ToString() + " : " + message);
-            */
+            logger.Info("Send Response message to " + destAddress.ToString() + " : " + message);
             await SendWebSocketTextAsync(ws, json_response_msg.Serialize());
         }
 
