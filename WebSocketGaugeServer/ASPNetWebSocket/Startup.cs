@@ -47,7 +47,7 @@ namespace ASPNetWebSocket
             app.UseWebSockets(webSocketOptions);
 
             app.UseRouting();
-
+            
             app.Use(async (context, next) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
@@ -119,9 +119,13 @@ namespace ASPNetWebSocket
                     }
                 }
             }
-            catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException || ex is OperationCanceledException)
+            catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
                 await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress);
+            }
+            catch(OperationCanceledException ex)
+            {
+                logger.Info(ex.Message);
             }
         }
 
@@ -129,9 +133,9 @@ namespace ASPNetWebSocket
         {
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
-            
+
+            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);            
             await SendWebSocketTextAsync(ws, json_error_msg.Serialize());           
-            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);
         }
 
         protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress)
