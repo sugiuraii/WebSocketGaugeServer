@@ -1,5 +1,7 @@
+﻿using System;
 using System.IO.Ports;
 using System.Threading;
+using System.Threading.Tasks;
 using log4net;
 
 namespace DefiSSMCOM
@@ -167,13 +169,21 @@ namespace DefiSSMCOM
             communicate_initialize();
         }
 
-
-
-        public ArraySegment<char> ReadToArraySegment(int maxBytes)
+        public async Task<byte[]> ReadMultiBytesAsync(int count, CancellationToken ct)
         {
-            SerialPort port = (SerialPort)sender;
-            communicateRealtimeIsError = true;
-            logger.Error("SerialPortError Event is invoked.");
+            var buf = new byte[count];
+            int currPos = 0;
+            await Task.Run(() =>
+                { 
+                    while(currPos < count || ct.IsCancellationRequested)
+                    {
+                        int numToRead = count - currPos;
+                        int numReadBytes = serialPort.Read(buf, currPos, numToRead);
+                        currPos += numReadBytes;
+                    }
+                    ct.ThrowIfCancellationRequested();                
+                });
+            return buf;
         }
 
         public int ReadByte()
