@@ -1,4 +1,4 @@
-﻿using System.IO.Ports;
+using System.IO.Ports;
 using System.Threading;
 using log4net;
 
@@ -31,7 +31,12 @@ namespace DefiSSMCOM
             communicateResetCount = 0;
 
             //通信エラー発生時のイベント処理登録
-            serialPort.ErrorReceived += new SerialErrorReceivedEventHandler(SerialPortErrorReceived);
+            serialPort.ErrorReceived += (sender, e) => 
+            {
+                communicateRealtimeIsError = true;
+                logger.Error("SerialPortError Event is invoked.");
+                logger.Error("Error type is  :" + e.EventType.ToString());
+            };
 
         }
 
@@ -162,8 +167,9 @@ namespace DefiSSMCOM
             communicate_initialize();
         }
 
-        //シリアルポートエラー発生時のイベント処理
-        private void SerialPortErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+
+
+        public ArraySegment<char> ReadToArraySegment(int maxBytes)
         {
             SerialPort port = (SerialPort)sender;
             communicateRealtimeIsError = true;
