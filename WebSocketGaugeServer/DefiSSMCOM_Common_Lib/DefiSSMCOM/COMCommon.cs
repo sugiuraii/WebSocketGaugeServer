@@ -178,11 +178,28 @@ namespace DefiSSMCOM
                     while(currPos < count || ct.IsCancellationRequested)
                     {
                         int numToRead = count - currPos;
+                        if(serialPort.BytesToRead < numToRead)
+                            continue;
                         int numReadBytes = serialPort.Read(buf, currPos, numToRead);
                         currPos += numReadBytes;
                     }
                     ct.ThrowIfCancellationRequested();                
                 });
+            return buf;
+        }
+
+        public byte[] ReadMultiBytes(int count)
+        {
+            var buf = new byte[count];
+            int currPos = 0;
+            while(currPos < count)
+            {
+                int numToRead = count - currPos;
+                if(serialPort.BytesToRead < numToRead)
+                    continue;
+                int numReadBytes = serialPort.Read(buf, currPos, numToRead);
+                currPos += numReadBytes;
+            }
             return buf;
         }
 
