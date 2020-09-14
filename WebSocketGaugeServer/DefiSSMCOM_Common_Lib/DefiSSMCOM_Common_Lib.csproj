@@ -2,6 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>
@@ -10,11 +11,13 @@
 
   <ItemGroup>
     <PackageReference Include="log4net" Version="2.0.8" />
-    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="SuperSocket" Version="2.0.0-beta3" />
-    <PackageReference Include="SuperSocket.WebSocket" Version="2.0.0-beta3" />
-    <PackageReference Include="SuperSocket.WebSocket.Server" Version="2.0.0-beta3" />
-    <PackageReference Include="System.IO.Ports" Version="4.7.0" />
+    <!-- Generic System.IO.Ports (Ver.4.7.0) has poor performance in linux. (Takes additional 20ms to handle single Defi message chunk.) -->
+    <!-- Use SystemIOPorts.SerialPort_Mono to avoid this performance issue. -->
+    <!-- Re-cconsider to use generic System.IO.Ports after its release of 5.0.0. -->
+    <!--
+      <PackageReference Include="System.IO.Ports" Version="4.7.0" />
+    -->
+    <PackageReference Include="SystemIOPorts.SerialPort_Mono" Version="1.0.0" />
   </ItemGroup>
 
 </Project>

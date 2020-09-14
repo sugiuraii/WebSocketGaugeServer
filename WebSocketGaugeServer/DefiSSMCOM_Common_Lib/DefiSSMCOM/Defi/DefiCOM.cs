@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.IO.Ports;
 
 namespace DefiSSMCOM.Defi
@@ -32,27 +33,19 @@ namespace DefiSSMCOM.Defi
         //この実装ではslowread_flagは無視
         protected override void communicate_main(bool slowread_flag)
         {
-            int i, c;
-            char[] inbuf = new char[DEFI_PACKET_SIZE];
-            //読み込みルーチン
+            byte[] firstInbuf = new byte[1];
+            byte[] remainingInbuf;
 
             try
             {
-                //デリミタ(ReceiverID)を見つけるまで読み進める
+                //Read until finding delimiter character.
                 do
                 {
-                    c = ReadByte();
+                    firstInbuf[0] = (byte)ReadByte();
                 }
-                while (c < 0x01 || c > 0x0f);
+                while (firstInbuf[0] < 0x01 || firstInbuf[0] > 0x0f);
 
-                //Defiパケットサイズ分だけ読み出す。
-                inbuf[0] = (char)c;
-
-                for (i = 1; i < DEFI_PACKET_SIZE; i++)
-                {
-                    c = ReadByte();
-                    inbuf[i] = (char)c;
-                }
+                remainingInbuf = ReadMultiBytes(DEFI_PACKET_SIZE - 1);
             }
             catch (TimeoutException ex)
             {
@@ -61,10 +54,12 @@ namespace DefiSSMCOM.Defi
                 communicateRealtimeIsError = true;
                 return;
             }
+            // Concat firstInbuf and remainingInbuf, and cast to char[].
+            var inbuf = firstInbuf.Concat(remainingInbuf).Select(b => (char)b).ToArray();
 
             //バッファの残り分は破棄
-            DiscardInBuffer();
-                    
+            //DiscardInBuffer();
+ 
             //ReceiverIDを判読し、private変数に格納
             int j;
             for (j = 0; j < DEFI_PACKET_SIZE; j += 5)

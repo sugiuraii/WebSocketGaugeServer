@@ -1,7 +1,7 @@
 ﻿using System;
 using DefiSSMCOM.WebSocket.JSON;
 using DefiSSMCOM.Arduino;
-using SuperSocket.WebSocket;
+using SuperSocket.WebSocket.Server;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 

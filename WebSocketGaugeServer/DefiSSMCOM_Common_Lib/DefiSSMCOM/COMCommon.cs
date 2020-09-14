@@ -1,5 +1,7 @@
-﻿using System.IO.Ports;
+﻿using System;
+using System.IO.Ports;
 using System.Threading;
+using System.Threading.Tasks;
 using log4net;
 
 namespace DefiSSMCOM
@@ -31,7 +33,12 @@ namespace DefiSSMCOM
             communicateResetCount = 0;
 
             //通信エラー発生時のイベント処理登録
-            serialPort.ErrorReceived += new SerialErrorReceivedEventHandler(SerialPortErrorReceived);
+            serialPort.ErrorReceived += (sender, e) => 
+            {
+                communicateRealtimeIsError = true;
+                logger.Error("SerialPortError Event is invoked.");
+                logger.Error("Error type is  :" + e.EventType.ToString());
+            };
 
         }
 
@@ -162,12 +169,38 @@ namespace DefiSSMCOM
             communicate_initialize();
         }
 
-        //シリアルポートエラー発生時のイベント処理
-        private void SerialPortErrorReceived(object sender, SerialErrorReceivedEventArgs e)
+        public async Task<byte[]> ReadMultiBytesAsync(int count, CancellationToken ct)
         {
-            SerialPort port = (SerialPort)sender;
-            communicateRealtimeIsError = true;
-            logger.Error("SerialPortError Event is invoked.");
+            var buf = new byte[count];
+            int currPos = 0;
+            await Task.Run(() =>
+                { 
+                    while(currPos < count || ct.IsCancellationRequested)
+                    {
+                        int numToRead = count - currPos;
+                        if(serialPort.BytesToRead < numToRead)
+                            continue;
+                        int numReadBytes = serialPort.Read(buf, currPos, numToRead);
+                        currPos += numReadBytes;
+                    }
+                    ct.ThrowIfCancellationRequested();                
+                });
+            return buf;
+        }
+
+        public byte[] ReadMultiBytes(int count)
+        {
+            var buf = new byte[count];
+            int currPos = 0;
+            while(currPos < count)
+            {
+                int numToRead = count - currPos;
+                if(serialPort.BytesToRead < numToRead)
+                    continue;
+                int numReadBytes = serialPort.Read(buf, currPos, numToRead);
+                currPos += numReadBytes;
+            }
+            return buf;
         }
 
         public int ReadByte()

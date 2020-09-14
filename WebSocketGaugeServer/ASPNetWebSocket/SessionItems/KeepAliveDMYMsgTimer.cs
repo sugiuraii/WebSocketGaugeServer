@@ -4,11 +4,11 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Threading;
-using SuperSocket.WebSocket;
-using System.Net;
+using System.Net.WebSockets;
 
 namespace DefiSSMCOM.WebSocket
 {
+    using WebSocket = System.Net.WebSockets.WebSocket;
     public class KeepAliveDMYMsgTimer
     {
         /// <summary>
@@ -21,26 +21,21 @@ namespace DefiSSMCOM.WebSocket
         /// </summary>
         private const string DUMMY_MESSAGE = "DMY";
 
-        private readonly WebSocketSession webSocketSession;
+        private readonly WebSocket ws;
 
         private readonly Timer keepAliveTimer;
 
-        /// <summary>
-        /// Constructor of KeepAliveMsgTimer
-        /// </summary>
-        /// <param name="session">Target WebSocket session.</param>
-        /// <param name="interval">Keep alive interval in milisecond.</param>
-        public KeepAliveDMYMsgTimer(WebSocketSession session, int interval)
+        public KeepAliveDMYMsgTimer(WebSocket ws, int interval)
         {
-            this.webSocketSession = session;
+            this.ws = ws;
             this.KeepAliveInterval = interval;
 
-            this.keepAliveTimer = new Timer((object obj) => 
+            this.keepAliveTimer = new Timer(async (obj) => 
             {
                 KeepAliveDMYMsgTimer timerObj = (KeepAliveDMYMsgTimer)obj;
-                WebSocketSession targetSession = timerObj.webSocketSession;
-
-                targetSession.Send(DUMMY_MESSAGE);
+                var ws = timerObj.ws;
+                
+                await WebsocketSendText(ws, DUMMY_MESSAGE);
 
             },this,Timeout.Infinite, KeepAliveInterval);
         }
@@ -59,6 +54,12 @@ namespace DefiSSMCOM.WebSocket
         public void Stop()
         {
             this.keepAliveTimer.Change(Timeout.Infinite, KeepAliveInterval);
+        }
+
+        private async Task WebsocketSendText(WebSocket ws, string text)
+        {
+            byte[] outbuf = Encoding.UTF8.GetBytes(text);
+            await ws.SendAsync(new ArraySegment<byte>(outbuf), WebSocketMessageType.Text, true, CancellationToken.None);
         }
     }
 }
