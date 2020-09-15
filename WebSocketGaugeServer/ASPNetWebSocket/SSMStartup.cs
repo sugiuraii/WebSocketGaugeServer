@@ -87,6 +87,7 @@ namespace ASPNetWebSocket
             try
             {
                 var wsmessage = await ReceiveWebSocketMessageAsync(ws);
+                    return;
                 if(wsmessage.MessageType != WebSocketMessageType.Text)
                     throw new InvalidDataException("Received websocket message type is not Text.");
 
@@ -133,6 +134,7 @@ namespace ASPNetWebSocket
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
                 await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress);
+            }
             }
             catch(OperationCanceledException ex)
             {
