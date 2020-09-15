@@ -17,6 +17,7 @@ namespace ASPNetWebSocket.Service
     {
         static ILog logger = LogManager.GetLogger(typeof(Program));
         private readonly SSMCOM ssmCOM;
+        private readonly Timer update_ssmflag_timer;
         private readonly Dictionary<Guid, WebSocket> WebSockets = new Dictionary<Guid, WebSocket>();
         private readonly Dictionary<Guid, SSMCOMWebsocketSessionParam> SessionParams = new Dictionary<Guid, SSMCOMWebsocketSessionParam>();
 
@@ -43,6 +44,8 @@ namespace ASPNetWebSocket.Service
             this.ssmCOM = new SSMCOM();
             this.ssmCOM.PortName = comportName;
 
+            this.update_ssmflag_timer = new Timer(new TimerCallback(updateSSMCOMReadflag), null, 0, Timeout.Infinite);
+            update_ssmflag_timer.Change(0, 2000);
             // Register websocket broad cast
             this.ssmCOM.SSMDataReceived += async (sender, args) =>
             {
@@ -94,7 +97,50 @@ namespace ASPNetWebSocket.Service
 
             this.SSMCOM.BackgroundCommunicateStart();
         }
+        private void updateSSMCOMReadflag(object stateobj)
+        {
+            // Do nothing if the running state is false.
+            if (!this.SSMCOM.IsCommunitateThreadAlive)
+                return;
 
+            //reset all ssmcom flag
+            this.SSMCOM.set_all_disable(true);
+            
+            if (WebSockets.Count < 1)
+                return;
+
+            foreach (var ws in WebSockets)
+            {
+                if (ws.Value == null || ws.Value.State !=  WebSocketState.Open) // Avoid null session bug
+                    continue;
+
+                //set again from the session param read parameter list
+                SSMCOMWebsocketSessionParam sessionparam;
+                try
+                {
+                    sessionparam = SessionParams[ws.Key];
+                }
+                catch (KeyNotFoundException ex)
+                {
+                    logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
+                    continue;
+                }
+
+                foreach (SSMParameterCode code in Enum.GetValues(typeof(SSMParameterCode)))
+                {
+                    if (sessionparam.FastSendlist[code])
+                    {
+                        if (!SSMCOM.get_fastread_flag(code))
+                            SSMCOM.set_fastread_flag(code, true, true);
+                    }
+                    if (sessionparam.SlowSendlist[code])
+                    {
+                        if (!SSMCOM.get_slowread_flag(code))
+                            SSMCOM.set_slowread_flag(code, true, true);
+                    }
+                }
+            }
+        }
         public void Dispose()
         {
             var stopTask = Task.Run(() => this.SSMCOM.BackGroundCommunicateStop());
