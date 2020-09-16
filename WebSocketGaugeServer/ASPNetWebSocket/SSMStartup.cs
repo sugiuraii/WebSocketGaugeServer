@@ -87,7 +87,11 @@ namespace ASPNetWebSocket
             try
             {
                 var wsmessage = await ReceiveWebSocketMessageAsync(ws);
+                
+                // Do nothing on closing message.
+                if(wsmessage.MessageType == WebSocketMessageType.Close)
                     return;
+                // Throw exception on non text message.
                 if(wsmessage.MessageType != WebSocketMessageType.Text)
                     throw new InvalidDataException("Received websocket message type is not Text.");
 
@@ -135,6 +139,9 @@ namespace ASPNetWebSocket
             {
                 await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress);
             }
+            catch(InvalidDataException ex)
+            {
+                logger.Warn(ex.Message);                
             }
             catch(OperationCanceledException ex)
             {
