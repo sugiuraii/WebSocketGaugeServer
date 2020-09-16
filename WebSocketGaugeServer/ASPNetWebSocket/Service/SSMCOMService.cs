@@ -18,24 +18,21 @@ namespace ASPNetWebSocket.Service
         static ILog logger = LogManager.GetLogger(typeof(Program));
         private readonly SSMCOM ssmCOM;
         private readonly Timer update_ssmflag_timer;
-        private readonly Dictionary<Guid, WebSocket> WebSockets = new Dictionary<Guid, WebSocket>();
-        private readonly Dictionary<Guid, SSMCOMWebsocketSessionParam> SessionParams = new Dictionary<Guid, SSMCOMWebsocketSessionParam>();
+        private readonly Dictionary<Guid, (WebSocket WebSocket, SSMCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, SSMCOMWebsocketSessionParam SessionParam)>();
 
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
         {
-            this.WebSockets.Add(sessionGuid, websocket);
-            this.SessionParams.Add(sessionGuid, new SSMCOMWebsocketSessionParam());
+            this.WebSocketDictionary.Add(sessionGuid, (websocket, new SSMCOMWebsocketSessionParam()));
         }
 
         public void RemoveWebSocket(Guid sessionGuid)
         {
-            this.WebSockets.Remove(sessionGuid);
-            this.SessionParams.Remove(sessionGuid);
+            this.WebSocketDictionary.Remove(sessionGuid);
         }
 
         public SSMCOMWebsocketSessionParam GetSessionParam(Guid guid) 
         {
-            return this.SessionParams[guid];
+            return this.WebSocketDictionary[guid].SessionParam;
         }
 
         public SSMCOM SSMCOM { get { return ssmCOM; } }
@@ -51,11 +48,11 @@ namespace ASPNetWebSocket.Service
             {
                 try
                 {
-                    foreach (var session in WebSockets)
+                    foreach (var session in WebSocketDictionary)
                     {
                         var guid = session.Key;
-                        var websocket = session.Value;
-                        var sessionparam = GetSessionParam(guid);
+                        var websocket = session.Value.WebSocket;
+                        var sessionparam = session.Value.SessionParam;
 
                         var msg_data = new ValueJSONFormat();        
                         foreach (SSMParameterCode ssmcode in args.Received_Parameter_Code) 
@@ -84,7 +81,7 @@ namespace ASPNetWebSocket.Service
                         {
                             string msg = JsonConvert.SerializeObject(msg_data);
                             byte[] buf = Encoding.UTF8.GetBytes(msg);
-                            await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                            await session.Value.WebSocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
                         }
                     }
                 }
@@ -106,25 +103,16 @@ namespace ASPNetWebSocket.Service
             //reset all ssmcom flag
             this.SSMCOM.set_all_disable(true);
             
-            if (WebSockets.Count < 1)
+            if (WebSocketDictionary.Count < 1)
                 return;
 
-            foreach (var ws in WebSockets)
+            foreach (var session in WebSocketDictionary)
             {
-                if (ws.Value == null || ws.Value.State !=  WebSocketState.Open) // Avoid null session bug
-                    continue;
+                var websocket = session.Value.WebSocket;
+                var sessionparam = session.Value.SessionParam;
 
-                //set again from the session param read parameter list
-                SSMCOMWebsocketSessionParam sessionparam;
-                try
-                {
-                    sessionparam = SessionParams[ws.Key];
-                }
-                catch (KeyNotFoundException ex)
-                {
-                    logger.Warn("Sesssion param is not set. Exception message : " + ex.Message + " " + ex.StackTrace);
+                if (websocket.State !=  WebSocketState.Open) // Avoid null session bug
                     continue;
-                }
 
                 foreach (SSMParameterCode code in Enum.GetValues(typeof(SSMParameterCode)))
                 {
