@@ -1,0 +1,89 @@
+using System;
+using System.Text;
+using System.Collections.Generic;
+using System.Net.WebSockets;
+using DefiSSMCOM.Arduino;
+using DefiSSMCOM.WebSocket;
+using DefiSSMCOM.WebSocket.JSON;
+using Newtonsoft.Json;
+using System.Threading.Tasks;
+using System.Threading;
+using log4net;
+
+namespace ASPNetWebSocket.Service
+{
+    public class ArduinoCOMService : IDisposable
+    {
+        static ILog logger = LogManager.GetLogger(typeof(Program));
+        private readonly ArduinoCOM arduinoCOM;
+        private readonly Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)>();
+
+        public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
+        {
+            this.WebSocketDictionary.Add(sessionGuid, (websocket, new ArduinoCOMWebsocketSessionParam()));
+        }
+
+        public void RemoveWebSocket(Guid sessionGuid)
+        {
+            this.WebSocketDictionary.Remove(sessionGuid);
+        }
+
+        public ArduinoCOMWebsocketSessionParam GetSessionParam(Guid guid) 
+        {
+            return this.WebSocketDictionary[guid].SessionParam;
+        }
+
+        public ArduinoCOM ArduinoCOM { get { return arduinoCOM; } }
+        public ArduinoCOMService(string comportName)
+        {
+            this.arduinoCOM = new ArduinoCOM();
+            this.arduinoCOM.PortName = comportName;
+
+            // Register websocket broad cast
+            this.arduinoCOM.ArduinoPacketReceived += async (sender, args) =>
+            {
+                try
+                {
+                    foreach (var session in WebSocketDictionary)
+                    {
+                        var guid = session.Key;
+                        var websocket = session.Value.WebSocket;
+                        var sessionparam = session.Value.SessionParam;
+
+                        var msg_data = new ValueJSONFormat();        
+                        if (sessionparam.SendCount < sessionparam.SendInterval)
+                            sessionparam.SendCount++;
+                        else
+                        {
+                            foreach (ArduinoParameterCode code in Enum.GetValues(typeof(ArduinoParameterCode)))
+                            {
+                                if (sessionparam.Sendlist[code])
+                                    msg_data.val.Add(code.ToString(), arduinoCOM.get_value(code).ToString());
+                            }
+
+                            if (msg_data.val.Count > 0)
+                            {
+                                string msg = JsonConvert.SerializeObject(msg_data);
+                                byte[] buf = Encoding.UTF8.GetBytes(msg);
+                                await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                            }
+                            sessionparam.SendCount = 0;
+                        }
+                    }
+                }
+                catch(WebSocketException ex)
+                {
+                    logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                    logger.Warn(ex.StackTrace);
+                }
+            };
+            this.ArduinoCOM.BackgroundCommunicateStart();
+        }
+
+        public void Dispose()
+        {
+            var stopTask = Task.Run(() => this.ArduinoCOM.BackGroundCommunicateStop());
+            Task.WhenAny(stopTask, Task.Delay(10000));
+        }
+    }
+}
