@@ -2,7 +2,7 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Net.WebSockets;
-using DefiSSMCOM.Defi;
+using DefiSSMCOM.Arduino;
 using DefiSSMCOM.WebSocket;
 using DefiSSMCOM.WebSocket.JSON;
 using Newtonsoft.Json;
@@ -12,15 +12,15 @@ using log4net;
 
 namespace ASPNetWebSocket.Service
 {
-    public class DefiCOMService : IDisposable
+    public class ArduinoCOMService : IDisposable
     {
         static ILog logger = LogManager.GetLogger(typeof(Program));
-        private readonly DefiCOM defiCOM;
-        private readonly Dictionary<Guid, (WebSocket WebSocket, DefiCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, DefiCOMWebsocketSessionParam SessionParam)>();
+        private readonly ArduinoCOM arduinoCOM;
+        private readonly Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)>();
 
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
         {
-            this.WebSocketDictionary.Add(sessionGuid, (websocket, new DefiCOMWebsocketSessionParam()));
+            this.WebSocketDictionary.Add(sessionGuid, (websocket, new ArduinoCOMWebsocketSessionParam()));
         }
 
         public void RemoveWebSocket(Guid sessionGuid)
@@ -28,19 +28,19 @@ namespace ASPNetWebSocket.Service
             this.WebSocketDictionary.Remove(sessionGuid);
         }
 
-        public DefiCOMWebsocketSessionParam GetSessionParam(Guid guid) 
+        public ArduinoCOMWebsocketSessionParam GetSessionParam(Guid guid) 
         {
             return this.WebSocketDictionary[guid].SessionParam;
         }
 
-        public DefiCOM DefiCOM { get { return defiCOM; } }
-        public DefiCOMService(string comportName)
+        public ArduinoCOM ArduinoCOM { get { return arduinoCOM; } }
+        public ArduinoCOMService(string comportName)
         {
-            this.defiCOM = new DefiCOM();
-            this.defiCOM.PortName = comportName;
+            this.arduinoCOM = new ArduinoCOM();
+            this.arduinoCOM.PortName = comportName;
 
             // Register websocket broad cast
-            this.defiCOM.DefiPacketReceived += async (sender, args) =>
+            this.arduinoCOM.ArduinoPacketReceived += async (sender, args) =>
             {
                 try
                 {
@@ -55,10 +55,10 @@ namespace ASPNetWebSocket.Service
                             sessionparam.SendCount++;
                         else
                         {
-                            foreach (DefiParameterCode deficode in Enum.GetValues(typeof(DefiParameterCode)))
+                            foreach (ArduinoParameterCode code in Enum.GetValues(typeof(ArduinoParameterCode)))
                             {
-                                if (sessionparam.Sendlist[deficode])
-                                    msg_data.val.Add(deficode.ToString(), defiCOM.get_value(deficode).ToString());
+                                if (sessionparam.Sendlist[code])
+                                    msg_data.val.Add(code.ToString(), arduinoCOM.get_value(code).ToString());
                             }
 
                             if (msg_data.val.Count > 0)
@@ -77,12 +77,12 @@ namespace ASPNetWebSocket.Service
                     logger.Warn(ex.StackTrace);
                 }
             };
-            this.DefiCOM.BackgroundCommunicateStart();
+            this.ArduinoCOM.BackgroundCommunicateStart();
         }
 
         public void Dispose()
         {
-            var stopTask = Task.Run(() => this.DefiCOM.BackGroundCommunicateStop());
+            var stopTask = Task.Run(() => this.ArduinoCOM.BackGroundCommunicateStop());
             Task.WhenAny(stopTask, Task.Delay(10000));
         }
     }
