@@ -8,7 +8,6 @@ using DefiSSMCOM.WebSocket.JSON;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
-using Microsoft.Extensions.Hosting;
 using log4net;
 
 namespace ASPNetWebSocket.Service
