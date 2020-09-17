@@ -98,7 +98,7 @@ namespace ASPNetWebSocket
                             sessionParam.reset();
                             await send_response_msg(ws, "Arduino Websocket all parameter reset.", destAddress);
                             break;
-                        case (DefiWSSendJSONFormat.ModeCode):
+                        case (ArduinoWSSendJSONFormat.ModeCode):
                             var msg_obj_wssend = JsonConvert.DeserializeObject<ArduinoWSSendJSONFormat>(message);
                             msg_obj_wssend.Validate();
                             sessionParam.Sendlist[(ArduinoParameterCode)Enum.Parse(typeof(ArduinoParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
@@ -106,7 +106,7 @@ namespace ASPNetWebSocket
                             await send_response_msg(ws, "Arduino Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress);
                             break;
 
-                        case (DefiWSIntervalJSONFormat.ModeCode):
+                        case (ArduinoWSIntervalJSONFormat.ModeCode):
                             var msg_obj_interval = JsonConvert.DeserializeObject<ArduinoWSIntervalJSONFormat>(message);
                             msg_obj_interval.Validate();
                             sessionParam.SendInterval = msg_obj_interval.interval;
