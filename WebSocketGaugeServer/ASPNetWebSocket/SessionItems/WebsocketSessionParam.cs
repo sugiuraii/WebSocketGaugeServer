@@ -4,11 +4,6 @@ using DefiSSMCOM.Defi;
 
 namespace DefiSSMCOM.WebSocket
 {
-    public class DefiCOMWebsocketSessionParam : SimpleWebsocketSessionParam<DefiParameterCode>
-    {
-        //主要な機能はDefi/ArduinoWebsocketSessionParamは共通につき、SimpleWebsocketSessionParamに実装
-    }
-
     /// <summary>
     /// Class to store websocket session parameters.
     /// </summary>

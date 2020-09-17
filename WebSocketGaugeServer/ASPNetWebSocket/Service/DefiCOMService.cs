@@ -17,24 +17,21 @@ namespace ASPNetWebSocket.Service
     {
         static ILog logger = LogManager.GetLogger(typeof(Program));
         private readonly DefiCOM defiCOM;
-        private readonly Dictionary<Guid, WebSocket> WebSockets = new Dictionary<Guid, WebSocket>();
-        private readonly Dictionary<Guid, DefiCOMWebsocketSessionParam> SessionParams = new Dictionary<Guid, DefiCOMWebsocketSessionParam>();
+        private readonly Dictionary<Guid, (WebSocket WebSocket, DefiCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, DefiCOMWebsocketSessionParam SessionParam)>();
 
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
         {
-            this.WebSockets.Add(sessionGuid, websocket);
-            this.SessionParams.Add(sessionGuid, new DefiCOMWebsocketSessionParam());
+            this.WebSocketDictionary.Add(sessionGuid, (websocket, new DefiCOMWebsocketSessionParam()));
         }
 
         public void RemoveWebSocket(Guid sessionGuid)
         {
-            this.WebSockets.Remove(sessionGuid);
-            this.SessionParams.Remove(sessionGuid);
+            this.WebSocketDictionary.Remove(sessionGuid);
         }
 
         public DefiCOMWebsocketSessionParam GetSessionParam(Guid guid) 
         {
-            return this.SessionParams[guid];
+            return this.WebSocketDictionary[guid].SessionParam;
         }
 
         public DefiCOM DefiCOM { get { return defiCOM; } }
@@ -48,11 +45,11 @@ namespace ASPNetWebSocket.Service
             {
                 try
                 {
-                    foreach (var session in WebSockets)
+                    foreach (var session in WebSocketDictionary)
                     {
                         var guid = session.Key;
-                        var websocket = session.Value;
-                        var sessionparam = GetSessionParam(guid);
+                        var websocket = session.Value.WebSocket;
+                        var sessionparam = session.Value.SessionParam;
 
                         var msg_data = new ValueJSONFormat();        
                         if (sessionparam.SendCount < sessionparam.SendInterval)
