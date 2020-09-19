@@ -34,7 +34,7 @@ namespace ASPNetWebSocket
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseUrls("http://*:5000");
-                    webBuilder.UseStartup<Startup>();
+                    webBuilder.UseStartup<ELM327Startup>();
                 });
     }
 }

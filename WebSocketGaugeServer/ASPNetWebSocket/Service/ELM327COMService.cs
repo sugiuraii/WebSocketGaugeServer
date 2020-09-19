@@ -35,11 +35,11 @@ namespace ASPNetWebSocket.Service
         }
 
         public ELM327COM ELM327COM { get { return elm327COM; } }
-        public ELM327COMService(string comportName)
+        public ELM327COMService(string comportName, int bauddRate)
         {
             this.elm327COM = new ELM327COM();
             this.elm327COM.PortName = comportName;
-
+            this.elm327COM.overrideDefaultBaudRate(bauddRate);
             this.update_obdflag_timer = new Timer(new TimerCallback(updateOBDReadflag), null, 0, Timeout.Infinite);
             update_obdflag_timer.Change(0, 2000);
             // Register websocket broad cast
