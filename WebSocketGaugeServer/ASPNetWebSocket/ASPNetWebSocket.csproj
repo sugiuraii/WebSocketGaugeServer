@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DefiSSMCOM_Common_Lib\DefiSSMCOM_Common_Lib.csproj" />
+    <ProjectReference Include="..\AssettoCorsa_SharedMemory_Library\AsettoCorsa_SharedMemory_Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>
