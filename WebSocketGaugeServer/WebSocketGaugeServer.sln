@@ -17,7 +17,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ELM327COM_WebSocket_Server"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FUELTRIP_Logger", "FUELTRIP_Logger\FUELTRIP_Logger.csproj", "{B9711A1A-1D42-46DB-B768-10F5BBB874C1}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsettoCorsa_SharedMemory_Library", "AsettoCorsa_SharedMemory_Library\AsettoCorsa_SharedMemory_Library.csproj", "{D445C5E6-6F5F-4555-8A52-7237B86CFE8F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssettoCorsa_SharedMemory_Library", "AssettoCorsa_SharedMemory_Library\AssettoCorsa_SharedMemory_Library.csproj", "{D445C5E6-6F5F-4555-8A52-7237B86CFE8F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ASPNetWebSocket", "ASPNetWebSocket\ASPNetWebSocket.csproj", "{D95F5401-5777-4FA5-8448-E5BEA00930F3}"
 EndProject
