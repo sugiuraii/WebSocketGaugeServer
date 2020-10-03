@@ -26,16 +26,18 @@ namespace FUELTRIP_Logger
             this.WebSocketDictionary.Remove(sessionGuid);
         }
 
-        public FUELTRIPWebSocketSessionParam GetSessionParam(Guid guid) 
+        public FUELTRIPWebSocketSessionParam GetSessionParam(Guid guid)
         {
             return this.WebSocketDictionary[guid].SessionParam;
         }
+
+        public FuelTripCalculator FUELTripCalculator { get { return this.fuelTripCalc; } }
 
         public FUELTRIPService(AppSettings appSettings)
         {
             this.fuelTripCalc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod);
 
-			//Websocket clients setup
+            //Websocket clients setup
             this.wsClients = new WebSocketClients(appSettings);
 
             this.wsClients.VALMessageParsed += async (sender, args) =>
@@ -57,7 +59,7 @@ namespace FUELTRIP_Logger
                     }
 
                 }
-                catch(WebSocketException ex)
+                catch (WebSocketException ex)
                 {
                     logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
                     logger.Warn(ex.StackTrace);
@@ -81,7 +83,7 @@ namespace FUELTRIP_Logger
                         await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
                     }
                 }
-                catch(WebSocketException ex)
+                catch (WebSocketException ex)
                 {
                     logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
                     logger.Warn(ex.StackTrace);
@@ -103,23 +105,23 @@ namespace FUELTRIP_Logger
         }
 
         private FUELTRIPJSONFormat constructMomentumFUELTRIPDataMessage(FuelTripCalculator fuelTripCalculator)
-		{
-			var fueltrip_json = new FUELTRIPJSONFormat ();
-			fueltrip_json.moment_gasmilage = fuelTripCalculator.MomentaryTripPerFuel;
-			fueltrip_json.total_gas = fuelTripCalculator.TotalFuelConsumption;
-			fueltrip_json.total_trip = fuelTripCalculator.TotalTrip;
-			fueltrip_json.total_gasmilage = fuelTripCalculator.TotalTripPerFuel;
+        {
+            var fueltrip_json = new FUELTRIPJSONFormat();
+            fueltrip_json.moment_gasmilage = fuelTripCalculator.MomentaryTripPerFuel;
+            fueltrip_json.total_gas = fuelTripCalculator.TotalFuelConsumption;
+            fueltrip_json.total_trip = fuelTripCalculator.TotalTrip;
+            fueltrip_json.total_gasmilage = fuelTripCalculator.TotalTripPerFuel;
 
             return fueltrip_json;
-		}
+        }
 
         private SectFUELTRIPJSONFormat constructSectionFUELTRIPDataMessage(FuelTripCalculator fuelTripCalculator)
         {
-            var sectfueltrip_json = new SectFUELTRIPJSONFormat ();
-			sectfueltrip_json.sect_gas = fuelTripCalculator.SectFuelArray;
-			sectfueltrip_json.sect_trip = fuelTripCalculator.SectTripArray;
-			sectfueltrip_json.sect_gasmilage = fuelTripCalculator.SectTripPerFuelArray;
-			sectfueltrip_json.sect_span = fuelTripCalculator.SectSpan;
+            var sectfueltrip_json = new SectFUELTRIPJSONFormat();
+            sectfueltrip_json.sect_gas = fuelTripCalculator.SectFuelArray;
+            sectfueltrip_json.sect_trip = fuelTripCalculator.SectTripArray;
+            sectfueltrip_json.sect_gasmilage = fuelTripCalculator.SectTripPerFuelArray;
+            sectfueltrip_json.sect_span = fuelTripCalculator.SectSpan;
 
             return sectfueltrip_json;
         }
