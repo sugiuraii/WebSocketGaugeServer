@@ -1,0 +1,28 @@
+{
+  "AppSettings": {
+    "defiserver_url": "ws://127.0.0.1:2012/",
+    "ssmserver_url": "ws://127.0.0.1:2013/",
+    "arduinoserver_url": "ws://127.0.0.1:2015/",
+    "elm327server_url": "ws://127.0.0.1:2016/",
+    "websocket_port": "2014",
+    "keepalive_interval": "60",
+    "Calculation": {
+      "FuelCalculationMethod": "RPM_INJECTION_PW",
+      "DataSource": {
+        "VehicleSpeedSource": "SSM",
+        "RPMSource": "DEFI",
+        "InjectionPWSource": "SSM",
+        "MassAirFlowSource": "SSM",
+        "AFRatioSource": "SSM",
+        "FuelRateSource": "ELM327"
+      },
+      "CalculationOption": {
+        "FuelCorrectionFactor": "1.0",
+        "TripCorrectionFactor": "1.0",
+        "NumCylinder": "4",
+        "InjectionLatency": "0.76",
+        "InjectorCapacity": "575"
+      }
+    }
+  }
+}
