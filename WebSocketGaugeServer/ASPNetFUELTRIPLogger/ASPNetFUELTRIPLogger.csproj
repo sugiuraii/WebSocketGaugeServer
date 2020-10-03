@@ -2,6 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\DefiSSMCOM_Common_Lib\DefiSSMCOM_Common_Lib.csproj" />
+    <ProjectReference Include="..\ASPNetWebSocket\ASPNetWebSocket.csproj" />
   </ItemGroup>
 
   <ItemGroup>
