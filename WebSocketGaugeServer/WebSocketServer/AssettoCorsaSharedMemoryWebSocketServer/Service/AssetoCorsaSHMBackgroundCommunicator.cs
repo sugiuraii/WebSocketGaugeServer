@@ -1,7 +1,7 @@
 using AssettoCorsaSharedMemory;
 using DefiSSMCOM;
     
-namespace ASPNetWebSocket.Service
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service
 {    
     public class AssetoCorsaSHMBackgroundCommunicator : IBackgroundCommunicate
     {
