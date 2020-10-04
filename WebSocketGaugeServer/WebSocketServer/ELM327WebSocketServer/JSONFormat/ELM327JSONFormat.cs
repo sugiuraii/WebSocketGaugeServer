@@ -1,7 +1,7 @@
-﻿using System;
-using DefiSSMCOM.OBDII;
+﻿using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
-namespace DefiSSMCOM.WebSocket.JSON
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.JSONFormat
 {
     public class ELM327COMReadJSONFormat : SlowFastCOMReadJSONFormat<OBDIIParameterCode>
     {

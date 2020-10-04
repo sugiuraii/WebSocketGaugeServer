@@ -1,27 +1,28 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ASPNetWebSocket.Service;
 using System.Net.WebSockets;
 using System.Threading;
-using DefiSSMCOM.WebSocket;
-using DefiSSMCOM.WebSocket.JSON;
 using Newtonsoft.Json;
-using DefiSSMCOM.OBDII;
 using System.Text;
 using System.IO;
 using System.Net;
 using log4net;
+using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service;
+using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
 
-namespace ASPNetWebSocket
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
 {
-    public class ELM327Startup
+    public class Startup
     {
         static ILog logger = LogManager.GetLogger(typeof(Program));
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -102,19 +103,19 @@ namespace ASPNetWebSocket
                 
                 switch (receivedJSONmode)
                 {
-                    //SSM COM all reset
+                    // ELM327 COM all reset
                     case (ResetJSONFormat.ModeCode):
                         sessionParam.reset();
                         await send_response_msg(ws, "ELM327COM session RESET. All send parameters are disabled.", destAddress);
                         break;
                     case (ELM327COMReadJSONFormat.ModeCode):
-                        var msg_obj_ssmread = JsonConvert.DeserializeObject<ELM327COMReadJSONFormat>(message);
-                        msg_obj_ssmread.Validate();
+                        var msg_obj_elm327read = JsonConvert.DeserializeObject<ELM327COMReadJSONFormat>(message);
+                        msg_obj_elm327read.Validate();
 
-                        var target_code = (OBDIIParameterCode)Enum.Parse(typeof(OBDIIParameterCode), msg_obj_ssmread.code);
-                        bool flag = msg_obj_ssmread.flag;
+                        var target_code = (OBDIIParameterCode)Enum.Parse(typeof(OBDIIParameterCode), msg_obj_elm327read.code);
+                        bool flag = msg_obj_elm327read.flag;
 
-                        if (msg_obj_ssmread.read_mode == SSMCOMReadJSONFormat.FastReadModeCode)
+                        if (msg_obj_elm327read.read_mode == ELM327COMReadJSONFormat.FastReadModeCode)
                         {
                             sessionParam.FastSendlist[target_code] = flag;
                         }
@@ -122,7 +123,7 @@ namespace ASPNetWebSocket
                         {
                             sessionParam.SlowSendlist[target_code] = flag;
                         }
-                        await send_response_msg(ws, "ELM327COM session read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString(), destAddress);
+                        await send_response_msg(ws, "ELM327COM session read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_elm327read.read_mode + " set to : " + flag.ToString(), destAddress);
                         break;
 
                     case (ELM327SLOWREADIntervalJSONFormat.ModeCode):

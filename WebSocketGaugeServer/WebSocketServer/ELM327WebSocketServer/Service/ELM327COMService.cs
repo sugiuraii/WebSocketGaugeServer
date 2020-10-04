@@ -2,15 +2,15 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Net.WebSockets;
-using DefiSSMCOM.OBDII;
-using DefiSSMCOM.WebSocket;
-using DefiSSMCOM.WebSocket.JSON;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
 using log4net;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
+using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
-namespace ASPNetWebSocket.Service
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
 {
     public class ELM327COMService : IDisposable
     {

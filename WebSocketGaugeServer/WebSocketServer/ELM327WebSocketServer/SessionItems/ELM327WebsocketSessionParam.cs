@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using DefiSSMCOM.OBDII;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
 
-namespace DefiSSMCOM.WebSocket
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.SessionItems
 {
     public class ELM327WebsocketSessionParam
     {

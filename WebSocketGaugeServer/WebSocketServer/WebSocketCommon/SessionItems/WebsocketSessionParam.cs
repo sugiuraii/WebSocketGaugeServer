@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using DefiSSMCOM.Defi;
 
-namespace DefiSSMCOM.WebSocket
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.SessionItems
 {
     /// <summary>
     /// Class to store websocket session parameters.
