@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 
-namespace DefiSSMCOM.Arduino
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 {
     public class ArduinoContentTable : ContentTableCommon<ArduinoParameterCode, ArduinoNumericContent>
     {

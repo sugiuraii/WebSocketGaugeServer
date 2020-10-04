@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO.Ports;
 
-namespace DefiSSMCOM.Arduino
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 {
     public class ArduinoCOM : COMCommon
     {
