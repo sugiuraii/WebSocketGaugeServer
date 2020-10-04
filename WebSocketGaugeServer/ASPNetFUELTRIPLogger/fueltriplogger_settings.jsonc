@@ -1,6 +1,8 @@
 {
-  "defiserver_url": "ws://127.0.0.1:2012/",
-  "ssmserver_url": "ws://127.0.0.1:2013/",
+  //"defiserver_url": "ws://127.0.0.1:2012/",
+  //"ssmserver_url": "ws://127.0.0.1:2013/",
+  "defiserver_url": "ws://192.168.122.16:2012/",
+  "ssmserver_url": "ws://192.168.122.16:2013/",
   "arduinoserver_url": "ws://127.0.0.1:2015/",
   "elm327server_url": "ws://127.0.0.1:2016/",
   "websocket_port": "2014",
