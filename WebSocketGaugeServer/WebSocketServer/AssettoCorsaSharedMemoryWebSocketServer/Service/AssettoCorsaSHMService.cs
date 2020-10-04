@@ -12,7 +12,7 @@ using log4net;
 using AssettoCorsaSharedMemory;
 using DefiSSMCOM.AssetoCorsaSHM;
 
-namespace ASPNetWebSocket.Service
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service
 {
     public class AssettoCorsaSHMService : IDisposable
     {

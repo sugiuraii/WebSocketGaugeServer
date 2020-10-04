@@ -20,9 +20,9 @@ using System.Net;
 using log4net;
 using DefiSSMCOM.AssetoCorsaSHM;
 
-namespace ASPNetWebSocket
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer
 {
-    public class AssettoCorsaSHMStartup
+    public class Startup
     {
         static ILog logger = LogManager.GetLogger(typeof(Program));
         // This method gets called by the runtime. Use this method to add services to the container.

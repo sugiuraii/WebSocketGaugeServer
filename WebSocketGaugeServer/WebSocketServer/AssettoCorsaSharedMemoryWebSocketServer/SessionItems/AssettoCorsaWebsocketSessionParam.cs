@@ -3,7 +3,7 @@ using DefiSSMCOM.WebSocket;
 using System;
 using System.Collections.Generic;
 
-namespace DefiSSMCOM.Websocket.AssettoCorsaSHM
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems
 {
     /// <summary>
     /// Property data for AssettoCorsaWebsocket sessions.

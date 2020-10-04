@@ -10,7 +10,7 @@ using log4net;
 
 [assembly: log4net.Config.XmlConfigurator(ConfigFile="log4net.config",Watch=true)]
 
-namespace ASPNetWebSocket
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer
 {
     public class Program
     {
@@ -34,7 +34,7 @@ namespace ASPNetWebSocket
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseUrls("http://*:5000");
-                    webBuilder.UseStartup<AssettoCorsaSHMStartup>();
+                    webBuilder.UseStartup<Startup>();
                 });
     }
 }

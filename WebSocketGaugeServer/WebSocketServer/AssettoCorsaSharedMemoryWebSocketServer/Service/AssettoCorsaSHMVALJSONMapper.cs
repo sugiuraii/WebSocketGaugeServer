@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using DefiSSMCOM.Websocket.AssettoCorsaSHM;
 
-namespace DefiSSMCOM.AssetoCorsaSHM
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service
 {
     public class AssettoCorsaSHMVALJSONMapper
     {

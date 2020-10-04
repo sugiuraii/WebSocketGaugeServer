@@ -1,6 +1,6 @@
 ﻿using DefiSSMCOM.AssetoCorsaSHM;
 
-namespace DefiSSMCOM.WebSocket.JSON
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.JSONFormat
 {
     public class AssettoCorsaPhysicsSendJSONFormat : WSSendJSONFormat<AssettoCorsaSHMPhysicsParameterCode>
     {
