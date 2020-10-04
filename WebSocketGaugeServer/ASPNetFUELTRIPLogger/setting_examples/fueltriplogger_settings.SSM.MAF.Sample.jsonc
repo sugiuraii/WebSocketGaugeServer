@@ -1,13 +1,12 @@
-/*
+﻿/*
 FUELTRIP logger example setting file.
-Calculation method            : RPM_INJECTION_PW
-Get sensor data from          : RPM from Defi, VehicleSpeed, Injection pulse width from SSM
+Calculation method            : MASS_AIR_FLOW
+Get sensor data from          : SSM
+Copy and overwrite the ../fueltriplogger_settings.jsonc with this file.
 */
 {
-  //"defiserver_url": "ws://127.0.0.1:2012/",
-  //"ssmserver_url": "ws://127.0.0.1:2013/",
-  "defiserver_url": "ws://192.168.122.16:2012/",
-  "ssmserver_url": "ws://192.168.122.16:2013/",
+  "defiserver_url": "ws://127.0.0.1:2012/",
+  "ssmserver_url": "ws://127.0.0.1:2013/",
   "arduinoserver_url": "ws://127.0.0.1:2015/",
   "elm327server_url": "ws://127.0.0.1:2016/",
   "Calculation": {
@@ -18,7 +17,7 @@ Get sensor data from          : RPM from Defi, VehicleSpeed, Injection pulse wid
         MASS_AIR_FLOW_AF : Calculate by "Mass air flow" and "A/F ratio"
         FUEL_RATE        : Calucluate by "Fuel Rate"
       */
-      "FuelCalculationMethod": "RPM_INJECTION_PW",
+    "FuelCalculationMethod": "MASS_AIR_FLOW",
     "DataSource": {
       /*
         Data source (Websocket server type) Candidate : 
@@ -28,16 +27,17 @@ Get sensor data from          : RPM from Defi, VehicleSpeed, Injection pulse wid
         ELN327 : "VehicleSpeed", "EngineRPM", "MassAirFlow", "A/F ratio" and "FuelRate" are available (depends on ECU model) 
       */
       "VehicleSpeedSource": "SSM",
-      "RPMSource": "DEFI",
-      "InjectionPWSource": "SSM",
-      // MassAirFlow, AFRatio and FuelRate are ignored in RPM_INJECTION_PW mode
       "MassAirFlowSource": "SSM",
+      // RPM, InjectionPW, AFratio, Fuelrate are ignored in MASS_AIR_FLOW mode
+      "RPMSource": "SSM",
+      "InjectionPWSource": "SSM",
       "AFRatioSource": "SSM",
       "FuelRateSource": "ELM327"
     },
     "CalculationOption": {
       "FuelCorrectionFactor": "1.0",
       "TripCorrectionFactor": "1.0",
+      // Follwoing 3 parmeters are considered only on "RPM_INJECTION_PW" mode.
       "NumCylinder": "4",
       "InjectionLatency": "0.76",
       "InjectorCapacity": "575"
