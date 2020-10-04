@@ -1,14 +1,14 @@
 ﻿using System;
-using Newtonsoft.Json;
 using System.Collections.Generic;
-using DefiSSMCOM.Defi;
-using DefiSSMCOM.SSM;
-using DefiSSMCOM.Arduino;
-using DefiSSMCOM.OBDII;
+using Newtonsoft.Json;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat
 {
-	public abstract class JSONFormat
+    public abstract class JSONFormat
 	{
         public string mode { get; set; }
 
