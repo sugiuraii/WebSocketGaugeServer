@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace DefiSSMCOM.OBDII
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
     public enum OBDIIParameterCode
     {

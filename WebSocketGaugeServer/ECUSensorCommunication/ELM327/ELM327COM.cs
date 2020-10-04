@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 
-namespace DefiSSMCOM.OBDII
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
     public class ELM327COM : COMCommon
     {

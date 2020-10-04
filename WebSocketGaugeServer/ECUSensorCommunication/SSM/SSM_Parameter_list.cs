@@ -1,4 +1,4 @@
-﻿namespace DefiSSMCOM.SSM
+﻿namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 {
     public enum SSMParameterCode
     {

@@ -2,7 +2,7 @@
 using System.Linq;
 using System.IO.Ports;
 
-namespace DefiSSMCOM.Defi
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 {
     public class DefiCOM : COMCommon
     {

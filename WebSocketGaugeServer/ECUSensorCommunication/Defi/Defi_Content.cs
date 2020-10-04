@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DefiSSMCOM.Defi
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 {
     public class DefiContentTable : ContentTableCommon<DefiParameterCode, DefiNumericContent>
     {

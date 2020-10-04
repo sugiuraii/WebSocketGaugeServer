@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DefiSSMCOM.SSM
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 {
     public class SSMContentTable : ContentTableCommon<SSMParameterCode,SSMNumericContent>
     {
