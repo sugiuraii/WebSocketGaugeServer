@@ -59,6 +59,11 @@ namespace FUELTRIP_Logger
                     }
 
                 }
+                catch (TimeoutException ex)
+                {
+                    logger.Warn("TimeOutException is occured on FUELTRIP calcilation. FUELTRIP calutaion is skipped on this tick. ");
+                    logger.Warn(ex.Message);
+                }
                 catch (WebSocketException ex)
                 {
                     logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
