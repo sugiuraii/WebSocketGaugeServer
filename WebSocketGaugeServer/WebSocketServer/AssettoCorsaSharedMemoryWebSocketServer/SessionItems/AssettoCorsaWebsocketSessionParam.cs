@@ -8,7 +8,7 @@ namespace DefiSSMCOM.Websocket.AssettoCorsaSHM
     /// <summary>
     /// Property data for AssettoCorsaWebsocket sessions.
     /// </summary>
-    public class AssettoCorsaWebsocketSessionParam : WebsocketSessionParam
+    public class AssettoCorsaWebsocketSessionParam
     {
         public readonly Dictionary<AssettoCorsaSHMPhysicsParameterCode, bool> PhysicsDataSendList;
         public readonly Dictionary<AssettoCorsaSHMGraphicsParameterCode, bool> GraphicsDataSendList;
@@ -22,7 +22,7 @@ namespace DefiSSMCOM.Websocket.AssettoCorsaSHM
         public int GraphicsDataSendCount = 0;
         public int StaticInfoDataSendCount = 0;
 
-        public override void reset()
+        public void reset()
         {
             PhysicsDataSendInterval = 0;
             GraphicsDataSendInterval = 0;
