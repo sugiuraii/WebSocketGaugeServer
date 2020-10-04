@@ -10,7 +10,7 @@ namespace FUELTRIP_Logger
     /// <summary>
     /// Application setting class.
     /// </summary>
-    public class AppSettings
+    public class FUELTRIPLoggerSettings
     {
         public string defiserver_url;
         public string ssmserver_url;
