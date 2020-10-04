@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace DefiSSMCOM
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 {
     public abstract class ContentTableCommon <parameterCodeType, numericContentType> 
         where parameterCodeType:struct 

@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using log4net;
 
-namespace DefiSSMCOM
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 {
     public abstract class COMCommon : IBackgroundCommunicate
     {
