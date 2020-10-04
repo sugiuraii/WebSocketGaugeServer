@@ -5,6 +5,10 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECUSensorCommunication", "ECUSensorCommunication\ECUSensorCommunication.csproj", "{0078FAE7-AE5F-4B9E-AD9B-F6436494635A}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSocketServer", "WebSocketServer", "{65D7EDB4-6EAB-4113-8AD6-CA862F057796}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ArduinoWebSocketServer", "WebSocketServer\ArduinoWebSocketServer\ArduinoWebSocketServer.csproj", "{97BD6691-C2BF-48B5-9796-158D6716C585}"
+EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -30,5 +34,20 @@ Global
 		{0078FAE7-AE5F-4B9E-AD9B-F6436494635A}.Release|x64.Build.0 = Release|Any CPU
 		{0078FAE7-AE5F-4B9E-AD9B-F6436494635A}.Release|x86.ActiveCfg = Release|Any CPU
 		{0078FAE7-AE5F-4B9E-AD9B-F6436494635A}.Release|x86.Build.0 = Release|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Debug|x64.Build.0 = Debug|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Debug|x86.Build.0 = Debug|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Release|Any CPU.Build.0 = Release|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Release|x64.ActiveCfg = Release|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Release|x64.Build.0 = Release|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Release|x86.ActiveCfg = Release|Any CPU
+		{97BD6691-C2BF-48B5-9796-158D6716C585}.Release|x86.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{97BD6691-C2BF-48B5-9796-158D6716C585} = {65D7EDB4-6EAB-4113-8AD6-CA862F057796}
 	EndGlobalSection
 EndGlobal
