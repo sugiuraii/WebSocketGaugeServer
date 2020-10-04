@@ -5,8 +5,6 @@
   "ssmserver_url": "ws://192.168.122.16:2013/",
   "arduinoserver_url": "ws://127.0.0.1:2015/",
   "elm327server_url": "ws://127.0.0.1:2016/",
-  "websocket_port": "2014",
-  "keepalive_interval": "60",
   "Calculation": {
     "FuelCalculationMethod": "RPM_INJECTION_PW",
     "DataSource": {
