@@ -1,15 +1,4 @@
-﻿using System;
-using System.Threading;
-using SuperSocket.SocketBase;
-using SuperSocket.ClientEngine;
-using SuperSocket.WebSocket;
-using WebSocket4Net;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Linq;
-using System.Collections.Generic;
-using DefiSSMCOM;
-using DefiSSMCOM.WebSocket.JSON;
-using log4net;
+﻿using DefiSSMCOM.WebSocket.JSON;
 
 namespace FUELTRIP_Logger
 {

@@ -10,14 +10,12 @@ namespace FUELTRIP_Logger
     /// <summary>
     /// Application setting class.
     /// </summary>
-    public class AppSettings
+    public class FUELTRIPLoggerSettings
     {
         public string defiserver_url;
         public string ssmserver_url;
         public string arduinoserver_url;
         public string elm327server_url;
-        public int websocket_port;
-        public int keepalive_interval;
         public calculation Calculation;
 
         public class calculation
