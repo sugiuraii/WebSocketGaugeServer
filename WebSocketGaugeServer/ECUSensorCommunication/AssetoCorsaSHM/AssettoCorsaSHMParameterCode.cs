@@ -1,10 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace DefiSSMCOM.AssetoCorsaSHM
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM
 {
     public enum AssettoCorsaSHMPhysicsParameterCode
     {
