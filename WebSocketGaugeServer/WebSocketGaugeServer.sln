@@ -13,6 +13,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocketCommon", "WebSocke
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssettoCorsaSharedMemoryWebSocketServer", "WebSocketServer\AssettoCorsaSharedMemoryWebSocketServer\AssettoCorsaSharedMemoryWebSocketServer.csproj", "{3A25EDFF-58EC-4491-AC2E-9F2E0B40F0FA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DefiWebSocketServer", "WebSocketServer\DefiWebSocketServer\DefiWebSocketServer.csproj", "{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}"
+EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -74,10 +76,23 @@ Global
 		{3A25EDFF-58EC-4491-AC2E-9F2E0B40F0FA}.Release|x64.Build.0 = Release|Any CPU
 		{3A25EDFF-58EC-4491-AC2E-9F2E0B40F0FA}.Release|x86.ActiveCfg = Release|Any CPU
 		{3A25EDFF-58EC-4491-AC2E-9F2E0B40F0FA}.Release|x86.Build.0 = Release|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Debug|x64.Build.0 = Debug|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Debug|x86.Build.0 = Debug|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Release|x64.ActiveCfg = Release|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Release|x64.Build.0 = Release|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Release|x86.ActiveCfg = Release|Any CPU
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{97BD6691-C2BF-48B5-9796-158D6716C585} = {65D7EDB4-6EAB-4113-8AD6-CA862F057796}
 		{E384371E-F168-453C-8CE4-5CD921A48BCB} = {65D7EDB4-6EAB-4113-8AD6-CA862F057796}
 		{3A25EDFF-58EC-4491-AC2E-9F2E0B40F0FA} = {65D7EDB4-6EAB-4113-8AD6-CA862F057796}
+		{0538B401-9A4A-4BEC-917C-8B18B18CB3D1} = {65D7EDB4-6EAB-4113-8AD6-CA862F057796}
 	EndGlobalSection
 EndGlobal

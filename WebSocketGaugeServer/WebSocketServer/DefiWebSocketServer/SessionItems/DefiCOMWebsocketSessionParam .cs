@@ -1,8 +1,8 @@
 using System;
 using System.Collections.Generic;
-using DefiSSMCOM.Defi;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
 
-namespace DefiSSMCOM.WebSocket
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.SessionItems
 {
     public class DefiCOMWebsocketSessionParam
     {

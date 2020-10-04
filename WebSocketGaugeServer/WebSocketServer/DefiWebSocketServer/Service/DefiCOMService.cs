@@ -2,15 +2,15 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Net.WebSockets;
-using DefiSSMCOM.Defi;
-using DefiSSMCOM.WebSocket;
-using DefiSSMCOM.WebSocket.JSON;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
 using log4net;
+using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.SessionItems;
+using Newtonsoft.Json;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
-namespace ASPNetWebSocket.Service
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
 {
     public class DefiCOMService : IDisposable
     {
