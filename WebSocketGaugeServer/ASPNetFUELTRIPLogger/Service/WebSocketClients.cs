@@ -82,7 +82,7 @@ namespace FUELTRIP_Logger
         /// Construct WebsocketClients.
         /// </summary>
         /// <param name="appSettings">AppSettings</param>
-        public WebSocketClients(AppSettings appSettings)
+        public WebSocketClients(FUELTRIPLoggerSettings appSettings)
         {
             RequiredParameterCode requiredCodes = appSettings.getRequiredParameterCodes();
             DefiWSClient = initializeDefiCOMWSClient(appSettings.defiserver_url, requiredCodes.DefiCodes);

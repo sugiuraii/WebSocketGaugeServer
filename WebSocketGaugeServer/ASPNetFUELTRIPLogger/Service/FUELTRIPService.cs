@@ -33,7 +33,7 @@ namespace FUELTRIP_Logger
 
         public FuelTripCalculator FUELTripCalculator { get { return this.fuelTripCalc; } }
 
-        public FUELTRIPService(AppSettings appSettings)
+        public FUELTRIPService(FUELTRIPLoggerSettings appSettings)
         {
             this.fuelTripCalc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod);
 
