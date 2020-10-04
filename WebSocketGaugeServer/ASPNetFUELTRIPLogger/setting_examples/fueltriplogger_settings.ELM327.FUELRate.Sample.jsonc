@@ -10,14 +10,14 @@ Copy and overwrite the ../fueltriplogger_settings.jsonc with this file.
   "arduinoserver_url": "ws://127.0.0.1:2015/",
   "elm327server_url": "ws://127.0.0.1:2016/",
   "Calculation": {
-      /*
+    /*
         Fuel calculation method. Candidates :
         RPM_INJECTION_PW : Calculate by "Engine RPM" and "Fuel injection pulse width".
         MASS_AIR_FLOW    : Calculate by "Mass air flow" (with assuming A/F ratio is 14.7)
         MASS_AIR_FLOW_AF : Calculate by "Mass air flow" and "A/F ratio"
         FUEL_RATE        : Calucluate by "Fuel Rate"
       */
-      "FuelCalculationMethod": "FUEL_RATE",
+    "FuelCalculationMethod": "FUEL_RATE",
     "DataSource": {
       /*
         Data source (Websocket server type) Candidate : 
@@ -32,7 +32,7 @@ Copy and overwrite the ../fueltriplogger_settings.jsonc with this file.
       "RPMSource": "DEFI",
       "InjectionPWSource": "SSM",
       "MassAirFlowSource": "SSM",
-      "AFRatioSource": "SSM",
+      "AFRatioSource": "SSM"
     },
     "CalculationOption": {
       "FuelCorrectionFactor": "1.0",
