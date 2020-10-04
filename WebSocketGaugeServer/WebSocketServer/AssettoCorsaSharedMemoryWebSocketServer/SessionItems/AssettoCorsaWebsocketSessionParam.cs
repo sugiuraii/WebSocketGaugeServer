@@ -1,7 +1,6 @@
-﻿using DefiSSMCOM.AssetoCorsaSHM;
-using DefiSSMCOM.WebSocket;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems
 {

@@ -1,8 +1,9 @@
 ﻿using AssettoCorsaSharedMemory;
-using DefiSSMCOM.WebSocket.JSON;
 using System;
 using System.Collections.Generic;
-using DefiSSMCOM.Websocket.AssettoCorsaSHM;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
+using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service
 {

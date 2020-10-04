@@ -6,19 +6,19 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ASPNetWebSocket.Service;
 using System.Net.WebSockets;
 using System.Threading;
-using DefiSSMCOM.Websocket.AssettoCorsaSHM;
-using DefiSSMCOM.WebSocket;
-using DefiSSMCOM.WebSocket.JSON;
 using Newtonsoft.Json;
-using DefiSSMCOM.Arduino;
 using System.Text;
 using System.IO;
 using System.Net;
 using log4net;
-using DefiSSMCOM.AssetoCorsaSHM;
+using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service;
+using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.JSONFormat;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer
 {

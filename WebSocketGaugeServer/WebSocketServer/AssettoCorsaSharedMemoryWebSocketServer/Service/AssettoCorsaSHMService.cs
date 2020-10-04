@@ -2,15 +2,11 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Net.WebSockets;
-using DefiSSMCOM.Websocket.AssettoCorsaSHM;
-using DefiSSMCOM.WebSocket;
-using DefiSSMCOM.WebSocket.JSON;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
 using log4net;
-using AssettoCorsaSharedMemory;
-using DefiSSMCOM.AssetoCorsaSHM;
+using Newtonsoft.Json;
+using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service
 {

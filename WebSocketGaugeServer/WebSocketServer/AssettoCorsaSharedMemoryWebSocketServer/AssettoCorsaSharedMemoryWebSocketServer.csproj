@@ -3,9 +3,11 @@
   <ItemGroup>
     <ProjectReference Include="..\WebSocketCommon\WebSocketCommon.csproj" />
     <ProjectReference Include="..\..\ECUSensorCommunication\ECUSensorCommunication.csproj" />
+    <ProjectReference Include="..\..\Imported\AssettoCorsa_SharedMemory_Library\AssettoCorsa_SharedMemory_Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
   </ItemGroup>
 

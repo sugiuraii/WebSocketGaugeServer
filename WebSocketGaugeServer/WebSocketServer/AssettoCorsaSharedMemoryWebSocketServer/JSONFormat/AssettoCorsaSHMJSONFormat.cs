@@ -1,4 +1,5 @@
-﻿using DefiSSMCOM.AssetoCorsaSHM;
+﻿using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.JSONFormat
 {
