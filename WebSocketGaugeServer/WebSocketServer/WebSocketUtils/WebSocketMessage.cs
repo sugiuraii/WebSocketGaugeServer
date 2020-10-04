@@ -1,7 +1,7 @@
 using System;
 using System.Net.WebSockets;
 
-namespace ASPNetWebSocket
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketUtils
 {
     public class WebSocketMessage
     {
@@ -20,7 +20,7 @@ namespace ASPNetWebSocket
         {
             get
             {
-                if(messageType != WebSocketMessageType.Binary)
+                if (messageType != WebSocketMessageType.Binary)
                     throw new InvalidOperationException("Binary content is requested, however the mesasge type is not binary.");
                 else
                     return binaryContent;
@@ -31,7 +31,7 @@ namespace ASPNetWebSocket
         {
             get
             {
-                if(messageType != WebSocketMessageType.Text)
+                if (messageType != WebSocketMessageType.Text)
                     throw new InvalidOperationException("Texi content is requested, however the mesasge type is not text.");
                 else
                     return textContent;
