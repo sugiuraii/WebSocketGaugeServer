@@ -1,7 +1,7 @@
 using System;
 using System.Net.WebSockets;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketUtils
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon
 {
     public class WebSocketMessage
     {

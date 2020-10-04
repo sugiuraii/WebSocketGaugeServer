@@ -6,7 +6,7 @@ using DefiSSMCOM.SSM;
 using DefiSSMCOM.Arduino;
 using DefiSSMCOM.OBDII;
 
-namespace DefiSSMCOM.WebSocket.JSON
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat
 {
 	public abstract class JSONFormat
 	{
