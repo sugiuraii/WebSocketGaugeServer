@@ -1,7 +1,8 @@
 ﻿using System;
-using DefiSSMCOM.Arduino;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
-namespace DefiSSMCOM.WebSocket.JSON
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.JSONFormat
 {
     public class ArduinoWSSendJSONFormat : WSSendJSONFormat<ArduinoParameterCode>
     {

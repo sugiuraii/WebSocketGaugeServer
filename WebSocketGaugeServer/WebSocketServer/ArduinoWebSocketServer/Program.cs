@@ -1,16 +1,11 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 using log4net;
 
-[assembly: log4net.Config.XmlConfigurator(ConfigFile="log4net.config",Watch=true)]
+[assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
 
-namespace ASPNetWebSocket
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
 {
     public class Program
     {

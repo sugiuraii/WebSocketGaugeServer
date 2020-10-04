@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\WebSocketUtils\WebSocketUtils.csproj" />
+    <ProjectReference Include="..\WebSocketCommon\WebSocketCommon.csproj" />
     <ProjectReference Include="..\..\ECUSensorCommunication\ECUSensorCommunication.csproj" />
   </ItemGroup>
 

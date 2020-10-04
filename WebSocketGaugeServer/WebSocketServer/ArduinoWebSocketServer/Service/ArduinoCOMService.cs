@@ -2,15 +2,15 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Net.WebSockets;
-using DefiSSMCOM.Arduino;
-using DefiSSMCOM.WebSocket;
-using DefiSSMCOM.WebSocket.JSON;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
 using log4net;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
+using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
-namespace ASPNetWebSocket.Service
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Service
 {
     public class ArduinoCOMService : IDisposable
     {
