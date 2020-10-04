@@ -5,3 +5,4 @@ bin
 /WebsocketGaugeServer/Release_Distribution
 /WebSocketGaugeServer/WebsocketGaugeServer.suo
 /WebSocketGaugeServer/WebsocketGaugeServer.v12.suo
+.vscode
