@@ -37,7 +37,7 @@ namespace FUELTRIP_Logger
     /// <summary>
     /// Fuel and trip calculation class.
     /// </summary>
-	public class FuelTripCalculator
+	public class FuelTripCalculator : IDisposable
 	{	
         private FuelTripCalculatorOption calculatorOption;
         private FuelCalculationMethod calculationMethod;
@@ -288,8 +288,7 @@ namespace FUELTRIP_Logger
 			stopWatch.Reset ();
 		}
 
-		//Destructor
-		~FuelTripCalculator()
+		public void Dispose()
 		{
 			saveTripFuel();
 		}
@@ -324,7 +323,7 @@ namespace FUELTRIP_Logger
                 return;
 			// Invoke timeout exception if the elapsed time over timeout
 			if (stopwatch_elapsed > StopWatchTimeout)
-				throw new TimeoutException ("tacho/speed/injpulse/massAirFlow/AFRatio update span is too large (Timeout).");
+				throw new TimeoutException ("tacho/speed/injpulse/massAirFlow/AFRatio update span is too large (Timeout). Elapsed time (ms) : " + stopwatch_elapsed.ToString());
 
 
             //Calculate momentary trip from speed.
