@@ -20,7 +20,7 @@ using log4net;
 
 namespace ASPNetWebSocket
 {
-    public class ArduinoStartup
+    public class Startup
     {
         static ILog logger = LogManager.GetLogger(typeof(Program));
         // This method gets called by the runtime. Use this method to add services to the container.
