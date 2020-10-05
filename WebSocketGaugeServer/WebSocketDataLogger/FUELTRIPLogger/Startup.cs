@@ -8,15 +8,19 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System.Net.WebSockets;
 using System.Threading;
-using DefiSSMCOM.WebSocket.JSON;
 using Newtonsoft.Json;
 using System.Text;
 using System.IO;
 using System.Net;
 using log4net;
-using ASPNetWebSocket;
+using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service;
+using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Settings;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
+using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.SessionItems;
 
-namespace FUELTRIP_Logger
+namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
 {
     public class Startup
     {

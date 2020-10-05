@@ -1,17 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
-using DefiSSMCOM.Defi;
-using DefiSSMCOM.SSM;
-using DefiSSMCOM.Arduino;
-using DefiSSMCOM.OBDII;
 using WebSocket4Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using log4net;
 using System.Threading;
-using DefiSSMCOM.WebSocket.JSON;
+using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Settings;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
+using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.JSONFormat;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
+using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.JSONFormat;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
+using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
-namespace FUELTRIP_Logger
+namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
 {
     class WebSocketClients
     {

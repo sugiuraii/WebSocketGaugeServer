@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using DefiSSMCOM.Defi;
-using DefiSSMCOM.SSM;
-using DefiSSMCOM.Arduino;
-using DefiSSMCOM.OBDII;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
+using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FUELTripCalculator;
 
-namespace FUELTRIP_Logger
+namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Settings
 {
     /// <summary>
     /// Application setting class.

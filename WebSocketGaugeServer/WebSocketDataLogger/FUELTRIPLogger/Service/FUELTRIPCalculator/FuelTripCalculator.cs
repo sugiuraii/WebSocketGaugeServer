@@ -5,7 +5,7 @@ using System.Xml;
 using System.Diagnostics;
 
 
-namespace FUELTRIP_Logger
+namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FUELTripCalculator
 {
     /// <summary>
     /// Option class for FuelTripCalculator
