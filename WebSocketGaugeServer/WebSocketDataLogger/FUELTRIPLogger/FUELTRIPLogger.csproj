@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
 
   <ItemGroup>
-    <ProjectReference Include="..\DefiSSMCOM_Common_Lib\DefiSSMCOM_Common_Lib.csproj" />
-    <ProjectReference Include="..\ASPNetWebSocket\ASPNetWebSocket.csproj" />
+    <ProjectReference Include="..\..\ECUSensorCommunication\ECUSensorCommunication.csproj" />
   </ItemGroup>
 
   <ItemGroup>

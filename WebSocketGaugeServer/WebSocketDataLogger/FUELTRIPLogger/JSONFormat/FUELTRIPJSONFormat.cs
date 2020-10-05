@@ -1,6 +1,6 @@
 ﻿using DefiSSMCOM.WebSocket.JSON;
 
-namespace FUELTRIP_Logger
+namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.JSONFormat
 {
     public class FUELTRIPJSONFormat : JSONFormat
     {
