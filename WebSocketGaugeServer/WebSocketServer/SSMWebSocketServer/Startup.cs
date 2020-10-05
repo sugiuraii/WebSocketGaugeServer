@@ -1,27 +1,28 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using ASPNetWebSocket.Service;
 using System.Net.WebSockets;
 using System.Threading;
-using DefiSSMCOM.WebSocket;
-using DefiSSMCOM.WebSocket.JSON;
 using Newtonsoft.Json;
-using DefiSSMCOM.SSM;
 using System.Text;
 using System.IO;
 using System.Net;
 using log4net;
+using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.JSONFormat;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
+using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.SessionItems;
 
-namespace ASPNetWebSocket
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
 {
-    public class SSMStartup
+    public class Startup
     {
         static ILog logger = LogManager.GetLogger(typeof(Program));
         // This method gets called by the runtime. Use this method to add services to the container.

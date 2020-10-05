@@ -1,7 +1,7 @@
-﻿using System;
-using DefiSSMCOM.SSM;
+﻿using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
-namespace DefiSSMCOM.WebSocket.JSON
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.JSONFormat
 {
     public class SSMCOMReadJSONFormat : SlowFastCOMReadJSONFormat<SSMParameterCode>
     {

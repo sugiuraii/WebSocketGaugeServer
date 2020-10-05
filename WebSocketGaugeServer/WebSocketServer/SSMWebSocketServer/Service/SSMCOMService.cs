@@ -2,15 +2,15 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 using System.Net.WebSockets;
-using DefiSSMCOM.SSM;
-using DefiSSMCOM.WebSocket;
-using DefiSSMCOM.WebSocket.JSON;
-using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
 using log4net;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
+using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using Newtonsoft.Json;
 
-namespace ASPNetWebSocket.Service
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
 {
     public class SSMCOMService : IDisposable
     {
