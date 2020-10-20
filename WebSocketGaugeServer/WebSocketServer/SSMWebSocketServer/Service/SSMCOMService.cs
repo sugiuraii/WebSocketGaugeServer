@@ -9,6 +9,7 @@ using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
 using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
 {
@@ -35,8 +36,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
         }
 
         public SSMCOM SSMCOM { get { return ssmCOM; } }
-        public SSMCOMService(string comportName)
+        public SSMCOMService(IConfiguration configuration)
         {
+            var comportName = configuration["comport"];
+
             this.ssmCOM = new SSMCOM();
             this.ssmCOM.PortName = comportName;
 
