@@ -29,7 +29,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<AssettoCorsaSHMService>(_ => new AssettoCorsaSHMService(33, 1000, 1000));
+            services.AddSingleton<AssettoCorsaSHMService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -7,6 +7,7 @@ using System.Threading;
 using log4net;
 using Newtonsoft.Json;
 using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
+using Microsoft.Extensions.Configuration;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service
 {
@@ -32,8 +33,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
             return this.WebSocketDictionary[guid].SessionParam;
         }
         public AssetoCorsaSHMBackgroundCommunicator AssettoCorsaCOM { get { return this.assettoCorsaCOM; } }
-        public AssettoCorsaSHMService(double physicaInterval, double graphicsInterval, double staticInfoInterval)
+        public AssettoCorsaSHMService(IConfiguration configuration)
         {
+            double physicaInterval = Double.Parse(configuration["physicaInterval"]);
+            double graphicsInterval = Double.Parse(configuration["graphicsInterval"]);
+            double staticInfoInterval = Double.Parse(configuration["staticInfoInterval"]);
+            
             this.assettoCorsaCOM = new AssetoCorsaSHMBackgroundCommunicator(physicaInterval, graphicsInterval, staticInfoInterval);
             this.assettoCorsaCOM.AssettoCorsaSharedMemory.PhysicsUpdated += async (sender, e) =>
             {

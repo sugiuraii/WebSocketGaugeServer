@@ -9,6 +9,7 @@ using log4net;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using Microsoft.Extensions.Configuration;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
 {
@@ -35,11 +36,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
         }
 
         public ELM327COM ELM327COM { get { return elm327COM; } }
-        public ELM327COMService(string comportName, int bauddRate)
+        public ELM327COMService(IConfiguration configuration)
         {
+            var comportName = configuration["comport"];
+            var baudRate = Int32.Parse(configuration["baudrate"]);
+
             this.elm327COM = new ELM327COM();
             this.elm327COM.PortName = comportName;
-            this.elm327COM.overrideDefaultBaudRate(bauddRate);
+            this.elm327COM.overrideDefaultBaudRate(baudRate);
             this.update_obdflag_timer = new Timer(new TimerCallback(updateOBDReadflag), null, 0, Timeout.Infinite);
             update_obdflag_timer.Change(0, 2000);
             // Register websocket broad cast

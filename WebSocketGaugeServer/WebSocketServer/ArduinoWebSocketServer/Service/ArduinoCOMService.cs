@@ -9,6 +9,7 @@ using log4net;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using Microsoft.Extensions.Configuration;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Service
 {
@@ -34,8 +35,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Servic
         }
 
         public ArduinoCOM ArduinoCOM { get { return arduinoCOM; } }
-        public ArduinoCOMService(string comportName)
+        public ArduinoCOMService(IConfiguration configuration)
         {
+            var comportName = configuration["comport"];
             this.arduinoCOM = new ArduinoCOM();
             this.arduinoCOM.PortName = comportName;
 

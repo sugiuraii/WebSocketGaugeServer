@@ -19,6 +19,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.JSONFormat;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
+using Microsoft.Extensions.Configuration;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer
 {
@@ -29,7 +30,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<DefiCOMService>(_ => new DefiCOMService("/dev/ttyUSB1"));
+            services.AddSingleton<DefiCOMService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

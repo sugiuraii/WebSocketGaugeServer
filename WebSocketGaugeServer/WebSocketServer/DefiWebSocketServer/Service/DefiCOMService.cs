@@ -9,6 +9,7 @@ using log4net;
 using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.SessionItems;
 using Newtonsoft.Json;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using Microsoft.Extensions.Configuration;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
 {
@@ -34,8 +35,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
         }
 
         public DefiCOM DefiCOM { get { return defiCOM; } }
-        public DefiCOMService(string comportName)
+        public DefiCOMService(IConfiguration configuration)
         {
+            var comportName = configuration["comport"];
+            
             this.defiCOM = new DefiCOM();
             this.defiCOM.PortName = comportName;
 

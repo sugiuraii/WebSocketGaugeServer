@@ -29,8 +29,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<ELM327COMService>(_ => new ELM327COMService("/dev/ttyUSB1", 9600)); // for obddsim
-            //services.AddSingleton<ELM327COMService>(_ => new ELM327COMService("/dev/ttyUSB1", 115200));
+            services.AddSingleton<ELM327COMService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
