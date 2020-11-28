@@ -47,7 +47,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             app.UseWebSockets(webSocketOptions);
 
             app.UseRouting();
-            
+
             app.Use(async (context, next) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
@@ -87,7 +87,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             try
             {
                 var wsmessage = await ReceiveWebSocketMessageAsync(ws);
-                if(wsmessage.MessageType == WebSocketMessageType.Text)
+                if (wsmessage.MessageType == WebSocketMessageType.Text)
                 {
                     string message = wsmessage.TextContent;
                     var msg_dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(message);
@@ -122,8 +122,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
                 await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress);
+                logger.Warn(ex.Message);
+                logger.Warn(ex.StackTrace);
             }
-            catch(OperationCanceledException ex)
+            catch (WebSocketException ex)
+            {
+                logger.Warn(ex.Message);
+                logger.Warn(ex.StackTrace);
+            }
+            catch (OperationCanceledException ex)
             {
                 logger.Info(ex.Message);
             }
@@ -134,15 +141,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
 
-            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);            
-            await SendWebSocketTextAsync(ws, json_error_msg.Serialize());           
+            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);
+            await SendWebSocketTextAsync(ws, json_error_msg.Serialize());
         }
 
         protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
-            
+
             logger.Info("Send Response message to " + destAddress.ToString() + " : " + message);
             await SendWebSocketTextAsync(ws, json_response_msg.Serialize());
         }
@@ -156,18 +163,18 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
         private async Task<WebSocketMessage> ReceiveWebSocketMessageAsync(WebSocket webSocket)
         {
             var buffer = new ArraySegment<byte>(new byte[1024 * 4]);
-            WebSocketReceiveResult result= null;
-            
+            WebSocketReceiveResult result = null;
+
             using (var ms = new MemoryStream())
             {
                 do
                 {
                     result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
                     ms.Write(buffer.Array, buffer.Offset, result.Count);
-                } while(!result.EndOfMessage);
-                
+                } while (!result.EndOfMessage);
+
                 ms.Seek(0, SeekOrigin.Begin);
-                switch(result.MessageType)
+                switch (result.MessageType)
                 {
                     case WebSocketMessageType.Text:
                         string returnStr;

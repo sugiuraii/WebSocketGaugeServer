@@ -144,7 +144,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                                 msg_obj_interval.Validate();
                                 sessionParam.GraphicsDataSendInterval = msg_obj_interval.interval;
 
-                                await send_response_msg(ws, "AsstoCorsa Websocket Graphics send_interval to : " + msg_obj_interval.interval.ToString(),destAddress);
+                                await send_response_msg(ws, "AsstoCorsa Websocket Graphics send_interval to : " + msg_obj_interval.interval.ToString(), destAddress);
                                 break;
                             }
                         case (AssettoCorsaStaticInfoWSIntervalJSONFormat.ModeCode):
@@ -165,6 +165,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
                 await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress);
+                logger.Warn(ex.Message);
+                logger.Warn(ex.StackTrace);
+            }
+            catch (WebSocketException ex)
+            {
+                logger.Warn(ex.Message);
+                logger.Warn(ex.StackTrace);
             }
             catch (OperationCanceledException ex)
             {

@@ -138,10 +138,18 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
                 await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress);
+                logger.Warn(ex.Message);
+                logger.Warn(ex.StackTrace);
+            }
+            catch (WebSocketException ex)
+            {
+                logger.Warn(ex.Message);
+                logger.Warn(ex.StackTrace);
             }
             catch(InvalidDataException ex)
             {
                 logger.Warn(ex.Message);                
+                logger.Warn(ex.StackTrace);
             }
             catch(OperationCanceledException ex)
             {
