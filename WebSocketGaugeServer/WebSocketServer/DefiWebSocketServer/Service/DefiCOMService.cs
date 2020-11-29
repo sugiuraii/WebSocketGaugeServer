@@ -30,7 +30,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
             this.WebSocketDictionary.Remove(sessionGuid);
         }
 
-        public DefiCOMWebsocketSessionParam GetSessionParam(Guid guid) 
+        public DefiCOMWebsocketSessionParam GetSessionParam(Guid guid)
         {
             return this.WebSocketDictionary[guid].SessionParam;
         }
@@ -39,7 +39,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
         public DefiCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime)
         {
             var comportName = configuration["comport"];
-            
+
             this.defiCOM = new DefiCOM();
             this.defiCOM.PortName = comportName;
 
@@ -55,7 +55,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
                         var websocket = session.Value.WebSocket;
                         var sessionparam = session.Value.SessionParam;
 
-                        var msg_data = new ValueJSONFormat();        
+                        var msg_data = new ValueJSONFormat();
                         if (sessionparam.SendCount < sessionparam.SendInterval)
                             sessionparam.SendCount++;
                         else
@@ -70,14 +70,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
                             {
                                 string msg = JsonConvert.SerializeObject(msg_data);
                                 byte[] buf = Encoding.UTF8.GetBytes(msg);
-                                if(websocket.State == WebSocketState.Open)
+                                if (websocket.State == WebSocketState.Open)
                                     await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
                             }
                             sessionparam.SendCount = 0;
                         }
                     }
                 }
-                catch(WebSocketException ex)
+                catch (WebSocketException ex)
                 {
                     logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
                     logger.Warn(ex.StackTrace);

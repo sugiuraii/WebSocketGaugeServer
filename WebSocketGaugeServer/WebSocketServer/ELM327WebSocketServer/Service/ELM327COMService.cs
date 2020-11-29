@@ -10,6 +10,7 @@ using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
 {
@@ -30,16 +31,18 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
             this.WebSocketDictionary.Remove(sessionGuid);
         }
 
-        public ELM327WebsocketSessionParam GetSessionParam(Guid guid) 
+        public ELM327WebsocketSessionParam GetSessionParam(Guid guid)
         {
             return this.WebSocketDictionary[guid].SessionParam;
         }
 
         public ELM327COM ELM327COM { get { return elm327COM; } }
-        public ELM327COMService(IConfiguration configuration)
+        public ELM327COMService(IConfiguration configuration, IHostApplicationLifetime lifetime)
         {
             var comportName = configuration["comport"];
             var baudRate = Int32.Parse(configuration["baudrate"]);
+
+            var cancellationToken = lifetime.ApplicationStopping;
 
             this.elm327COM = new ELM327COM();
             this.elm327COM.PortName = comportName;
@@ -57,8 +60,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
                         var websocket = session.Value.WebSocket;
                         var sessionparam = session.Value.SessionParam;
 
-                        var msg_data = new ValueJSONFormat();        
-                        foreach (var code in args.Received_Parameter_Code) 
+                        var msg_data = new ValueJSONFormat();
+                        foreach (var code in args.Received_Parameter_Code)
                         {
                             if (sessionparam.FastSendlist[code] || sessionparam.SlowSendlist[code])
                             {
@@ -71,11 +74,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
                         {
                             string msg = JsonConvert.SerializeObject(msg_data);
                             byte[] buf = Encoding.UTF8.GetBytes(msg);
-                            await session.Value.WebSocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                            if (websocket.State == WebSocketState.Open)
+                                await session.Value.WebSocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
                         }
                     }
                 }
-                catch(WebSocketException ex)
+                catch (WebSocketException ex)
                 {
                     logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
                     logger.Warn(ex.StackTrace);
@@ -92,7 +96,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
 
             //reset all ssmcom flag
             this.ELM327COM.set_all_disable(true);
-            
+
             if (WebSocketDictionary.Count < 1)
                 return;
 
@@ -101,7 +105,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
                 var websocket = session.Value.WebSocket;
                 var sessionparam = session.Value.SessionParam;
 
-                if (websocket.State !=  WebSocketState.Open) // Avoid null session bug
+                if (websocket.State != WebSocketState.Open) // Avoid null session bug
                     continue;
 
                 foreach (OBDIIParameterCode code in Enum.GetValues(typeof(OBDIIParameterCode)))

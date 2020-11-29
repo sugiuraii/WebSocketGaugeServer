@@ -10,6 +10,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
 {
@@ -30,18 +31,20 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
             this.WebSocketDictionary.Remove(sessionGuid);
         }
 
-        public SSMCOMWebsocketSessionParam GetSessionParam(Guid guid) 
+        public SSMCOMWebsocketSessionParam GetSessionParam(Guid guid)
         {
             return this.WebSocketDictionary[guid].SessionParam;
         }
 
         public SSMCOM SSMCOM { get { return ssmCOM; } }
-        public SSMCOMService(IConfiguration configuration)
+        public SSMCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime)
         {
             var comportName = configuration["comport"];
 
             this.ssmCOM = new SSMCOM();
             this.ssmCOM.PortName = comportName;
+
+            var cancellationToken = lifetime.ApplicationStopping;
 
             this.update_ssmflag_timer = new Timer(new TimerCallback(updateSSMCOMReadflag), null, 0, Timeout.Infinite);
             update_ssmflag_timer.Change(0, 2000);
@@ -56,8 +59,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
                         var websocket = session.Value.WebSocket;
                         var sessionparam = session.Value.SessionParam;
 
-                        var msg_data = new ValueJSONFormat();        
-                        foreach (SSMParameterCode ssmcode in args.Received_Parameter_Code) 
+                        var msg_data = new ValueJSONFormat();
+                        foreach (SSMParameterCode ssmcode in args.Received_Parameter_Code)
                         {
                             if (sessionparam.FastSendlist[ssmcode] || sessionparam.SlowSendlist[ssmcode])
                             {
@@ -78,16 +81,16 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
                                 msg_data.Validate();
                             }
                         }
-
                         if (msg_data.val.Count > 0)
                         {
                             string msg = JsonConvert.SerializeObject(msg_data);
                             byte[] buf = Encoding.UTF8.GetBytes(msg);
-                            await session.Value.WebSocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                            if (websocket.State == WebSocketState.Open)
+                                await session.Value.WebSocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
                         }
                     }
                 }
-                catch(WebSocketException ex)
+                catch (WebSocketException ex)
                 {
                     logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
                     logger.Warn(ex.StackTrace);
@@ -104,7 +107,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
 
             //reset all ssmcom flag
             this.SSMCOM.set_all_disable(true);
-            
+
             if (WebSocketDictionary.Count < 1)
                 return;
 
@@ -113,7 +116,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
                 var websocket = session.Value.WebSocket;
                 var sessionparam = session.Value.SessionParam;
 
-                if (websocket.State !=  WebSocketState.Open) // Avoid null session bug
+                if (websocket.State != WebSocketState.Open) // Avoid null session bug
                     continue;
 
                 foreach (SSMParameterCode code in Enum.GetValues(typeof(SSMParameterCode)))
