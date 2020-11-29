@@ -105,14 +105,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer
                     {
                         case (ResetJSONFormat.ModeCode):
                             sessionParam.reset();
-                            await send_response_msg(ws, "Defi Websocket all parameter reset.", destAddress);
+                            await send_response_msg(ws, "Defi Websocket all parameter reset.", destAddress, ct);
                             break;
                         case (DefiWSSendJSONFormat.ModeCode):
                             DefiWSSendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<DefiWSSendJSONFormat>(message);
                             msg_obj_wssend.Validate();
                             sessionParam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
-                            await send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress);
+                            await send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress, ct);
                             break;
 
                         case (DefiWSIntervalJSONFormat.ModeCode):
@@ -120,7 +120,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer
                             msg_obj_interval.Validate();
                             sessionParam.SendInterval = msg_obj_interval.interval;
 
-                            await send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString(), destAddress);
+                            await send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString(), destAddress, ct);
                             break;
                         default:
                             throw new JSONFormatsException("Unsuppoted mode property.");
@@ -129,7 +129,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer
             }
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
-                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress);
+                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, ct);
                 logger.Warn(ex.Message);
                 logger.Warn(ex.StackTrace);
             }
@@ -144,28 +144,28 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer
             }
         }
 
-        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress)
+        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
         {
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
 
             logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);            
-            await SendWebSocketTextAsync(ws, json_error_msg.Serialize());           
+            await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);           
         }
 
-        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress)
+        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
             
             logger.Info("Send Response message to " + destAddress.ToString() + " : " + message);
-            await SendWebSocketTextAsync(ws, json_response_msg.Serialize());
+            await SendWebSocketTextAsync(ws, json_response_msg.Serialize(), ct);
         }
 
-        private async Task SendWebSocketTextAsync(WebSocket webSocket, string text)
+        private async Task SendWebSocketTextAsync(WebSocket webSocket, string text, CancellationToken ct)
         {
             byte[] sendBuf = Encoding.UTF8.GetBytes(text);
-            await webSocket.SendAsync(new ArraySegment<byte>(sendBuf, 0, sendBuf.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+            await webSocket.SendAsync(new ArraySegment<byte>(sendBuf, 0, sendBuf.Length), WebSocketMessageType.Text, true, ct);
         }
 
         private async Task<WebSocketMessage> ReceiveWebSocketMessageAsync(WebSocket webSocket, CancellationToken ct)
