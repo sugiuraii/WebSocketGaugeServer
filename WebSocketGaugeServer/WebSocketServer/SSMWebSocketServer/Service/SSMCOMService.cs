@@ -46,8 +46,6 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
 
             var cancellationToken = lifetime.ApplicationStopping;
 
-            this.update_ssmflag_timer = new Timer(new TimerCallback(updateSSMCOMReadflag), null, 0, Timeout.Infinite);
-            update_ssmflag_timer.Change(0, 2000);
             // Register websocket broad cast
             this.ssmCOM.SSMDataReceived += async (sender, args) =>
             {
@@ -97,7 +95,11 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
                 }
             };
 
+            // Start SSMCOM communitcation thread.
             this.SSMCOM.BackgroundCommunicateStart();
+            // Start perioddical SSMFlag update.
+            this.update_ssmflag_timer = new Timer(new TimerCallback(updateSSMCOMReadflag), null, 0, Timeout.Infinite);
+            update_ssmflag_timer.Change(0, 2000);
         }
         private void updateSSMCOMReadflag(object stateobj)
         {

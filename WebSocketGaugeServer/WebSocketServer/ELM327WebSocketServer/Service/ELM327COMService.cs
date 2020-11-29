@@ -47,8 +47,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
             this.elm327COM = new ELM327COM();
             this.elm327COM.PortName = comportName;
             this.elm327COM.overrideDefaultBaudRate(baudRate);
-            this.update_obdflag_timer = new Timer(new TimerCallback(updateOBDReadflag), null, 0, Timeout.Infinite);
-            update_obdflag_timer.Change(0, 2000);
+
             // Register websocket broad cast
             this.elm327COM.ELM327DataReceived += async (sender, args) =>
             {
@@ -86,7 +85,11 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
                 }
             };
 
+            // Start ELM327COM communitcation thread.
             this.ELM327COM.BackgroundCommunicateStart();
+            // Start perioddical OBDFlag update.
+            this.update_obdflag_timer = new Timer(new TimerCallback(updateOBDReadflag), null, 0, Timeout.Infinite);
+            update_obdflag_timer.Change(0, 2000);
         }
         private void updateOBDReadflag(object stateobj)
         {
