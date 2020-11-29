@@ -33,7 +33,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
         {
             if (env.IsDevelopment())
             {
@@ -52,8 +52,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
+                    var cancellationToken = lifetime.ApplicationStopping;
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await HandleHttpConnection(context, webSocket);
+                    await HandleHttpConnection(context, webSocket, cancellationToken);
                 }
                 else
                 {
@@ -62,7 +63,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             });
         }
 
-        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket)
+        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {
             var service = (ArduinoCOMService)context.RequestServices.GetRequiredService(typeof(ArduinoCOMService));
             var connectionID = Guid.NewGuid();
@@ -74,19 +75,26 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
 
             while (webSocket.State == WebSocketState.Open)
             {
-                await processReceivedMessage(webSocket, sessionParam, destAddress);
+                await processReceivedMessage(webSocket, sessionParam, destAddress, ct);
             }
             service.RemoveWebSocket(connectionID);
-            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed normally", CancellationToken.None);
-            logger.Info("Session is disconnected from : " + destAddress.ToString());
+            if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
+            {
+                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed normally", CancellationToken.None);
+                logger.Info("Session is disconnected from : " + destAddress.ToString());
+            }
+            else
+            {
+                logger.Info("Session is aborted. " + destAddress.ToString());
+            }
         }
 
-        private async Task processReceivedMessage(WebSocket ws, ArduinoCOMWebsocketSessionParam sessionParam, IPAddress destAddress)
+        private async Task processReceivedMessage(WebSocket ws, ArduinoCOMWebsocketSessionParam sessionParam, IPAddress destAddress, CancellationToken ct)
         {
             // Get mode code
             try
             {
-                var wsmessage = await ReceiveWebSocketMessageAsync(ws);
+                var wsmessage = await ReceiveWebSocketMessageAsync(ws, ct);
                 if (wsmessage.MessageType == WebSocketMessageType.Text)
                 {
                     string message = wsmessage.TextContent;
@@ -160,7 +168,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             await webSocket.SendAsync(new ArraySegment<byte>(sendBuf, 0, sendBuf.Length), WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
-        private async Task<WebSocketMessage> ReceiveWebSocketMessageAsync(WebSocket webSocket)
+        private async Task<WebSocketMessage> ReceiveWebSocketMessageAsync(WebSocket webSocket, CancellationToken ct)
         {
             var buffer = new ArraySegment<byte>(new byte[1024 * 4]);
             WebSocketReceiveResult result = null;
@@ -169,7 +177,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             {
                 do
                 {
-                    result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+                    result = await webSocket.ReceiveAsync(buffer, ct);
                     ms.Write(buffer.Array, buffer.Offset, result.Count);
                 } while (!result.EndOfMessage);
 

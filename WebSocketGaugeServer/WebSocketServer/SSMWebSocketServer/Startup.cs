@@ -33,7 +33,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
         {
             if (env.IsDevelopment())
             {
@@ -47,13 +47,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             app.UseWebSockets(webSocketOptions);
 
             app.UseRouting();
-            
+
             app.Use(async (context, next) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
+                    var cancellationToken = lifetime.ApplicationStopping;
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await HandleHttpConnection(context, webSocket);
+                    await HandleHttpConnection(context, webSocket, cancellationToken);
                 }
                 else
                 {
@@ -62,7 +63,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             });
         }
 
-        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket)
+        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {
             var service = (SSMCOMService)context.RequestServices.GetRequiredService(typeof(SSMCOMService));
             var connectionID = Guid.NewGuid();
@@ -74,31 +75,38 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
 
             while (webSocket.State == WebSocketState.Open)
             {
-                await processReceivedMessage(webSocket, service, sessionParam, destAddress);
+                await processReceivedMessage(webSocket, service, sessionParam, destAddress, ct);
             }
             service.RemoveWebSocket(connectionID);
-            await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed normally", CancellationToken.None);
-            logger.Info("Session is disconnected from : " + destAddress.ToString());
+            if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
+            {
+                await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed normally", ct);
+                logger.Info("Session is disconnected from : " + destAddress.ToString());
+            }
+            else
+            {
+                logger.Info("Session is aborted. " + destAddress.ToString());
+            }
         }
 
-        private async Task processReceivedMessage(WebSocket ws, SSMCOMService service, SSMCOMWebsocketSessionParam sessionParam, IPAddress destAddress)
+        private async Task processReceivedMessage(WebSocket ws, SSMCOMService service, SSMCOMWebsocketSessionParam sessionParam, IPAddress destAddress, CancellationToken ct)
         {
             // Get mode code
             try
             {
-                var wsmessage = await ReceiveWebSocketMessageAsync(ws);
-                
+                var wsmessage = await ReceiveWebSocketMessageAsync(ws, ct);
+
                 // Do nothing on closing message.
-                if(wsmessage.MessageType == WebSocketMessageType.Close)
+                if (wsmessage.MessageType == WebSocketMessageType.Close)
                     return;
                 // Throw exception on non text message.
-                if(wsmessage.MessageType != WebSocketMessageType.Text)
+                if (wsmessage.MessageType != WebSocketMessageType.Text)
                     throw new InvalidDataException("Received websocket message type is not Text.");
 
                 string message = wsmessage.TextContent;
                 var msg_dict = JsonConvert.DeserializeObject<Dictionary<string, string>>(message);
-                string receivedJSONmode = msg_dict["mode"];   
-                
+                string receivedJSONmode = msg_dict["mode"];
+
                 switch (receivedJSONmode)
                 {
                     //SSM COM all reset
@@ -146,12 +154,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
                 logger.Warn(ex.Message);
                 logger.Warn(ex.StackTrace);
             }
-            catch(InvalidDataException ex)
+            catch (InvalidDataException ex)
             {
-                logger.Warn(ex.Message);                
+                logger.Warn(ex.Message);
                 logger.Warn(ex.StackTrace);
             }
-            catch(OperationCanceledException ex)
+            catch (OperationCanceledException ex)
             {
                 logger.Info(ex.Message);
             }
@@ -162,15 +170,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
 
-            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);            
-            await SendWebSocketTextAsync(ws, json_error_msg.Serialize());           
+            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);
+            await SendWebSocketTextAsync(ws, json_error_msg.Serialize());
         }
 
         protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
-            
+
             logger.Info("Send Response message to " + destAddress.ToString() + " : " + message);
             await SendWebSocketTextAsync(ws, json_response_msg.Serialize());
         }
@@ -181,21 +189,21 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             await webSocket.SendAsync(new ArraySegment<byte>(sendBuf, 0, sendBuf.Length), WebSocketMessageType.Text, true, CancellationToken.None);
         }
 
-        private async Task<WebSocketMessage> ReceiveWebSocketMessageAsync(WebSocket webSocket)
+        private async Task<WebSocketMessage> ReceiveWebSocketMessageAsync(WebSocket webSocket, CancellationToken ct)
         {
             var buffer = new ArraySegment<byte>(new byte[1024 * 4]);
-            WebSocketReceiveResult result= null;
-            
+            WebSocketReceiveResult result = null;
+
             using (var ms = new MemoryStream())
             {
                 do
                 {
-                    result = await webSocket.ReceiveAsync(buffer, CancellationToken.None);
+                    result = await webSocket.ReceiveAsync(buffer, ct);
                     ms.Write(buffer.Array, buffer.Offset, result.Count);
-                } while(!result.EndOfMessage);
-                
+                } while (!result.EndOfMessage);
+
                 ms.Seek(0, SeekOrigin.Begin);
-                switch(result.MessageType)
+                switch (result.MessageType)
                 {
                     case WebSocketMessageType.Text:
                         string returnStr;
