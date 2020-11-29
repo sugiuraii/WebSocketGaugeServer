@@ -109,23 +109,23 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
                         case (ResetJSONFormat.ModeCode):
                             service.FUELTripCalculator.resetSectTripFuel();
                             service.FUELTripCalculator.resetTotalTripFuel();
-                            await send_response_msg(ws, "FUELTRIPCalc AllRESET.", destAddress);
+                            await send_response_msg(ws, "FUELTRIPCalc AllRESET.", destAddress, ct);
                             break;
                         case (SectResetJSONFormat.ModeCode):
                             service.FUELTripCalculator.resetSectTripFuel();
-                            await send_response_msg(ws, "FUELTRIPCalcSectRESET.", destAddress);
+                            await send_response_msg(ws, "FUELTRIPCalcSectRESET.", destAddress, ct);
                             break;
                         case (SectSpanJSONFormat.ModeCode):
                             SectSpanJSONFormat span_jsonobj = JsonConvert.DeserializeObject<SectSpanJSONFormat>(message);
                             span_jsonobj.Validate();
                             service.FUELTripCalculator.SectSpan = span_jsonobj.sect_span * 1000;
-                            await send_response_msg(ws, "FUELTRIPCalcSectSpan Set to : " + span_jsonobj.sect_span.ToString() + "sec", destAddress);
+                            await send_response_msg(ws, "FUELTRIPCalcSectSpan Set to : " + span_jsonobj.sect_span.ToString() + "sec", destAddress, ct);
                             break;
                         case (SectStoreMaxJSONFormat.ModeCode):
                             SectStoreMaxJSONFormat storemax_jsonobj = JsonConvert.DeserializeObject<SectStoreMaxJSONFormat>(message);
                             storemax_jsonobj.Validate();
                             service.FUELTripCalculator.SectStoreMax = storemax_jsonobj.storemax;
-                            await send_response_msg(ws, "FUELTRIPCalc SectStoreMax Set to : " + storemax_jsonobj.storemax.ToString(), destAddress);
+                            await send_response_msg(ws, "FUELTRIPCalc SectStoreMax Set to : " + storemax_jsonobj.storemax.ToString(), destAddress, ct);
                             break;
                         default:
                             throw new JSONFormatsException("Unsuppoted mode property.");
@@ -134,7 +134,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
             }
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
-                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress);
+                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, ct);
             }
             catch (WebSocketException ex)
             {
@@ -147,28 +147,28 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
             }
         }
 
-        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress)
+        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
         {
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
 
-            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);
-            await SendWebSocketTextAsync(ws, json_error_msg.Serialize());
+            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);            
+            await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);           
         }
 
-        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress)
+        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
-
+            
             logger.Info("Send Response message to " + destAddress.ToString() + " : " + message);
-            await SendWebSocketTextAsync(ws, json_response_msg.Serialize());
+            await SendWebSocketTextAsync(ws, json_response_msg.Serialize(), ct);
         }
 
-        private async Task SendWebSocketTextAsync(WebSocket webSocket, string text)
+        private async Task SendWebSocketTextAsync(WebSocket webSocket, string text, CancellationToken ct)
         {
             byte[] sendBuf = Encoding.UTF8.GetBytes(text);
-            await webSocket.SendAsync(new ArraySegment<byte>(sendBuf, 0, sendBuf.Length), WebSocketMessageType.Text, true, CancellationToken.None);
+            await webSocket.SendAsync(new ArraySegment<byte>(sendBuf, 0, sendBuf.Length), WebSocketMessageType.Text, true, ct);
         }
 
         private async Task<WebSocketMessage> ReceiveWebSocketMessageAsync(WebSocket webSocket, CancellationToken ct)
