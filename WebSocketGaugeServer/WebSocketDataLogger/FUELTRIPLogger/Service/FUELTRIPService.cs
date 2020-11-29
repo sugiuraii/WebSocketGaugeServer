@@ -9,6 +9,7 @@ using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FUELTr
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Settings;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.JSONFormat;
+using Microsoft.Extensions.Hosting;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
 {
@@ -37,12 +38,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
 
         public FuelTripCalculator FUELTripCalculator { get { return this.fuelTripCalc; } }
 
-        public FUELTRIPService(FUELTRIPLoggerSettings appSettings)
+        public FUELTRIPService(FUELTRIPLoggerSettings appSettings, IHostApplicationLifetime lifetime)
         {
             this.fuelTripCalc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod);
 
             //Websocket clients setup
             this.wsClients = new WebSocketClients(appSettings);
+
+            var cancellationToken = lifetime.ApplicationStopping;
 
             this.wsClients.VALMessageParsed += async (sender, args) =>
             {
@@ -59,7 +62,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
                         string msg = this.constructMomentumFUELTRIPDataMessage(fuelTripCalc).Serialize();
                         // Send message,
                         byte[] buf = Encoding.UTF8.GetBytes(msg);
-                        await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                        await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
                     }
 
                 }
@@ -89,7 +92,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
                         string msg = this.constructSectionFUELTRIPDataMessage(fuelTripCalc).Serialize();
                         // Send message,
                         byte[] buf = Encoding.UTF8.GetBytes(msg);
-                        await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                        await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
                     }
                 }
                 catch (WebSocketException ex)
