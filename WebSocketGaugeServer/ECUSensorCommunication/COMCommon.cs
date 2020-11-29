@@ -265,7 +265,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         {
             get
             {
-                return communicate_realtime_thread1.IsAlive;
+                if(communicate_realtime_thread1 == null)
+                    throw new InvalidOperationException("Communication thread is null. Maybe not created. Run BackgroundCommunicateStart() before query IsCommunicationThradAlive.");
+                else
+                    return communicate_realtime_thread1.IsAlive;
             }
         }
 

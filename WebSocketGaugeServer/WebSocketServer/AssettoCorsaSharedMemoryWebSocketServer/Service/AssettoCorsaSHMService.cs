@@ -8,6 +8,7 @@ using log4net;
 using Newtonsoft.Json;
 using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service
 {
@@ -33,12 +34,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
             return this.WebSocketDictionary[guid].SessionParam;
         }
         public AssetoCorsaSHMBackgroundCommunicator AssettoCorsaCOM { get { return this.assettoCorsaCOM; } }
-        public AssettoCorsaSHMService(IConfiguration configuration)
+        public AssettoCorsaSHMService(IConfiguration configuration, IHostApplicationLifetime lifetime)
         {
             double physicaInterval = Double.Parse(configuration["physicaInterval"]);
             double graphicsInterval = Double.Parse(configuration["graphicsInterval"]);
             double staticInfoInterval = Double.Parse(configuration["staticInfoInterval"]);
-            
+
+            var cancellationToken = lifetime.ApplicationStopping;
+
             this.assettoCorsaCOM = new AssetoCorsaSHMBackgroundCommunicator(physicaInterval, graphicsInterval, staticInfoInterval);
             this.assettoCorsaCOM.AssettoCorsaSharedMemory.PhysicsUpdated += async (sender, e) =>
             {
@@ -62,7 +65,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                             {
                                 string msg = JsonConvert.SerializeObject(msg_data);
                                 byte[] buf = Encoding.UTF8.GetBytes(msg);
-                                await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                                if (websocket.State == WebSocketState.Open)
+                                    await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
                             }
                             sessionparam.PhysicsDataSendCount = 0;
                         }
@@ -97,7 +101,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                             {
                                 string msg = JsonConvert.SerializeObject(msg_data);
                                 byte[] buf = Encoding.UTF8.GetBytes(msg);
-                                await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                                if (websocket.State == WebSocketState.Open)
+                                    await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
                             }
                             sessionparam.GraphicsDataSendCount = 0;
                         }
@@ -132,7 +137,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                             {
                                 string msg = JsonConvert.SerializeObject(msg_data);
                                 byte[] buf = Encoding.UTF8.GetBytes(msg);
-                                await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                                if (websocket.State == WebSocketState.Open)
+                                    await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
                             }
                             sessionparam.GraphicsDataSendCount = 0;
                         }

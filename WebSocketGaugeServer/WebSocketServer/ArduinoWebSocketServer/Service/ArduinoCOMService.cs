@@ -10,6 +10,7 @@ using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Service
 {
@@ -35,11 +36,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Servic
         }
 
         public ArduinoCOM ArduinoCOM { get { return arduinoCOM; } }
-        public ArduinoCOMService(IConfiguration configuration)
+        public ArduinoCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime)
         {
             var comportName = configuration["comport"];
             this.arduinoCOM = new ArduinoCOM();
             this.arduinoCOM.PortName = comportName;
+
+            var cancellationToken = lifetime.ApplicationStopping;
 
             // Register websocket broad cast
             this.arduinoCOM.ArduinoPacketReceived += async (sender, args) =>
@@ -67,7 +70,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Servic
                             {
                                 string msg = JsonConvert.SerializeObject(msg_data);
                                 byte[] buf = Encoding.UTF8.GetBytes(msg);
-                                await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                                if (websocket.State == WebSocketState.Open)
+                                    await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
                             }
                             sessionparam.SendCount = 0;
                         }
