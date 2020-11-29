@@ -10,6 +10,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.SessionItems;
 using Newtonsoft.Json;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Hosting;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
 {
@@ -35,13 +36,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
         }
 
         public DefiCOM DefiCOM { get { return defiCOM; } }
-        public DefiCOMService(IConfiguration configuration)
+        public DefiCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime)
         {
             var comportName = configuration["comport"];
             
             this.defiCOM = new DefiCOM();
             this.defiCOM.PortName = comportName;
 
+            var cancellationToken = lifetime.ApplicationStopping;
             // Register websocket broad cast
             this.defiCOM.DefiPacketReceived += async (sender, args) =>
             {
@@ -68,7 +70,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
                             {
                                 string msg = JsonConvert.SerializeObject(msg_data);
                                 byte[] buf = Encoding.UTF8.GetBytes(msg);
-                                await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, CancellationToken.None);
+                                if(websocket.State == WebSocketState.Open)
+                                    await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
                             }
                             sessionparam.SendCount = 0;
                         }
