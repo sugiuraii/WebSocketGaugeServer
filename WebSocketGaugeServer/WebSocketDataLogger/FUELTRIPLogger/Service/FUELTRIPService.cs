@@ -3,13 +3,15 @@ using System.Text;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using System.Threading;
 using log4net;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FUELTripCalculator;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Settings;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.JSONFormat;
 using Microsoft.Extensions.Hosting;
+using System.IO;
+using Newtonsoft.Json;
+using Microsoft.Extensions.Configuration;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
 {
@@ -38,8 +40,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
 
         public FuelTripCalculator FUELTripCalculator { get { return this.fuelTripCalc; } }
 
-        public FUELTRIPService(FUELTRIPLoggerSettings appSettings, IHostApplicationLifetime lifetime)
+        public FUELTRIPService(IConfiguration configuration, IHostApplicationLifetime lifetime)
         {
+            var appSettings = JsonConvert.DeserializeObject<FUELTRIPLoggerSettings>(File.ReadAllText("./fueltriplogger_settings.jsonc"));
             this.fuelTripCalc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod);
 
             //Websocket clients setup
@@ -111,6 +114,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
         public void Dispose()
         {
             fuelTripCalc.saveTripFuel();
+            logger.Info("FUELTRIP data is saved.");
             var stopTask = Task.Run(() => this.wsClients.stop());
             Task.WhenAny(stopTask, Task.Delay(10000));
             logger.Info("Websocket server is stopped");

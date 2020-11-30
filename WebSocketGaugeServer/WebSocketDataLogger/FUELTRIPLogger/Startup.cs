@@ -27,11 +27,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
         static ILog logger = LogManager.GetLogger(typeof(Program));
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public void ConfigureServices(IServiceCollection services, IHostApplicationLifetime lifetime)
+        public void ConfigureServices(IServiceCollection services)
         {
-            var appSettings = JsonConvert.DeserializeObject<FUELTRIPLoggerSettings>(File.ReadAllText("./fueltriplogger_settings.jsonc"));
-            var service = new FUELTRIPService(appSettings, lifetime);
-            services.AddSingleton<FUELTRIPService>(service);
+            services.AddSingleton<FUELTRIPService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -49,6 +47,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
             app.UseWebSockets(webSocketOptions);
 
             app.UseRouting();
+
+            // Create and Startup FUELTRIP, by requresting singleton service.
+            app.ApplicationServices.GetService<FUELTRIPService>();
 
             app.Use(async (context, next) =>
             {
