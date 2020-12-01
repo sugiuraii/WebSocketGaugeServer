@@ -15,6 +15,13 @@
     <PackageReference Include="WebSocket4Net" Version="0.15.2" />
   </ItemGroup>
 
+  <ItemGroup>  
+    <Content Include="fueltriplogger_settings.jsonc">  
+      <Link>fueltriplogger_settings.jsonc</Link>  
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>  
+    </Content>  
+  </ItemGroup>  
+
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
