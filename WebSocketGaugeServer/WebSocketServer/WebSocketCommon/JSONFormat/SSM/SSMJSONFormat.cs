@@ -1,5 +1,4 @@
 ﻿using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.SSM
 {
