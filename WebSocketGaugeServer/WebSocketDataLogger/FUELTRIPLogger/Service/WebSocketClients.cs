@@ -8,13 +8,13 @@ using System.Threading;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Settings;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
-using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.JSONFormat;
-using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.JSONFormat;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
-using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.JSONFormat;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
-using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.JSONFormat;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Defi;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Arduino;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.SSM;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.ELM327;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
 {

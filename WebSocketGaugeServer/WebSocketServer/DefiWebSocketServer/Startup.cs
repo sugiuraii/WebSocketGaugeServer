@@ -15,10 +15,10 @@ using System.Net;
 using log4net;
 using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service;
 using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.SessionItems;
-using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.JSONFormat;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Defi;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer
 {
