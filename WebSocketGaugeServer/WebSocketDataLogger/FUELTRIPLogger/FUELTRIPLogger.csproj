@@ -2,10 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ECUSensorCommunication\ECUSensorCommunication.csproj" />
-    <ProjectReference Include="..\..\WebSocketServer\DefiWebSocketServer\DefiWebSocketServer.csproj" />
-    <ProjectReference Include="..\..\WebSocketServer\SSMWebSocketServer\SSMWebSocketServer.csproj" />
-    <ProjectReference Include="..\..\WebSocketServer\ArduinoWebSocketServer\ArduinoWebSocketServer.csproj" />
-    <ProjectReference Include="..\..\WebSocketServer\ELM327WebSocketServer\ELM327WebSocketServer.csproj" />
     <ProjectReference Include="..\..\WebSocketServer\WebSocketCommon\WebSocketCommon.csproj" />
   </ItemGroup>
 
@@ -14,6 +10,13 @@
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
     <PackageReference Include="WebSocket4Net" Version="0.15.2" />
   </ItemGroup>
+
+  <ItemGroup>  
+    <Content Include="fueltriplogger_settings.jsonc">  
+      <Link>fueltriplogger_settings.jsonc</Link>  
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>  
+    </Content>  
+  </ItemGroup>  
 
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>

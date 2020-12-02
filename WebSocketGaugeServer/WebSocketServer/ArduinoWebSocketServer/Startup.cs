@@ -15,10 +15,10 @@ using System.Net;
 using log4net;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Service;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
-using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.JSONFormat;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
+using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Arduino;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
 {
