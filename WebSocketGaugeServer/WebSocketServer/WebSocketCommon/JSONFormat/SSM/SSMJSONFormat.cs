@@ -1,7 +1,7 @@
 ﻿using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.JSONFormat
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.SSM
 {
     public class SSMCOMReadJSONFormat : SlowFastCOMReadJSONFormat<SSMParameterCode>
     {

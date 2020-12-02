@@ -1,7 +1,6 @@
 ﻿using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.JSONFormat
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.AssettoCorsaSHM
 {
     public class AssettoCorsaPhysicsSendJSONFormat : WSSendJSONFormat<AssettoCorsaSHMPhysicsParameterCode>
     {
