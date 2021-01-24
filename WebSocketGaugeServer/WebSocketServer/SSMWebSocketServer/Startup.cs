@@ -47,7 +47,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             app.UseWebSockets(webSocketOptions);
 
             app.UseRouting();
-
+            app.UseDefaultFiles ();
+            app.UseStaticFiles();
             app.Use(async (context, next) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
