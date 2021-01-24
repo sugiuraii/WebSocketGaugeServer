@@ -19,6 +19,7 @@ using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.AssettoCorsaSHM;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer
 {
@@ -47,8 +48,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
             app.UseWebSockets(webSocketOptions);
 
             app.UseRouting();
-            app.UseDefaultFiles ();
-            app.UseStaticFiles();
+
+            // Add static file with new extension mappings for bitmaptext fnt file
+            var provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".fnt"] = "text/xml";
+            app.UseDefaultFiles();
+            app.UseStaticFiles(new StaticFileOptions{
+                ContentTypeProvider = provider
+            });
+
             app.Use(async (context, next) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
@@ -193,15 +201,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
 
-            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);            
-            await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);           
+            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);
+            await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);
         }
 
         protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
-            
+
             logger.Info("Send Response message to " + destAddress.ToString() + " : " + message);
             await SendWebSocketTextAsync(ws, json_response_msg.Serialize(), ct);
         }

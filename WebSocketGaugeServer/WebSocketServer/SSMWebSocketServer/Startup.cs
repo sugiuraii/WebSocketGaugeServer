@@ -19,6 +19,7 @@ using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
 using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.SSM;
+using Microsoft.AspNetCore.StaticFiles;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
 {
@@ -47,8 +48,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             app.UseWebSockets(webSocketOptions);
 
             app.UseRouting();
-            app.UseDefaultFiles ();
-            app.UseStaticFiles();
+            
+            // Add static file with new extension mappings for bitmaptext fnt file
+            var provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".fnt"] = "text/xml";
+            app.UseDefaultFiles();
+            app.UseStaticFiles(new StaticFileOptions{
+                ContentTypeProvider = provider
+            });
+
             app.Use(async (context, next) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
