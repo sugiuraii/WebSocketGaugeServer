@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\ECUSensorCommunication\ECUSensorCommunication.csproj" />
+    <ProjectReference Include="..\..\WebSocketServer\WebSocketCommon\WebSocketCommon.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="log4Net" Version="2.0.12" />
+    <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
+    <PackageReference Include="WebSocket4Net" Version="0.15.2" />
+  </ItemGroup>
+
+  <ItemGroup>  
+    <Content Include="fueltriplogger_settings.jsonc">  
+      <Link>fueltriplogger_settings.jsonc</Link>  
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>  
+    </Content>  
+  </ItemGroup>  
+
+  <PropertyGroup>
+    <TargetFramework>net5.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+</Project>
