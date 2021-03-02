@@ -1,0 +1,46 @@
+/*
+FUELTRIP logger example setting file.
+Calculation method            : RPM_INJECTION_PW
+Get sensor data from          : RPM from Defi, VehicleSpeed, Injection pulse width from SSM
+*/
+{
+  //"defiserver_url": "ws://127.0.0.1:2012/",
+  //"ssmserver_url": "ws://127.0.0.1:2013/",
+  "defiserver_url": "ws://192.168.122.16:2012/",
+  "ssmserver_url": "ws://192.168.122.16:2013/",
+  "arduinoserver_url": "ws://127.0.0.1:2015/",
+  "elm327server_url": "ws://127.0.0.1:2016/",
+  "Calculation": {
+      /*
+        Fuel calculation method. Candidates :
+        RPM_INJECTION_PW : Calculate by "Engine RPM" and "Fuel injection pulse width".
+        MASS_AIR_FLOW    : Calculate by "Mass air flow" (with assuming A/F ratio is 14.7)
+        MASS_AIR_FLOW_AF : Calculate by "Mass air flow" and "A/F ratio"
+        FUEL_RATE        : Calucluate by "Fuel Rate"
+      */
+      "FuelCalculationMethod": "RPM_INJECTION_PW",
+    "DataSource": {
+      /*
+        Data source (Websocket server type) Candidate : 
+        DEFI : Only "Engine RPM" is available
+        SSM : "VehicleSpeed", "Engine RPM", "InjectionPW", "MassAirFlow" and "AF ratio" are available.
+        ARDUINO : "VehicleSpeed" and "Engine RPM" are available
+        ELN327 : "VehicleSpeed", "EngineRPM", "MassAirFlow", "A/F ratio" and "FuelRate" are available (depends on ECU model) 
+      */
+      "VehicleSpeedSource": "SSM",
+      "RPMSource": "DEFI",
+      "InjectionPWSource": "SSM",
+      // MassAirFlow, AFRatio and FuelRate are ignored in RPM_INJECTION_PW mode
+      "MassAirFlowSource": "SSM",
+      "AFRatioSource": "SSM",
+      "FuelRateSource": "ELM327"
+    },
+    "CalculationOption": {
+      "FuelCorrectionFactor": "1.0",
+      "TripCorrectionFactor": "1.0",
+      "NumCylinder": "4",
+      "InjectionLatency": "0.76",
+      "InjectorCapacity": "575"
+    }
+  }
+}
