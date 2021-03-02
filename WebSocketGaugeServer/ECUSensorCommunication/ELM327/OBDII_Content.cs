@@ -11,7 +11,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private byte _pid;
         private int _returnByteLength;
 
-        public OBDIINumericContent(byte pid, int returnByteLength, Func<double, double> conversion_function, String unit)
+        public OBDIINumericContent(byte pid, int returnByteLength, Func<UInt32, double> conversion_function, String unit)
         {
             _pid = pid;
             _returnByteLength = returnByteLength;
