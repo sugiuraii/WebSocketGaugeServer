@@ -83,7 +83,7 @@ namespace DefiSSMCOM.Application
         /// </summary>
         public int baudrate;
 
-        public static AppSettingsWithBaudRate loadFromXml(string filepath)
+        public static new AppSettingsWithBaudRate loadFromXml(string filepath)
         {
             AppSettingsWithBaudRate appsetting = new AppSettingsWithBaudRate();
             FileStream fs;
