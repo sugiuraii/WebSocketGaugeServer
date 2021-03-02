@@ -71,7 +71,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
                     {
                         if (headerCode == content_table[paramCode].Header_char)
                         {
-                            content_table[paramCode].RawValue = Int32.Parse(readbuf.Remove(0, 1));
+                            content_table[paramCode].RawValue = UInt32.Parse(readbuf.Remove(0, 1));
                             paramCodeHit = true;
                             break;
                         }
@@ -98,7 +98,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
             return content_table[code].Value;
         }
 
-        public int get_raw_value(ArduinoParameterCode code)
+        public UInt32 get_raw_value(ArduinoParameterCode code)
         {
             return content_table[code].RawValue;
         }
