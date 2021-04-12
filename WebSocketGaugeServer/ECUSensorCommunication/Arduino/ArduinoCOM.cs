@@ -24,7 +24,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
             ResetBaudRate = 9600;
 
             Parity = Parity.None;
-            ReadTimeout = 500;
+            ReadTimeout = 5000;
         }
 
         //Override ArudinoCOM DefaultBaudRate
