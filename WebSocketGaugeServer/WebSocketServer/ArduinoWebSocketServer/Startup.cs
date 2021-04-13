@@ -45,18 +45,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(120)
             };
+            
+            // Handle WebSokect connection   
             app.UseWebSockets(webSocketOptions);
-
             app.UseRouting();
-
-            // Add static file with new extension mappings for bitmaptext fnt file
-            var provider = new FileExtensionContentTypeProvider();
-            provider.Mappings[".fnt"] = "text/xml";
-            app.UseDefaultFiles();
-            app.UseStaticFiles(new StaticFileOptions{
-                ContentTypeProvider = provider
-            });
-
             app.Use(async (context, next) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
@@ -69,6 +61,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
                 {
                     await next();
                 }
+            });
+
+            // Add static file with new extension mappings for bitmaptext fnt file
+            var provider = new FileExtensionContentTypeProvider();
+            provider.Mappings[".fnt"] = "text/xml";
+            app.UseDefaultFiles();
+            app.UseStaticFiles(new StaticFileOptions{
+                ContentTypeProvider = provider
             });
         }
 
