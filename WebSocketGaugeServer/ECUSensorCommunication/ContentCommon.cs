@@ -29,8 +29,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
     public abstract class NumericContent
     {
-        protected Func<double, double> _conversion_function;
-        protected Int32 _raw_value;
+        protected Func<UInt32, double> _conversion_function;
+        protected UInt32 _raw_value;
         protected String _unit;
 
         public double Value
@@ -41,7 +41,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             }
         }
 
-        public Int32 RawValue
+        public UInt32 RawValue
         {
             get
             {
@@ -53,7 +53,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             }
         }
 
-        public Func<double, double> ConversionFunction
+        public Func<UInt32, double> ConversionFunction
         {
             get
             {

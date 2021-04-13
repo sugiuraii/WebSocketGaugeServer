@@ -28,7 +28,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
             return content_table[code].Value;
         }
 
-        public Int32 get_raw_value(SSMParameterCode code)
+        public UInt32 get_raw_value(SSMParameterCode code)
         {
             return content_table[code].RawValue;
         }
@@ -185,7 +185,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
             }
 
             //datasize計算 (チェックサムは含まれない?)
-            Int32 datasize =  command_byte.Length + padding_byte.Length + address_bytes.Length;
+            int datasize =  command_byte.Length + padding_byte.Length + address_bytes.Length;
             datasize_byte = new byte[] { (byte)datasize };
 
             //連結
@@ -216,9 +216,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
                 //アドレス3バイトあたりデータ1バイト
                 int read_byte_length = content_table[code].AddressLength / 3;
 
-                int i;
-                int temp_buf = inbuf[get_offset];
-                for (i = 1; i < read_byte_length; i++)
+                UInt32 temp_buf = inbuf[get_offset];
+                for (int i = 1; i < read_byte_length; i++)
                 {
                     temp_buf = (temp_buf << 8) + inbuf[get_offset + i];
                 }

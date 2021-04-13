@@ -33,7 +33,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
             _numeric_content_table.Add(ArduinoParameterCode.Engine_Speed, new ArduinoNumericContent('T', tpulse => 
             {
                 if(tpulse > 0)
-                    return 60/(NumPulsePerRev*tpulse * 1e-6);
+                    return 60/(NumPulsePerRev*(double)tpulse * 1e-6);
                 else
                     return 0;
             }, "rpm"));
@@ -41,39 +41,39 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
             _numeric_content_table.Add(ArduinoParameterCode.Vehicle_Speed, new ArduinoNumericContent('S', tpulse =>
             {
                 if (tpulse > 0)
-                    return 3600 / (637 * tpulse * NumPulsePerSpd * 1e-6);
+                    return 3600 / (637 * (double)tpulse * NumPulsePerSpd * 1e-6);
                 else
                     return 0;
             }, "km/h"));
 
             //Boost conversion for autogauge boost sensor.
-            _numeric_content_table.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new ArduinoNumericContent('A', adc_out => 100 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP), "kPa"));
+            _numeric_content_table.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new ArduinoNumericContent('A', adc_out => 100 * ((double)adc_out * ADC_REF_VOLTAGE / ADC_STEP), "kPa"));
             // (To use boost sensor of defi instead of autogauge, please use following conversion function)
             // _numeric_content_table.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new ArduinoNumericContent('A', adc_out => 73.47 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP), "kPa"));
             
             _numeric_content_table.Add(ArduinoParameterCode.Coolant_Temperature, new ArduinoNumericContent('B', adc_out =>
             {
-                double R = adc_out * WaterTempThermistorSerialResistance / (ADC_STEP - adc_out);
+                double R = (double)adc_out * WaterTempThermistorSerialResistance / (ADC_STEP - (double)adc_out);
                 double T = THERMISTOR_B/(Math.Log(R/THERMISTOR_R0)+THERMISTOR_B/298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;
             }, "degC"));
             _numeric_content_table.Add(ArduinoParameterCode.Oil_Temperature, new ArduinoNumericContent('C', adc_out =>
             {
-                double R = adc_out * OilTempThermistorSerialResistance / (ADC_STEP - adc_out);
+                double R = (double)adc_out * OilTempThermistorSerialResistance / (ADC_STEP - (double)adc_out);
                 double T = THERMISTOR_B / (Math.Log(R / THERMISTOR_R0) + THERMISTOR_B / 298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;
             }, "degC"));
             _numeric_content_table.Add(ArduinoParameterCode.Oil_Temperature2, new ArduinoNumericContent('D', adc_out =>
             {
-                double R = adc_out * OilTempThermistorSerialResistance / (ADC_STEP - adc_out);
+                double R = (double)adc_out * OilTempThermistorSerialResistance / (ADC_STEP - (double)adc_out);
                 double T = THERMISTOR_B / (Math.Log(R / THERMISTOR_R0) + THERMISTOR_B / 298.15);
                 double Tdeg = T - 273.15;
                 return Tdeg;
             }, "degC"));
-            _numeric_content_table.Add(ArduinoParameterCode.Oil_Pressure, new ArduinoNumericContent('E', adc_out => 250 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP - 0.48) * 0.0101972, "kgf/cm2"));
-            _numeric_content_table.Add(ArduinoParameterCode.Fuel_Rail_Pressure, new ArduinoNumericContent('F', adc_out => 250 * (adc_out * ADC_REF_VOLTAGE / ADC_STEP - 0.48) * 0.0101972, "kgf/cm2"));
+            _numeric_content_table.Add(ArduinoParameterCode.Oil_Pressure, new ArduinoNumericContent('E', adc_out => 250 * ((double)adc_out * ADC_REF_VOLTAGE / ADC_STEP - 0.48) * 0.0101972, "kgf/cm2"));
+            _numeric_content_table.Add(ArduinoParameterCode.Fuel_Rail_Pressure, new ArduinoNumericContent('F', adc_out => 250 * ((double)adc_out * ADC_REF_VOLTAGE / ADC_STEP - 0.48) * 0.0101972, "kgf/cm2"));
         }
     }
 
@@ -81,7 +81,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
     {
         private char _header_char;
 
-        public ArduinoNumericContent(char header_char, Func <double, double> conversion_function, String unit)
+        public ArduinoNumericContent(char header_char, Func <UInt32, double> conversion_function, String unit)
         {
             _header_char = header_char;
             _conversion_function = conversion_function;

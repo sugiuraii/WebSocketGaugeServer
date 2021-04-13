@@ -44,7 +44,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             return content_table[code].Value;
         }
 
-        public Int32 get_raw_value(OBDIIParameterCode code)
+        public UInt32 get_raw_value(OBDIIParameterCode code)
         {
             return content_table[code].RawValue;
         }
@@ -233,7 +233,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
             try
             {
-                Int32 returnValue;
                 //inMsg = ReadTo("\r");
                 
                 // Read to next prompt char of '>'
@@ -264,7 +263,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 }
 
                 //logger.Debug("Filtered ELM327IN:" + inMsg);
-                returnValue = Convert.ToInt32(inMsg.Remove(0, 4), 16);
+                var returnValue = Convert.ToUInt32(inMsg.Remove(0, 4), 16);
 
                 content_table[code].RawValue = returnValue;
             }
