@@ -30,6 +30,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddRazorPages();
+            services.AddServerSideBlazor();
             services.AddSingleton<ELM327COMService>();
         }
 
@@ -51,7 +53,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             app.UseRouting();
             app.Use(async (context, next) =>
             {
-                if (context.WebSockets.IsWebSocketRequest)
+                if (context.WebSockets.IsWebSocketRequest && context.Request.Path == "/ws")
                 {
                     var cancellationToken = lifetime.ApplicationStopping;
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -63,12 +65,17 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
                 }
             });
 
-            // Add static file with new extension mappings for bitmaptext fnt file
+            app.UseDefaultFiles();
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".fnt"] = "text/xml";
-            app.UseDefaultFiles();
-            app.UseStaticFiles(new StaticFileOptions{
-                ContentTypeProvider = provider
+            app.UseStaticFiles(new StaticFileOptions{ ContentTypeProvider = provider });
+            app.UseStaticFiles();
+
+            app.UseHttpsRedirection();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
 
@@ -98,7 +105,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             }
         }
 
-        private async Task processReceivedMessage(WebSocket ws, ELM327COMService service, ELM327WebsocketSessionParam sessionParam, IPAddress destAddress,  CancellationToken ct)
+        private async Task processReceivedMessage(WebSocket ws, ELM327COMService service, ELM327WebsocketSessionParam sessionParam, IPAddress destAddress, CancellationToken ct)
         {
             // Get mode code
             try
@@ -179,15 +186,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
 
-            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);            
-            await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);           
+            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);
+            await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);
         }
 
         protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
-            
+
             logger.Info("Send Response message to " + destAddress.ToString() + " : " + message);
             await SendWebSocketTextAsync(ws, json_response_msg.Serialize(), ct);
         }
