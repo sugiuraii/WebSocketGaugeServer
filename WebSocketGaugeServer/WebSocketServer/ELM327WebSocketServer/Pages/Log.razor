@@ -1,0 +1,15 @@
+@page "/log"
+@using Logging.Memory
+
+<h1>ELM327WebSocketServer Log</h1>
+
+<p>
+    <code>
+        <pre>
+            @foreach (var line in MemoryLogger.LogList)
+            {
+                @(line+"\n")
+            }            
+        </pre>
+    </code>
+</p>
