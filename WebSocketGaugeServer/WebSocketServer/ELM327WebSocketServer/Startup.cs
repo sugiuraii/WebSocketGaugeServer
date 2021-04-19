@@ -53,7 +53,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             app.UseRouting();
             app.Use(async (context, next) =>
             {
-                if (context.WebSockets.IsWebSocketRequest && context.Request.Path == "/ws")
+                if (context.WebSockets.IsWebSocketRequest && context.Request.Path != "/_blazor") // Ignore blazor signalR access
                 {
                     var cancellationToken = lifetime.ApplicationStopping;
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -71,7 +71,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             app.UseStaticFiles(new StaticFileOptions{ ContentTypeProvider = provider });
             app.UseStaticFiles();
 
-            app.UseHttpsRedirection();
+            //app.UseHttpsRedirection();
             app.UseEndpoints(endpoints =>
             {
                 endpoints.MapBlazorHub();
