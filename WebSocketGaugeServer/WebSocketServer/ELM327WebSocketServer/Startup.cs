@@ -20,6 +20,7 @@ using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.ELM327;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
 {
@@ -36,7 +37,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory)
         {
             if (env.IsDevelopment())
             {
@@ -47,6 +48,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             {
                 KeepAliveInterval = TimeSpan.FromSeconds(120)
             };
+
+            // Enable Logger.Memory
+            loggerFactory.AddMemory();
 
             // Handle WebSokect connection
             app.UseWebSockets(webSocketOptions);
