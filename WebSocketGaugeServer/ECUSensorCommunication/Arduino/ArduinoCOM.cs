@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Ports;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 {
@@ -11,10 +12,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
         private const int NUM_ROWS_PER_CYCLE = 8;
         // Arduino received Event
         public event EventHandler ArduinoPacketReceived;
-
+        private readonly ILogger logger;
         //Constructor
-        public ArduinoCOM()
+        public ArduinoCOM(ILogger<ArduinoCOM> logger) : base(logger)
         {
+            this.logger = logger;
             content_table = new ArduinoContentTable();
 
             //Default baudrate (can be overrided by setting xml file)
@@ -51,14 +53,14 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
                     else
                     {
                         //Header code is failed to read (0 length)
-                        logger.Warn("Arduino header read failed (0length data packet)");
+                        logger.LogWarning("Arduino header read failed (0length data packet)");
                         return;
                     }
                 }
                 catch (TimeoutException ex)
                 {
                     //On timeout, set communicateRealtimeIsError = true to try reset on next cycle.
-                    logger.Warn("Arduino packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                    logger.LogWarning("Arduino packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
                     communicateRealtimeIsError = true;
                     return;
                 }
@@ -79,12 +81,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 
                     //Invoke warning if unknown header code is received
                     if(!paramCodeHit)
-                        logger.Warn("Header code matching is failed. Header code is : " + headerCode);
+                        logger.LogWarning("Header code matching is failed. Header code is : " + headerCode);
                 }
                 catch (FormatException ex)
                 {
                     // If the message from arduino is corrupt, set communicatRealtime error flag to try reset on next cycle.
-                    logger.Warn("Invalid Arduino packet format. " + ex.GetType().ToString() + " " + ex.Message);
+                    logger.LogWarning("Invalid Arduino packet format. " + ex.GetType().ToString() + " " + ex.Message);
                     communicateRealtimeIsError = true;
                     return;
                 }

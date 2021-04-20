@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 {
@@ -11,10 +12,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 
 		//SSMCOM data received event
 		public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
-
+        private readonly ILogger logger;
         //コンストラクタ
-        public SSMCOM()
+        public SSMCOM(ILogger<SSMCOM> logger) : base(logger)
         {
+            this.logger = logger;
+
             //シリアルポート設定
             DefaultBaudRate = 4800;
             ResetBaudRate = 4800;
@@ -60,7 +63,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
         public void set_slowread_flag(SSMParameterCode code, bool flag, bool quiet)
         {
             if(!quiet)
-                logger.Debug("Slowread flag of " + code.ToString() + "is enabled.");
+                logger.LogDebug("Slowread flag of " + code.ToString() + "is enabled.");
             content_table[code].SlowReadEnable = flag;
         }
 
@@ -71,7 +74,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
         public void set_fastread_flag(SSMParameterCode code, bool flag, bool quiet)
         {
             if(!quiet)
-                logger.Debug("Fastread flag of " + code.ToString() + "is enabled.");
+                logger.LogDebug("Fastread flag of " + code.ToString() + "is enabled.");
             content_table[code].FastReadEnable = flag;
         }
 
@@ -83,7 +86,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
         public void set_all_disable(bool quiet)
         {
             if(!quiet)
-                logger.Debug("All flag reset.");
+                logger.LogDebug("All flag reset.");
             content_table.setAllDisable();
         }
 
@@ -143,7 +146,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
             }
             catch (TimeoutException ex)
             {
-                logger.Warn("SSMCOM timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                logger.LogWarning("SSMCOM timeout. " + ex.GetType().ToString() + " " + ex.Message);
                 communicateRealtimeIsError = true;
             }
         }

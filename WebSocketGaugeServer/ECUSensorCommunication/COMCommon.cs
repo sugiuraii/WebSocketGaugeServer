@@ -18,16 +18,16 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         private int communicateResetCount; //何回communicate_reset()が連続でコールされたか？ (COMMUNICATE_RESET_MAXを超えたらプログラムを落とす)
         private const int COMMUNICATE_RESET_MAX = 20; //communicate_reset()コールを連続で許可する回数。
 
-        protected readonly ILogger logger;
+        private readonly ILogger logger;
 
         public COMCommon(ILogger<COMCommon> logger)
         {
+            this.logger = logger;
+
             serialPort = new SerialPort();
             DefaultBaudRate = 19200;
             ResetBaudRate = 9600;
             SlowReadInterval = 10;
-
-            this.logger = logger;
 
             communicateRealtimeIsRunning = false;
             communicateRealtimeIsError = false;

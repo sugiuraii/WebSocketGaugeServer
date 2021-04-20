@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
@@ -21,9 +22,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         //ELM327COM data received event
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
 
+        private readonly ILogger logger;
+
         //Constructor
-        public ELM327COM()
+        public ELM327COM(ILogger<ELM327COM> logger) : base(logger)
         {
+            this.logger = logger;
             //Setup serial port
             DefaultBaudRate = 115200;
 
@@ -71,7 +75,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         public void set_slowread_flag(OBDIIParameterCode code, bool flag, bool quiet)
         {
             if (!quiet)
-                logger.Debug("Slowread flag of " + code.ToString() + "is enabled.");
+                logger.LogDebug("Slowread flag of " + code.ToString() + "is enabled.");
             content_table[code].SlowReadEnable = flag;
         }
 
@@ -82,7 +86,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         public void set_fastread_flag(OBDIIParameterCode code, bool flag, bool quiet)
         {
             if (!quiet)
-                logger.Debug("Fastread flag of " + code.ToString() + "is enabled.");
+                logger.LogDebug("Fastread flag of " + code.ToString() + "is enabled.");
             content_table[code].FastReadEnable = flag;
         }
 
@@ -94,7 +98,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         public void set_all_disable(bool quiet)
         {
             if (!quiet)
-                logger.Debug("All flag reset.");
+                logger.LogDebug("All flag reset.");
             content_table.setAllDisable();
         }
 
@@ -102,7 +106,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         {
             base.communicate_initialize();
             if (DefaultBaudRate != RECOMMENDED_BAUD_RATE)
-                logger.Warn("Baurdate is different from recommended ELM327-USB bardrate of " + RECOMMENDED_BAUD_RATE.ToString() + "bps");
+                logger.LogWarning("Baurdate is different from recommended ELM327-USB bardrate of " + RECOMMENDED_BAUD_RATE.ToString() + "bps");
 
             initializeELM327ATCommand();
         }
@@ -116,7 +120,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             }
             catch (TimeoutException ex)
             {
-                logger.Debug("TimeoutException in initializeELM327ATCommand() (Ignored) . Message : " + ex.Message);
+                logger.LogDebug("TimeoutException in initializeELM327ATCommand() (Ignored) . Message : " + ex.Message);
             }
             DiscardInBuffer();
             bool initializeFinished = false;
@@ -129,23 +133,23 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     // Input initial AT commands
                     Write("ATZ\r");
                     Thread.Sleep(WAIT_AFTER_ATZ);
-                    logger.Debug("Call ATZ to initialize. Return Msg is " + ReadTo(">"));
+                    logger.LogDebug("Call ATZ to initialize. Return Msg is " + ReadTo(">"));
 
                     // Disable space.
                     Write("ATS0\r");
-                    logger.Debug("Call ATS0 to disable space. Return Msg is " + ReadTo(">"));
+                    logger.LogDebug("Call ATS0 to disable space. Return Msg is " + ReadTo(">"));
                     // Disable echoback.
                     Write("ATE0\r");
-                    logger.Debug("Call ATE0 to disable echoback. Return Msg is " + ReadTo(">"));
+                    logger.LogDebug("Call ATE0 to disable echoback. Return Msg is " + ReadTo(">"));
                     // Disable Linefeed on delimiter
                     Write("ATL0\r");
-                    logger.Debug("Call ATL0 to disable linefeed. Return Msg is " + ReadTo(">"));
+                    logger.LogDebug("Call ATL0 to disable linefeed. Return Msg is " + ReadTo(">"));
 
                     initializeFinished = true;
                 }
                 catch (TimeoutException ex)
                 {
-                    logger.Error("Timeout is occured during ELM327 initialization AT command settings. Wait 2sec and retry.. : " + ex.Message);
+                    logger.LogError("Timeout is occured during ELM327 initialization AT command settings. Wait 2sec and retry.. : " + ex.Message);
                     initializeFailedCount++;
                     if(initializeFailedCount > INITIALIZE_FAILED_MAX)
                     {
@@ -207,7 +211,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             }
             catch (TimeoutException ex)
             {
-                logger.Warn("SSMCOM timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                logger.LogWarning("SSMCOM timeout. " + ex.GetType().ToString() + " " + ex.Message);
                 communicateRealtimeIsError = true;
             }
         }
@@ -228,7 +232,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             int returnByteLength = content_table[code].ReturnByteLength;
             outMsg = MODECODE.ToString("X2") + outPID + returnByteLength.ToString("X1");
             Write(outMsg + "\r");
-            //logger.Debug("ELM327OUT:" + outMsg);
+            //logger.LogDebug("ELM327OUT:" + outMsg);
             String inMsg = "";
 
             try
@@ -242,7 +246,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 // (This routine is implemented to make countermeasure in the case of multiple message returned.
                 inMsg = discardStringAfterChar(inMsg, '\r');
 
-                //logger.Debug("ELM327IN:" + inMsg);
+                //logger.LogDebug("ELM327IN:" + inMsg);
                 
                 // Get ECU data.
                 inMsg = inMsg.Replace(">","").Replace("\n","").Replace("\r","");
@@ -252,7 +256,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     throw new FormatException("Return message at communicateOnePID() is empty.");
                 else if (inMsg.Contains("NO DATA"))
                 {
-                    logger.Warn("ELM327 returns NO DATA." + " OutPID :" + outPID + " Code : " + code.ToString());
+                    logger.LogWarning("ELM327 returns NO DATA." + " OutPID :" + outPID + " Code : " + code.ToString());
                     return;
                 }
 
@@ -262,41 +266,41 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     throw new FormatException("PID return from ELM327 does not match with commanded PID." + "outPID : " + outPID + " inPID :" + inPID);
                 }
 
-                //logger.Debug("Filtered ELM327IN:" + inMsg);
+                //logger.LogDebug("Filtered ELM327IN:" + inMsg);
                 var returnValue = Convert.ToUInt32(inMsg.Remove(0, 4), 16);
 
                 content_table[code].RawValue = returnValue;
             }
             catch(TimeoutException ex)
             {
-                logger.Error("ELM327COM timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                logger.LogError("ELM327COM timeout. " + ex.GetType().ToString() + " " + ex.Message);
                 communicateRealtimeIsError = true;
             }
             catch(FormatException ex)
             {
-                logger.Warn(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
+                logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
                 if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
                 {
-                    logger.Warn("Retry communication" + " OutPID :" + outPID + " Code : " + code.ToString());
+                    logger.LogWarning("Retry communication" + " OutPID :" + outPID + " Code : " + code.ToString());
                     communicateOnePID(code, errorRetryCount + 1);
                 }
                 else
                 {
-                    logger.Error("PID communication retry count exceeds maximum (" + PID_COMMUNICATE_RETRY_MAX.ToString() + ")");
+                    logger.LogError("PID communication retry count exceeds maximum (" + PID_COMMUNICATE_RETRY_MAX.ToString() + ")");
                     communicateRealtimeIsError = true;
                 }
             }
             catch(ArgumentOutOfRangeException ex)
             {
-                logger.Warn(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
+                logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
                 if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
                 {
-                    logger.Warn("Retry communication"  + " OutPID :" + outPID + " Code : " + code.ToString());
+                    logger.LogWarning("Retry communication"  + " OutPID :" + outPID + " Code : " + code.ToString());
                     communicateOnePID(code, errorRetryCount + 1);
                 }
                 else
                 {
-                    logger.Error("PID communication retry count exceeds maximum (" + PID_COMMUNICATE_RETRY_MAX.ToString() + ")");
+                    logger.LogError("PID communication retry count exceeds maximum (" + PID_COMMUNICATE_RETRY_MAX.ToString() + ")");
                     communicateRealtimeIsError = true;
                 }
             }
