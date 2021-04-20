@@ -14,9 +14,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 		public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
         private readonly ILogger logger;
         //コンストラクタ
-        public SSMCOM(ILogger logger) : base(logger)
+        public SSMCOM(ILoggerFactory logger) : base(logger)
         {
-            this.logger = logger;
+            this.logger = logger.CreateLogger<SSMCOM>();
 
             //シリアルポート設定
             DefaultBaudRate = 4800;

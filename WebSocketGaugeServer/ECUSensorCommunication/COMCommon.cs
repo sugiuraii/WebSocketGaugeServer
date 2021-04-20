@@ -20,9 +20,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
         private readonly ILogger logger;
 
-        public COMCommon(ILogger logger)
+        public COMCommon(ILoggerFactory logger)
         {
-            this.logger = logger;
+            this.logger = logger.CreateLogger<COMCommon>();
 
             serialPort = new SerialPort();
             DefaultBaudRate = 19200;
@@ -37,8 +37,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             serialPort.ErrorReceived += (sender, e) => 
             {
                 communicateRealtimeIsError = true;
-                logger.LogError("SerialPortError Event is invoked.");
-                logger.LogError("Error type is  :" + e.EventType.ToString());
+                this.logger.LogError("SerialPortError Event is invoked.");
+                this.logger.LogError("Error type is  :" + e.EventType.ToString());
             };
 
         }

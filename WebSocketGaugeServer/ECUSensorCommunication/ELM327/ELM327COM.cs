@@ -25,9 +25,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly ILogger logger;
 
         //Constructor
-        public ELM327COM(ILogger logger) : base(logger)
+        public ELM327COM(ILoggerFactory logger) : base(logger)
         {
-            this.logger = logger;
+            this.logger = logger.CreateLogger<ELM327COM>();
             //Setup serial port
             DefaultBaudRate = 115200;
 
