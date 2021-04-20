@@ -37,7 +37,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
         }
 
         public ELM327COM ELM327COM { get { return elm327COM; } }
-        public ELM327COMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILogger<ELM327COMService> logger)
+        public ELM327COMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<ELM327COMService> logger)
         {
             this.logger = logger;
             var comportName = configuration["comport"];
@@ -45,7 +45,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
 
             var cancellationToken = lifetime.ApplicationStopping;
 
-            this.elm327COM = new ELM327COM(this.logger);
+            this.elm327COM = new ELM327COM(loggerFactory);
             this.elm327COM.PortName = comportName;
             this.elm327COM.overrideDefaultBaudRate(baudRate);
 
