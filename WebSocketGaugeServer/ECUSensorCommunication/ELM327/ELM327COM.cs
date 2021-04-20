@@ -25,7 +25,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly ILogger logger;
 
         //Constructor
-        public ELM327COM(ILogger<ELM327COM> logger) : base(logger)
+        public ELM327COM(ILogger logger) : base(logger)
         {
             this.logger = logger;
             //Setup serial port

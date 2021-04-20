@@ -14,7 +14,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 		public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
         private readonly ILogger logger;
         //コンストラクタ
-        public SSMCOM(ILogger<SSMCOM> logger) : base(logger)
+        public SSMCOM(ILogger logger) : base(logger)
         {
             this.logger = logger;
 

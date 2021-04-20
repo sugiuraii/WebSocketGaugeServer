@@ -16,7 +16,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
         const int DEFI_PACKET_SIZE = 35;
         private readonly ILogger logger;
         //コンストラクタ
-        public DefiCOM(ILogger<DefiCOM> logger) : base(logger)
+        public DefiCOM(ILogger logger) : base(logger)
         {
             this.logger = logger;
             content_table = new DefiContentTable();

@@ -20,7 +20,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
         private readonly ILogger logger;
 
-        public COMCommon(ILogger<COMCommon> logger)
+        public COMCommon(ILogger logger)
         {
             this.logger = logger;
 
