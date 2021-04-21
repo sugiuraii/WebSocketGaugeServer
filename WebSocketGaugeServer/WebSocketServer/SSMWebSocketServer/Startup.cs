@@ -19,6 +19,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
 using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.SSM;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
 {
@@ -32,8 +33,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<Startup> logger)
         {
+            loggerFactory.AddMemory();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -53,7 +55,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
                 {
                     var cancellationToken = lifetime.ApplicationStopping;
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await HandleHttpConnection(context, webSocket, cancellationToken);
+                    await HandleHttpConnection(context, webSocket, logger, cancellationToken);
                 }
                 else
                 {
@@ -70,7 +72,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             });
         }
 
-        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
+        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, ILogger logger, CancellationToken ct)
         {
             var service = (SSMCOMService)context.RequestServices.GetRequiredService(typeof(SSMCOMService));
             var connectionID = Guid.NewGuid();
@@ -82,7 +84,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
 
             while (webSocket.State == WebSocketState.Open)
             {
-                await processReceivedMessage(webSocket, service, sessionParam, destAddress, ct);
+                await processReceivedMessage(webSocket, service, sessionParam, destAddress, logger, ct);
             }
             service.RemoveWebSocket(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
@@ -96,7 +98,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             }
         }
 
-        private async Task processReceivedMessage(WebSocket ws, SSMCOMService service, SSMCOMWebsocketSessionParam sessionParam, IPAddress destAddress, CancellationToken ct)
+        private async Task processReceivedMessage(WebSocket ws, SSMCOMService service, SSMCOMWebsocketSessionParam sessionParam, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             // Get mode code
             try
@@ -119,7 +121,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
                     //SSM COM all reset
                     case (ResetJSONFormat.ModeCode):
                         sessionParam.reset();
-                        await send_response_msg(ws, "SSMCOM session RESET. All send parameters are disabled.", destAddress, ct);
+                        await send_response_msg(ws, "SSMCOM session RESET. All send parameters are disabled.", destAddress, logger, ct);
                         break;
                     case (SSMCOMReadJSONFormat.ModeCode):
                         SSMCOMReadJSONFormat msg_obj_ssmread = JsonConvert.DeserializeObject<SSMCOMReadJSONFormat>(message);
@@ -136,7 +138,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
                         {
                             sessionParam.SlowSendlist[target_code] = flag;
                         }
-                        await send_response_msg(ws, "SSMCOM session read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString(), destAddress, ct);
+                        await send_response_msg(ws, "SSMCOM session read flag for : " + target_code.ToString() + " read_mode :" + msg_obj_ssmread.read_mode + " set to : " + flag.ToString(), destAddress, logger, ct);
                         break;
 
                     case (SSMSLOWREADIntervalJSONFormat.ModeCode):
@@ -144,7 +146,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
                         msg_obj_interval.Validate();
                         service.SSMCOM.SlowReadInterval = msg_obj_interval.interval;
 
-                        await send_response_msg(ws, "SSMCOM slowread interval to : " + msg_obj_interval.interval.ToString(), destAddress, ct);
+                        await send_response_msg(ws, "SSMCOM slowread interval to : " + msg_obj_interval.interval.ToString(), destAddress, logger, ct);
                         break;
                     default:
                         throw new JSONFormatsException("Unsuppoted mode property.");
@@ -152,7 +154,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             }
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
-                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, ct);
+                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, logger, ct);
                 logger.LogWarning(ex.Message);
                 logger.LogWarning(ex.StackTrace);
             }
@@ -172,7 +174,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             }
         }
 
-        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
+        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
@@ -181,7 +183,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);           
         }
 
-        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
+        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;

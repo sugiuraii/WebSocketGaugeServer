@@ -19,6 +19,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.SessionIte
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Arduino;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
 {
@@ -32,8 +33,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<Startup> logger)
         {
+            loggerFactory.AddMemory();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -53,7 +55,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
                 {
                     var cancellationToken = lifetime.ApplicationStopping;
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await HandleHttpConnection(context, webSocket, cancellationToken);
+                    await HandleHttpConnection(context, webSocket, logger, cancellationToken);
                 }
                 else
                 {
@@ -70,7 +72,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             });
         }
 
-        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
+        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, ILogger logger, CancellationToken ct)
         {
             var service = (ArduinoCOMService)context.RequestServices.GetRequiredService(typeof(ArduinoCOMService));
             var connectionID = Guid.NewGuid();
@@ -82,7 +84,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
 
             while (webSocket.State == WebSocketState.Open)
             {
-                await processReceivedMessage(webSocket, sessionParam, destAddress, ct);
+                await processReceivedMessage(webSocket, sessionParam, destAddress, logger, ct);
             }
             service.RemoveWebSocket(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
@@ -96,7 +98,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             }
         }
 
-        private async Task processReceivedMessage(WebSocket ws, ArduinoCOMWebsocketSessionParam sessionParam, IPAddress destAddress, CancellationToken ct)
+        private async Task processReceivedMessage(WebSocket ws, ArduinoCOMWebsocketSessionParam sessionParam, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             // Get mode code
             try
@@ -112,14 +114,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
                     {
                         case (ResetJSONFormat.ModeCode):
                             sessionParam.reset();
-                            await send_response_msg(ws, "Arduino Websocket all parameter reset.", destAddress, ct);
+                            await send_response_msg(ws, "Arduino Websocket all parameter reset.", destAddress, logger, ct);
                             break;
                         case (ArduinoWSSendJSONFormat.ModeCode):
                             var msg_obj_wssend = JsonConvert.DeserializeObject<ArduinoWSSendJSONFormat>(message);
                             msg_obj_wssend.Validate();
                             sessionParam.Sendlist[(ArduinoParameterCode)Enum.Parse(typeof(ArduinoParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
-                            await send_response_msg(ws, "Arduino Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress, ct);
+                            await send_response_msg(ws, "Arduino Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress, logger, ct);
                             break;
 
                         case (ArduinoWSIntervalJSONFormat.ModeCode):
@@ -127,7 +129,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
                             msg_obj_interval.Validate();
                             sessionParam.SendInterval = msg_obj_interval.interval;
 
-                            await send_response_msg(ws, "Arduino Websocket send_interval to : " + msg_obj_interval.interval.ToString(), destAddress, ct);
+                            await send_response_msg(ws, "Arduino Websocket send_interval to : " + msg_obj_interval.interval.ToString(), destAddress, logger, ct);
                             break;
                         default:
                             throw new JSONFormatsException("Unsuppoted mode property.");
@@ -136,7 +138,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             }
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
-                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, ct);
+                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, logger, ct);
                 logger.LogWarning(ex.Message);
                 logger.LogWarning(ex.StackTrace);
             }
@@ -151,7 +153,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             }
         }
 
-        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
+        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
@@ -160,7 +162,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
             await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);           
         }
 
-        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
+        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;

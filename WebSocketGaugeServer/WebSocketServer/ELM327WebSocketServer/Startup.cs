@@ -68,7 +68,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".fnt"] = "text/xml";
             app.UseDefaultFiles();
-            app.UseStaticFiles(new StaticFileOptions{
+            app.UseStaticFiles(new StaticFileOptions
+            {
                 ContentTypeProvider = provider
             });
         }
@@ -99,7 +100,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             }
         }
 
-        private async Task processReceivedMessage(WebSocket ws, ELM327COMService service, ELM327WebsocketSessionParam sessionParam, IPAddress destAddress, ILogger logger,  CancellationToken ct)
+        private async Task processReceivedMessage(WebSocket ws, ELM327COMService service, ELM327WebsocketSessionParam sessionParam, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             // Get mode code
             try
@@ -180,15 +181,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
 
-            logger.LogError("Send Error message to " + destAddress.ToString() + " : " + message);            
-            await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);           
+            logger.LogError("Send Error message to " + destAddress.ToString() + " : " + message);
+            await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);
         }
 
         protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
-            
+
             logger.LogInformation("Send Response message to " + destAddress.ToString() + " : " + message);
             await SendWebSocketTextAsync(ws, json_response_msg.Serialize(), ct);
         }
