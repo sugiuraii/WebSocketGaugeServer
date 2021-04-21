@@ -72,8 +72,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                 }
                 catch (WebSocketException ex)
                 {
-                    logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
-                    logger.Warn(ex.StackTrace);
+                    logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                    logger.LogWarning(ex.StackTrace);
                 }
             };
 
@@ -108,8 +108,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                 }
                 catch (WebSocketException ex)
                 {
-                    logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
-                    logger.Warn(ex.StackTrace);
+                    logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                    logger.LogWarning(ex.StackTrace);
                 }
             };
 
@@ -144,8 +144,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                 }
                 catch (WebSocketException ex)
                 {
-                    logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
-                    logger.Warn(ex.StackTrace);
+                    logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                    logger.LogWarning(ex.StackTrace);
                 }
             };
             this.assettoCorsaCOM.BackgroundCommunicateStart();

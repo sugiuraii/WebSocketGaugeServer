@@ -78,7 +78,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
 
             service.AddWebSocket(connectionID, webSocket);
             var sessionParam = service.GetSessionParam(connectionID);
-            logger.Info("Session is connected from : " + destAddress.ToString());
+            logger.LogInformation("Session is connected from : " + destAddress.ToString());
 
             while (webSocket.State == WebSocketState.Open)
             {
@@ -88,11 +88,11 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
             {
                 await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed normally", ct);
-                logger.Info("Session is disconnected from : " + destAddress.ToString());
+                logger.LogInformation("Session is disconnected from : " + destAddress.ToString());
             }
             else
             {
-                logger.Info("Session is aborted. " + destAddress.ToString());
+                logger.LogInformation("Session is aborted. " + destAddress.ToString());
             }
         }
 
@@ -153,22 +153,22 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
                 await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, ct);
-                logger.Warn(ex.Message);
-                logger.Warn(ex.StackTrace);
+                logger.LogWarning(ex.Message);
+                logger.LogWarning(ex.StackTrace);
             }
             catch (WebSocketException ex)
             {
-                logger.Warn(ex.Message);
-                logger.Warn(ex.StackTrace);
+                logger.LogWarning(ex.Message);
+                logger.LogWarning(ex.StackTrace);
             }
             catch (InvalidDataException ex)
             {
-                logger.Warn(ex.Message);
-                logger.Warn(ex.StackTrace);
+                logger.LogWarning(ex.Message);
+                logger.LogWarning(ex.StackTrace);
             }
             catch (OperationCanceledException ex)
             {
-                logger.Info(ex.Message);
+                logger.LogInformation(ex.Message);
             }
         }
 
@@ -177,7 +177,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
 
-            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);            
+            logger.LogError("Send Error message to " + destAddress.ToString() + " : " + message);            
             await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);           
         }
 
@@ -186,7 +186,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
             
-            logger.Info("Send Response message to " + destAddress.ToString() + " : " + message);
+            logger.LogInformation("Send Response message to " + destAddress.ToString() + " : " + message);
             await SendWebSocketTextAsync(ws, json_response_msg.Serialize(), ct);
         }
 
