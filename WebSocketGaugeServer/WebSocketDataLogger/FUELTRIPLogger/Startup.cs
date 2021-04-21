@@ -6,13 +6,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using System.Net.WebSockets;
 using System.Threading;
 using Newtonsoft.Json;
 using System.Text;
 using System.IO;
 using System.Net;
-using log4net;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Settings;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
@@ -24,7 +24,6 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
 {
     public class Startup
     {
-        static ILog logger = LogManager.GetLogger(typeof(Program));
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -33,8 +32,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<Startup> logger)
         {
+            loggerFactory.AddMemory();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -57,7 +58,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
                 {
                     var cancellationToken = lifetime.ApplicationStopping;
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await HandleHttpConnection(context, webSocket, cancellationToken);
+                    await HandleHttpConnection(context, webSocket, logger, cancellationToken);
                 }
                 else
                 {
@@ -66,7 +67,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
             });
         }
 
-        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
+        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, ILogger logger, CancellationToken ct)
         {
             var service = (FUELTRIPService)context.RequestServices.GetRequiredService(typeof(FUELTRIPService));
             var connectionID = Guid.NewGuid();
@@ -74,25 +75,25 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
 
             service.AddWebSocket(connectionID, webSocket);
             var sessionParam = service.GetSessionParam(connectionID);
-            logger.Info("Session is connected from : " + destAddress.ToString());
+            logger.LogInformation("Session is connected from : " + destAddress.ToString());
 
             while (webSocket.State == WebSocketState.Open)
             {
-                await processReceivedMessage(webSocket, service, sessionParam, destAddress, ct);
+                await processReceivedMessage(webSocket, service, sessionParam, destAddress, logger, ct);
             }
             service.RemoveWebSocket(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
             {
                 await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed normally", CancellationToken.None);
-                logger.Info("Session is disconnected from : " + destAddress.ToString());
+                logger.LogInformation("Session is disconnected from : " + destAddress.ToString());
             }
             else
             {
-                logger.Info("Session is aborted. " + destAddress.ToString());
+                logger.LogInformation("Session is aborted. " + destAddress.ToString());
             }
         }
 
-        private async Task processReceivedMessage(WebSocket ws, FUELTRIPService service, FUELTRIPWebSocketSessionParam sessionParam, IPAddress destAddress, CancellationToken ct)
+        private async Task processReceivedMessage(WebSocket ws, FUELTRIPService service, FUELTRIPWebSocketSessionParam sessionParam, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             // Get mode code
             try
@@ -110,23 +111,23 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
                         case (ResetJSONFormat.ModeCode):
                             service.FUELTripCalculator.resetSectTripFuel();
                             service.FUELTripCalculator.resetTotalTripFuel();
-                            await send_response_msg(ws, "FUELTRIPCalc AllRESET.", destAddress, ct);
+                            await send_response_msg(ws, "FUELTRIPCalc AllRESET.", destAddress, logger, ct);
                             break;
                         case (SectResetJSONFormat.ModeCode):
                             service.FUELTripCalculator.resetSectTripFuel();
-                            await send_response_msg(ws, "FUELTRIPCalcSectRESET.", destAddress, ct);
+                            await send_response_msg(ws, "FUELTRIPCalcSectRESET.", destAddress, logger, ct);
                             break;
                         case (SectSpanJSONFormat.ModeCode):
                             SectSpanJSONFormat span_jsonobj = JsonConvert.DeserializeObject<SectSpanJSONFormat>(message);
                             span_jsonobj.Validate();
                             service.FUELTripCalculator.SectSpan = span_jsonobj.sect_span * 1000;
-                            await send_response_msg(ws, "FUELTRIPCalcSectSpan Set to : " + span_jsonobj.sect_span.ToString() + "sec", destAddress, ct);
+                            await send_response_msg(ws, "FUELTRIPCalcSectSpan Set to : " + span_jsonobj.sect_span.ToString() + "sec", destAddress, logger, ct);
                             break;
                         case (SectStoreMaxJSONFormat.ModeCode):
                             SectStoreMaxJSONFormat storemax_jsonobj = JsonConvert.DeserializeObject<SectStoreMaxJSONFormat>(message);
                             storemax_jsonobj.Validate();
                             service.FUELTripCalculator.SectStoreMax = storemax_jsonobj.storemax;
-                            await send_response_msg(ws, "FUELTRIPCalc SectStoreMax Set to : " + storemax_jsonobj.storemax.ToString(), destAddress, ct);
+                            await send_response_msg(ws, "FUELTRIPCalc SectStoreMax Set to : " + storemax_jsonobj.storemax.ToString(), destAddress, logger, ct);
                             break;
                         default:
                             throw new JSONFormatsException("Unsuppoted mode property.");
@@ -135,34 +136,34 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
             }
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
-                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, ct);
+                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, logger, ct);
             }
             catch (WebSocketException ex)
             {
-                logger.Warn(ex.Message);
-                logger.Warn(ex.StackTrace);
+                logger.LogWarning(ex.Message);
+                logger.LogWarning(ex.StackTrace);
             }
             catch (OperationCanceledException ex)
             {
-                logger.Info(ex.Message);
+                logger.LogInformation(ex.Message);
             }
         }
 
-        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
+        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
 
-            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);            
+            logger.LogError("Send Error message to " + destAddress.ToString() + " : " + message);            
             await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);           
         }
 
-        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
+        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
             
-            logger.Info("Send Response message to " + destAddress.ToString() + " : " + message);
+            logger.LogInformation("Send Response message to " + destAddress.ToString() + " : " + message);
             await SendWebSocketTextAsync(ws, json_response_msg.Serialize(), ct);
         }
 
