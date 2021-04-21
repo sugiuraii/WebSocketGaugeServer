@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Threading;
-using log4net;
 using Newtonsoft.Json;
 using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
 using Microsoft.Extensions.Configuration;
@@ -14,7 +13,6 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
 {
     public class AssettoCorsaSHMService : IDisposable
     {
-        static ILog logger = LogManager.GetLogger(typeof(Program));
         private readonly AssetoCorsaSHMBackgroundCommunicator assettoCorsaCOM;
 
         private readonly Dictionary<Guid, (WebSocket WebSocket, AssettoCorsaWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, AssettoCorsaWebsocketSessionParam SessionParam)>();

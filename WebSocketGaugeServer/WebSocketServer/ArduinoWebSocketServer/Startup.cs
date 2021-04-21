@@ -12,7 +12,6 @@ using Newtonsoft.Json;
 using System.Text;
 using System.IO;
 using System.Net;
-using log4net;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Service;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
@@ -24,8 +23,7 @@ using Microsoft.AspNetCore.StaticFiles;
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer
 {
     public class Startup
-    {
-        static ILog logger = LogManager.GetLogger(typeof(Program));
+    {      
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)

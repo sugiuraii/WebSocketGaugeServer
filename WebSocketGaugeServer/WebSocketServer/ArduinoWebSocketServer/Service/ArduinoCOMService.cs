@@ -5,7 +5,6 @@ using System.Net.WebSockets;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
-using log4net;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
@@ -16,7 +15,6 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Servic
 {
     public class ArduinoCOMService : IDisposable
     {
-        static ILog logger = LogManager.GetLogger(typeof(Program));
         private readonly ArduinoCOM arduinoCOM;
         private readonly Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)>();
 

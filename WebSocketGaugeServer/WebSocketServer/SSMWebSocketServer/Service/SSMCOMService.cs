@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Threading;
-using log4net;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
 using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
@@ -15,8 +14,7 @@ using Microsoft.Extensions.Hosting;
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
 {
     public class SSMCOMService : IDisposable
-    {
-        static ILog logger = LogManager.GetLogger(typeof(Program));
+    {        
         private readonly SSMCOM ssmCOM;
         private readonly Timer update_ssmflag_timer;
         private readonly Dictionary<Guid, (WebSocket WebSocket, SSMCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, SSMCOMWebsocketSessionParam SessionParam)>();
