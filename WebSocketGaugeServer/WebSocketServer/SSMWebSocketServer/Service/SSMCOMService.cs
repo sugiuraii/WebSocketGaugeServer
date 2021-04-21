@@ -10,6 +10,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
 {
@@ -18,6 +19,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
         private readonly SSMCOM ssmCOM;
         private readonly Timer update_ssmflag_timer;
         private readonly Dictionary<Guid, (WebSocket WebSocket, SSMCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, SSMCOMWebsocketSessionParam SessionParam)>();
+        private readonly ILogger logger;
 
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
         {
@@ -35,11 +37,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
         }
 
         public SSMCOM SSMCOM { get { return ssmCOM; } }
-        public SSMCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime)
+        public SSMCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<SSMCOMService> logger)
         {
+            this.logger = logger;
             var comportName = configuration["comport"];
 
-            this.ssmCOM = new SSMCOM();
+            this.ssmCOM = new SSMCOM(loggerFactory);
             this.ssmCOM.PortName = comportName;
 
             var cancellationToken = lifetime.ApplicationStopping;

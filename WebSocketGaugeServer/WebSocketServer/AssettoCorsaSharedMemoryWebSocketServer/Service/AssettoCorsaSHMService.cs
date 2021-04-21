@@ -3,20 +3,25 @@ using System.Text;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using System.Threading;
 using Newtonsoft.Json;
 using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service
 {
     public class AssettoCorsaSHMService : IDisposable
     {
+        private readonly ILogger logger;
         private readonly AssetoCorsaSHMBackgroundCommunicator assettoCorsaCOM;
 
         private readonly Dictionary<Guid, (WebSocket WebSocket, AssettoCorsaWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, AssettoCorsaWebsocketSessionParam SessionParam)>();
 
+        public AssettoCorsaSHMService(ILogger<AssettoCorsaSHMService> logger)
+        {
+            this.logger = logger;
+        }
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
         {
             this.WebSocketDictionary.Add(sessionGuid, (websocket, new AssettoCorsaWebsocketSessionParam()));
