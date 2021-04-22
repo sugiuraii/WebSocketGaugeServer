@@ -61,7 +61,5 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer
                 ContentTypeProvider = provider
             });
         }
-
-        
     }
 }

@@ -23,13 +23,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Middlewar
     public class DefiWebSocketMiddleware : IWebSocketHandleMiddleware
     {
         private readonly ILogger logger;
-        
+
         public DefiWebSocketMiddleware(ILoggerFactory loggerFactory)
         {
             this.logger = loggerFactory.CreateLogger<DefiWebSocketMiddleware>();
         }
 
-        public async Task HandleHttpConnection(HttpContext context, WebSocket webSocket,  CancellationToken ct)
+        public async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {
             var service = (DefiCOMService)context.RequestServices.GetRequiredService(typeof(DefiCOMService));
             var connectionID = Guid.NewGuid();
@@ -55,7 +55,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Middlewar
             }
         }
 
-        private async Task processReceivedMessage(WebSocket ws, DefiCOMWebsocketSessionParam sessionParam, IPAddress destAddress,  CancellationToken ct)
+        private async Task processReceivedMessage(WebSocket ws, DefiCOMWebsocketSessionParam sessionParam, IPAddress destAddress, CancellationToken ct)
         {
             // Get mode code
             try
@@ -110,7 +110,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Middlewar
             }
         }
 
-        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress,  CancellationToken ct)
+        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
         {
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
@@ -119,7 +119,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Middlewar
             await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);
         }
 
-        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress,  CancellationToken ct)
+        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
