@@ -4,19 +4,18 @@ using System.Collections.Generic;
 using System.Net.WebSockets;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
-using System.Threading;
-using log4net;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Service
 {
     public class ArduinoCOMService : IDisposable
     {
-        static ILog logger = LogManager.GetLogger(typeof(Program));
+        private readonly ILogger logger;
         private readonly ArduinoCOM arduinoCOM;
         private readonly Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)>();
 
@@ -30,16 +29,17 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Servic
             this.WebSocketDictionary.Remove(sessionGuid);
         }
 
-        public ArduinoCOMWebsocketSessionParam GetSessionParam(Guid guid) 
+        public ArduinoCOMWebsocketSessionParam GetSessionParam(Guid guid)
         {
             return this.WebSocketDictionary[guid].SessionParam;
         }
 
         public ArduinoCOM ArduinoCOM { get { return arduinoCOM; } }
-        public ArduinoCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime)
+        public ArduinoCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<ArduinoCOMService> logger)
         {
+            this.logger = logger;
             var comportName = configuration["comport"];
-            this.arduinoCOM = new ArduinoCOM();
+            this.arduinoCOM = new ArduinoCOM(loggerFactory);
             this.arduinoCOM.PortName = comportName;
 
             var cancellationToken = lifetime.ApplicationStopping;
@@ -55,7 +55,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Servic
                         var websocket = session.Value.WebSocket;
                         var sessionparam = session.Value.SessionParam;
 
-                        var msg_data = new ValueJSONFormat();        
+                        var msg_data = new ValueJSONFormat();
                         if (sessionparam.SendCount < sessionparam.SendInterval)
                             sessionparam.SendCount++;
                         else
@@ -77,10 +77,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Servic
                         }
                     }
                 }
-                catch(WebSocketException ex)
+                catch (WebSocketException ex)
                 {
-                    logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
-                    logger.Warn(ex.StackTrace);
+                    logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                    logger.LogWarning(ex.StackTrace);
                 }
             };
             this.ArduinoCOM.BackgroundCommunicateStart();

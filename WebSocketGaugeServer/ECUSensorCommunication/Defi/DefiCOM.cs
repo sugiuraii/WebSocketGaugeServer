@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.IO.Ports;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 {
@@ -13,10 +14,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 
         //DefiLinkパケットサイズ
         const int DEFI_PACKET_SIZE = 35;
-
+        private readonly ILogger logger;
         //コンストラクタ
-        public DefiCOM()
+        public DefiCOM(ILoggerFactory logger) : base(logger)
         {
+            this.logger = logger.CreateLogger<DefiCOM>();
             content_table = new DefiContentTable();
 
             //DEFIボーレート設定
@@ -50,7 +52,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
             catch (TimeoutException ex)
             {
                 //読み出しタイムアウト時はエラーフラグを立て、次のサイクルでリセット処理を入れる
-                logger.Warn("Defi packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                logger.LogWarning("Defi packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
                 communicateRealtimeIsError = true;
                 return;
             }
@@ -105,7 +107,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
                 catch (FormatException ex)
                 {
                     //DefiPacketが崩れていた場合エラーフラグを立て、次のサイクルでリセット処理を入れる。
-                    logger.Warn("Invalid Defi packet. " + ex.GetType().ToString() + " " + ex.Message);
+                    logger.LogWarning("Invalid Defi packet. " + ex.GetType().ToString() + " " + ex.Message);
                     communicateRealtimeIsError = true;
                     return;
                 }

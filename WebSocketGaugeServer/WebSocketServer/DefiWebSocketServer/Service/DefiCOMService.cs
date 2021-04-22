@@ -5,18 +5,18 @@ using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Threading;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
-using log4net;
 using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.SessionItems;
 using Newtonsoft.Json;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
 {
     public class DefiCOMService : IDisposable
     {
-        static ILog logger = LogManager.GetLogger(typeof(Program));
+        private readonly ILogger logger;
         private readonly DefiCOM defiCOM;
         private readonly Dictionary<Guid, (WebSocket WebSocket, DefiCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, DefiCOMWebsocketSessionParam SessionParam)>();
 
@@ -36,11 +36,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
         }
 
         public DefiCOM DefiCOM { get { return defiCOM; } }
-        public DefiCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime)
+        public DefiCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<DefiCOMService> logger)
         {
+            this.logger = logger;
             var comportName = configuration["comport"];
 
-            this.defiCOM = new DefiCOM();
+            this.defiCOM = new DefiCOM(loggerFactory);
             this.defiCOM.PortName = comportName;
 
             var cancellationToken = lifetime.ApplicationStopping;
@@ -79,8 +80,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
                 }
                 catch (WebSocketException ex)
                 {
-                    logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
-                    logger.Warn(ex.StackTrace);
+                    logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                    logger.LogWarning(ex.StackTrace);
                 }
             };
             this.DefiCOM.BackgroundCommunicateStart();

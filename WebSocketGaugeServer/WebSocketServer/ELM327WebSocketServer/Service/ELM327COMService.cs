@@ -5,21 +5,21 @@ using System.Net.WebSockets;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
-using log4net;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
 {
     public class ELM327COMService : IDisposable
     {
-        static ILog logger = LogManager.GetLogger(typeof(Program));
         private readonly ELM327COM elm327COM;
         private readonly Timer update_obdflag_timer;
         private readonly Dictionary<Guid, (WebSocket WebSocket, ELM327WebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, ELM327WebsocketSessionParam SessionParam)>();
+        private readonly ILogger logger;
 
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
         {
@@ -37,14 +37,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
         }
 
         public ELM327COM ELM327COM { get { return elm327COM; } }
-        public ELM327COMService(IConfiguration configuration, IHostApplicationLifetime lifetime)
+        public ELM327COMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<ELM327COMService> logger)
         {
+            this.logger = logger;
             var comportName = configuration["comport"];
             var baudRate = Int32.Parse(configuration["baudrate"]);
 
             var cancellationToken = lifetime.ApplicationStopping;
 
-            this.elm327COM = new ELM327COM();
+            this.elm327COM = new ELM327COM(loggerFactory);
             this.elm327COM.PortName = comportName;
             this.elm327COM.overrideDefaultBaudRate(baudRate);
 
@@ -80,8 +81,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
                 }
                 catch (WebSocketException ex)
                 {
-                    logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
-                    logger.Warn(ex.StackTrace);
+                    logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                    logger.LogWarning(ex.StackTrace);
                 }
             };
 

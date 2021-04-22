@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using WebSocket4Net;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
-using log4net;
 using System.Threading;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Settings;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
@@ -15,11 +14,13 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Defi;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Arduino;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.SSM;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.ELM327;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
 {
     class WebSocketClients
     {
+        private readonly ILogger logger;
         private const int CONNECT_RETRY_SEC = 5;
         private const int DEFI_ARDUINO_PACKET_INTERVAL = 2;
         public readonly WebSocket DefiWSClient;
@@ -79,16 +80,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
         }
 
         public event EventHandler<EventArgs> VALMessageParsed;
-
-        //log4net
-        private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
         
         /// <summary>
         /// Construct WebsocketClients.
         /// </summary>
         /// <param name="appSettings">AppSettings</param>
-        public WebSocketClients(FUELTRIPLoggerSettings appSettings)
+        public WebSocketClients(FUELTRIPLoggerSettings appSettings, ILoggerFactory loggerFactory)
         {
+            this.logger = loggerFactory.CreateLogger<WebSocketClients>();
             RequiredParameterCode requiredCodes = appSettings.getRequiredParameterCodes();
             DefiWSClient = initializeDefiCOMWSClient(appSettings.defiserver_url, requiredCodes.DefiCodes);
             SSMWSClient = initializeSSMCOMWSClient(appSettings.ssmserver_url, requiredCodes.SSMCodes);
@@ -148,7 +147,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
         /// <param name="errorMsg">Error message</param>
         private void wsErrorMsg(string clientType, string errorName, string errorMsg)
         {
-            logger.Error(clientType + " Websocket connection error occurs. Exception : " + errorName + "\n Message : " + errorMsg);
+            logger.LogError(clientType + " Websocket connection error occurs. Exception : " + errorName + "\n Message : " + errorMsg);
         }
 
         /// <summary>
@@ -158,11 +157,11 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
         /// <param name="wsClient"> Websocket client object</param>
         private void wsClosedReconnect(string clientType, WebSocket wsClient)
         {
-            logger.Info(clientType + " Websocket connection is Closed. Wait " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
+            logger.LogInformation(clientType + " Websocket connection is Closed. Wait " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
             Thread.Sleep(CONNECT_RETRY_SEC * 1000);
             while (wsClient.State != WebSocketState.Closed)
             {
-                logger.Info(clientType + " Websocket is now closing, not closed completely. Wait more " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
+                logger.LogInformation(clientType + " Websocket is now closing, not closed completely. Wait more " + CONNECT_RETRY_SEC.ToString() + "sec and reconnect.");
                 Thread.Sleep(CONNECT_RETRY_SEC * 1000);
             }
             wsClient.Open();
@@ -331,17 +330,17 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
             }
             catch (KeyNotFoundException ex)
             {
-                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
                 return;
             }
             catch (JsonReaderException ex)
             {
-                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
                 return;
             }
             catch (JsonException ex)
             {
-                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
                 return;
             }
 
@@ -421,38 +420,38 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
                 {
                     ErrorJSONFormat err_json = JsonConvert.DeserializeObject<ErrorJSONFormat>(jsonmsg);
                     err_json.Validate();
-                    logger.Error("Error occured from " + wsClientType.ToString() + ":" + err_json.msg);
+                    logger.LogError("Error occured from " + wsClientType.ToString() + ":" + err_json.msg);
                 }
                 else if (receivedJSONMode == ResponseJSONFormat.ModeCode)
                 {
                     ResponseJSONFormat res_json = JsonConvert.DeserializeObject<ResponseJSONFormat>(jsonmsg);
                     res_json.Validate();
-                    logger.Info("Response from " + wsClientType.ToString() + ":" + res_json.msg);
+                    logger.LogInformation("Response from " + wsClientType.ToString() + ":" + res_json.msg);
                 }
             }
             catch (JSONFormatsException ex)
             {
-                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
                 return;
             }
             catch (JsonException ex)
             {
-                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
                 return;
             }
             catch (KeyNotFoundException ex)
             {
-                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
                 return;
             }
             catch (FormatException ex)
             {
-                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
                 return;
             }
             catch (InvalidOperationException ex)
             {
-                logger.Error(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message + " JSON:" + jsonmsg);
                 return;
             }
 

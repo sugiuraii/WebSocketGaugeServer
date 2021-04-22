@@ -12,7 +12,6 @@ using Newtonsoft.Json;
 using System.Text;
 using System.IO;
 using System.Net;
-using log4net;
 using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service;
 using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
@@ -20,12 +19,12 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.AssettoCorsaSHM;
 using Microsoft.AspNetCore.StaticFiles;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer
 {
     public class Startup
     {
-        static ILog logger = LogManager.GetLogger(typeof(Program));
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -34,8 +33,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<Startup> logger)
         {
+            loggerFactory.AddMemory();
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -55,7 +55,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                 {
                     var cancellationToken = lifetime.ApplicationStopping;
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    await HandleHttpConnection(context, webSocket, cancellationToken);
+                    await HandleHttpConnection(context, webSocket, logger, cancellationToken);
                 }
                 else
                 {
@@ -72,7 +72,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
             });
         }
 
-        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
+        private async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, ILogger logger, CancellationToken ct)
         {
             var service = (AssettoCorsaSHMService)context.RequestServices.GetRequiredService(typeof(AssettoCorsaSHMService));
             var connectionID = Guid.NewGuid();
@@ -80,25 +80,25 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
 
             service.AddWebSocket(connectionID, webSocket);
             var sessionParam = service.GetSessionParam(connectionID);
-            logger.Info("Session is connected from : " + destAddress.ToString());
+            logger.LogInformation("Session is connected from : " + destAddress.ToString());
 
             while (webSocket.State == WebSocketState.Open)
             {
-                await processReceivedMessage(webSocket, sessionParam, destAddress, ct);
+                await processReceivedMessage(webSocket, sessionParam, destAddress, logger, ct);
             }
             service.RemoveWebSocket(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
             {
                 await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed normally", ct);
-                logger.Info("Session is disconnected from : " + destAddress.ToString());
+                logger.LogInformation("Session is disconnected from : " + destAddress.ToString());
             }
             else
             {
-                logger.Info("Session is aborted. " + destAddress.ToString());
+                logger.LogInformation("Session is aborted. " + destAddress.ToString());
             }
         }
 
-        private async Task processReceivedMessage(WebSocket ws, AssettoCorsaWebsocketSessionParam sessionParam, IPAddress destAddress, CancellationToken ct)
+        private async Task processReceivedMessage(WebSocket ws, AssettoCorsaWebsocketSessionParam sessionParam, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             // Get mode code
             try
@@ -115,7 +115,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                         case (ResetJSONFormat.ModeCode):
                             {
                                 sessionParam.reset();
-                                await send_response_msg(ws, "AssettoCorsaSHM Websocket all parameter reset.", destAddress, ct);
+                                await send_response_msg(ws, "AssettoCorsaSHM Websocket all parameter reset.", destAddress, logger, ct);
                                 break;
                             }
                         case (AssettoCorsaPhysicsSendJSONFormat.ModeCode):
@@ -125,7 +125,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                                 msg_obj_wssend.Validate();
                                 sessionParam.PhysicsDataSendList[(AssettoCorsaSHMPhysicsParameterCode)Enum.Parse(typeof(AssettoCorsaSHMPhysicsParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
-                                await send_response_msg(ws, "AsstoCorsa Websocket Physics send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress, ct);
+                                await send_response_msg(ws, "AsstoCorsa Websocket Physics send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress, logger, ct);
                                 break;
                             }
                         case (AssettoCorsaGraphicsSendJSONFormat.ModeCode):
@@ -134,7 +134,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                                 msg_obj_wssend.Validate();
                                 sessionParam.GraphicsDataSendList[(AssettoCorsaSHMGraphicsParameterCode)Enum.Parse(typeof(AssettoCorsaSHMGraphicsParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
-                                await send_response_msg(ws, "AsstoCorsa Websocket Graphics send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress, ct);
+                                await send_response_msg(ws, "AsstoCorsa Websocket Graphics send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress, logger, ct);
                                 break;
                             }
                         case (AssettoCorsaStaticInfoSendJSONFormat.ModeCode):
@@ -143,7 +143,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                                 msg_obj_wssend.Validate();
                                 sessionParam.StaticInfoDataSendList[(AssettoCorsaSHMStaticInfoParameterCode)Enum.Parse(typeof(AssettoCorsaSHMStaticInfoParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
 
-                                await send_response_msg(ws, "AsstoCorsa Websocket StaticInfo send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress, ct);
+                                await send_response_msg(ws, "AsstoCorsa Websocket StaticInfo send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress, logger, ct);
                                 break;
                             }
                         case (AssettoCorsaPhysicsWSIntervalJSONFormat.ModeCode):
@@ -152,7 +152,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                                 msg_obj_interval.Validate();
                                 sessionParam.PhysicsDataSendInterval = msg_obj_interval.interval;
 
-                                await send_response_msg(ws, "AsstoCorsa Websocket Physics send_interval to : " + msg_obj_interval.interval.ToString(), destAddress, ct);
+                                await send_response_msg(ws, "AsstoCorsa Websocket Physics send_interval to : " + msg_obj_interval.interval.ToString(), destAddress, logger, ct);
                                 break;
                             }
                         case (AssettoCorsaGraphicsWSIntervalJSONFormat.ModeCode):
@@ -161,7 +161,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                                 msg_obj_interval.Validate();
                                 sessionParam.GraphicsDataSendInterval = msg_obj_interval.interval;
 
-                                await send_response_msg(ws, "AsstoCorsa Websocket Graphics send_interval to : " + msg_obj_interval.interval.ToString(), destAddress, ct);
+                                await send_response_msg(ws, "AsstoCorsa Websocket Graphics send_interval to : " + msg_obj_interval.interval.ToString(), destAddress, logger, ct);
                                 break;
                             }
                         case (AssettoCorsaStaticInfoWSIntervalJSONFormat.ModeCode):
@@ -170,7 +170,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
                                 msg_obj_interval.Validate();
                                 sessionParam.StaticInfoDataSendInterval = msg_obj_interval.interval;
 
-                                await send_response_msg(ws, "AsstoCorsa Websocket StaticInfo send_interval to : " + msg_obj_interval.interval.ToString(), destAddress, ct);
+                                await send_response_msg(ws, "AsstoCorsa Websocket StaticInfo send_interval to : " + msg_obj_interval.interval.ToString(), destAddress, logger, ct);
                                 break;
                             }
                         default:
@@ -181,36 +181,36 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSo
             }
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
-                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, ct);
-                logger.Warn(ex.Message);
-                logger.Warn(ex.StackTrace);
+                await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, logger, ct);
+                logger.LogWarning(ex.Message);
+                logger.LogWarning(ex.StackTrace);
             }
             catch (WebSocketException ex)
             {
-                logger.Warn(ex.Message);
-                logger.Warn(ex.StackTrace);
+                logger.LogWarning(ex.Message);
+                logger.LogWarning(ex.StackTrace);
             }
             catch (OperationCanceledException ex)
             {
-                logger.Info(ex.Message);
+                logger.LogInformation(ex.Message);
             }
         }
 
-        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
+        protected async Task send_error_msg(WebSocket ws, string message, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             ErrorJSONFormat json_error_msg = new ErrorJSONFormat();
             json_error_msg.msg = message;
 
-            logger.Error("Send Error message to " + destAddress.ToString() + " : " + message);
+            logger.LogError("Send Error message to " + destAddress.ToString() + " : " + message);
             await SendWebSocketTextAsync(ws, json_error_msg.Serialize(), ct);
         }
 
-        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, CancellationToken ct)
+        protected async Task send_response_msg(WebSocket ws, string message, IPAddress destAddress, ILogger logger, CancellationToken ct)
         {
             ResponseJSONFormat json_response_msg = new ResponseJSONFormat();
             json_response_msg.msg = message;
 
-            logger.Info("Send Response message to " + destAddress.ToString() + " : " + message);
+            logger.LogInformation("Send Response message to " + destAddress.ToString() + " : " + message);
             await SendWebSocketTextAsync(ws, json_response_msg.Serialize(), ct);
         }
 

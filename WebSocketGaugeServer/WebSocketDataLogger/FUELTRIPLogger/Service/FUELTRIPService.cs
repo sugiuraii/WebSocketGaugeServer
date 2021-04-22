@@ -3,7 +3,6 @@ using System.Text;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
-using log4net;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FUELTripCalculator;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Settings;
@@ -12,13 +11,13 @@ using Microsoft.Extensions.Hosting;
 using System.IO;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
 {
     public class FUELTRIPService : IDisposable
     {
-        private static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
-
+        private readonly ILogger logger;
         private readonly WebSocketClients wsClients;
         private readonly FuelTripCalculator fuelTripCalc;
         private readonly Dictionary<Guid, (WebSocket WebSocket, FUELTRIPWebSocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, FUELTRIPWebSocketSessionParam SessionParam)>();
@@ -40,13 +39,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
 
         public FuelTripCalculator FUELTripCalculator { get { return this.fuelTripCalc; } }
 
-        public FUELTRIPService(IConfiguration configuration, IHostApplicationLifetime lifetime)
+        public FUELTRIPService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<FUELTRIPService> logger)
         {
+            this.logger = logger;
             var appSettings = JsonConvert.DeserializeObject<FUELTRIPLoggerSettings>(File.ReadAllText("./fueltriplogger_settings.jsonc"));
             this.fuelTripCalc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod);
 
             //Websocket clients setup
-            this.wsClients = new WebSocketClients(appSettings);
+            this.wsClients = new WebSocketClients(appSettings, loggerFactory);
 
             var cancellationToken = lifetime.ApplicationStopping;
 
@@ -71,13 +71,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
                 }
                 catch (TimeoutException ex)
                 {
-                    logger.Warn("TimeOutException is occured on FUELTRIP calcilation. FUELTRIP calutaion is skipped on this tick. ");
-                    logger.Warn(ex.Message);
+                    logger.LogWarning("TimeOutException is occured on FUELTRIP calcilation. FUELTRIP calutaion is skipped on this tick. ");
+                    logger.LogWarning(ex.Message);
                 }
                 catch (WebSocketException ex)
                 {
-                    logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
-                    logger.Warn(ex.StackTrace);
+                    logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                    logger.LogWarning(ex.StackTrace);
                 }
             };
 
@@ -100,24 +100,24 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
                 }
                 catch (WebSocketException ex)
                 {
-                    logger.Warn(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
-                    logger.Warn(ex.StackTrace);
+                    logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                    logger.LogWarning(ex.StackTrace);
                 }
             };
 
             this.fuelTripCalc.loadTripFuel();
             this.wsClients.start();
 
-            logger.Info("Websocket server is started");
+            logger.LogInformation("Websocket server is started");
         }
 
         public void Dispose()
         {
             fuelTripCalc.saveTripFuel();
-            logger.Info("FUELTRIP data is saved.");
+            logger.LogInformation("FUELTRIP data is saved.");
             var stopTask = Task.Run(() => this.wsClients.stop());
             Task.WhenAny(stopTask, Task.Delay(10000));
-            logger.Info("Websocket server is stopped");
+            logger.LogInformation("Websocket server is stopped");
         }
 
         private FUELTRIPJSONFormat constructMomentumFUELTRIPDataMessage(FuelTripCalculator fuelTripCalculator)

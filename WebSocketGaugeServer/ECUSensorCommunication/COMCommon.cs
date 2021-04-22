@@ -2,7 +2,7 @@
 using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
-using log4net;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 {
@@ -18,11 +18,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         private int communicateResetCount; //何回communicate_reset()が連続でコールされたか？ (COMMUNICATE_RESET_MAXを超えたらプログラムを落とす)
         private const int COMMUNICATE_RESET_MAX = 20; //communicate_reset()コールを連続で許可する回数。
 
-        //Log4net logger
-        protected static readonly ILog logger = LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private readonly ILogger logger;
 
-        public COMCommon()
+        public COMCommon(ILoggerFactory logger)
         {
+            this.logger = logger.CreateLogger<COMCommon>();
+
             serialPort = new SerialPort();
             DefaultBaudRate = 19200;
             ResetBaudRate = 9600;
@@ -36,8 +37,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             serialPort.ErrorReceived += (sender, e) => 
             {
                 communicateRealtimeIsError = true;
-                logger.Error("SerialPortError Event is invoked.");
-                logger.Error("Error type is  :" + e.EventType.ToString());
+                this.logger.LogError("SerialPortError Event is invoked.");
+                this.logger.LogError("Error type is  :" + e.EventType.ToString());
             };
 
         }
@@ -46,13 +47,13 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         {
             // Set serialport1.BaudRate to default baud rate
             serialPort.BaudRate = DefaultBaudRate;
-            logger.Info("Set baudrate to " + serialPort.BaudRate.ToString() + " bps.");
+            logger.LogInformation("Set baudrate to " + serialPort.BaudRate.ToString() + " bps.");
 
             communicate_realtime_thread1 = new Thread(new ThreadStart(communicate_realtime));
             communicateRealtimeIsRunning = true;
             communicateRealtimeIsError = false;
             communicate_realtime_thread1.Start();
-            logger.Info("Communication Started.");
+            logger.LogInformation("Communication Started.");
         }
 
         public void BackGroundCommunicateStop()
@@ -62,7 +63,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
             //通信スレッド終了まで待つ
             communicate_realtime_thread1.Join();
-            logger.Info("Communication Stopped.");
+            logger.LogInformation("Communication Stopped.");
         }
 
         //読み込みスレッド実装（communicate_realtime_start()からスレッドを作って呼び出すこと）
@@ -71,8 +72,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             try
             {
                 //ポートオープン
-                logger.Info("COMport open.");
-                logger.Info("Call initialization routine");
+                logger.LogInformation("COMport open.");
+                logger.LogInformation("Call initialization routine");
                 serialPort.Open();
                 communicate_initialize();
 
@@ -115,15 +116,15 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             }
             catch (System.IO.IOException ex)
             {
-                logger.Error(ex.GetType().ToString() + " " + ex.Message);
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message);
             }
             catch (System.InvalidOperationException ex)
             {
-                logger.Error(ex.GetType().ToString() + " " + ex.Message);
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message);
             }
             catch (System.UnauthorizedAccessException ex)
             {
-                logger.Error(ex.GetType().ToString() + " " + ex.Message);
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message);
             }
             finally
             {
@@ -133,7 +134,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                 if (serialPort.IsOpen)
                 {
                     serialPort.Close();
-                    logger.Info("COMPort is closed.");
+                    logger.LogInformation("COMPort is closed.");
                 }
             }
         }
@@ -149,7 +150,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         //　通信リセット
         private void communticate_reset()
         {
-            logger.Info("COM communication reset.");
+            logger.LogInformation("COM communication reset.");
             serialPort.Close();
 
             //フレームをずらすために、一旦別ボーレートで通信させる
@@ -163,9 +164,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
             //ボーレート戻し、ポート復帰させる
             SetBaudRateToDefaultBaudRate();
-            logger.Info("COMport open.");
+            logger.LogInformation("COMport open.");
             serialPort.Open();
-            logger.Info("Call initialization routine");
+            logger.LogInformation("Call initialization routine");
             communicate_initialize();
         }
 
@@ -246,19 +247,19 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         public void SetBaudRateToTemporaryBaudRate(int baudrate)
         {
             serialPort.BaudRate = baudrate;
-            logger.Info("Set baud rate to temporary badurate of : " + baudrate.ToString());
+            logger.LogInformation("Set baud rate to temporary badurate of : " + baudrate.ToString());
         }
 
         public void SetBaduRateToResetBaudRate()
         {
             serialPort.BaudRate = ResetBaudRate;
-            logger.Info("Set baud rate to reset badurate of : " + ResetBaudRate.ToString());
+            logger.LogInformation("Set baud rate to reset badurate of : " + ResetBaudRate.ToString());
         }
 
         public void SetBaudRateToDefaultBaudRate()
         {
             serialPort.BaudRate = DefaultBaudRate;
-            logger.Info("Recover to default baudrate of : " + DefaultBaudRate.ToString());
+            logger.LogInformation("Recover to default baudrate of : " + DefaultBaudRate.ToString());
         }
 
         public bool IsCommunitateThreadAlive
@@ -281,7 +282,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             set
             {
                 slowReadInterval = value;
-                logger.Debug("Set slowread interval to " + value.ToString());
+                logger.LogDebug("Set slowread interval to " + value.ToString());
             }
         }
 
@@ -302,7 +303,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                 }
                 catch (System.InvalidOperationException ex1)
                 {
-                    logger.Error("Port name set error : " + ex1.GetType().ToString() + " " + ex1.Message);
+                    logger.LogError("Port name set error : " + ex1.GetType().ToString() + " " + ex1.Message);
                 }
             }
         }
