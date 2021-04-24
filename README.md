@@ -44,9 +44,7 @@ Operation are checked on following hardware...
 ELM327COM_WebSocket_Server is also tested on [com0com](https://sourceforge.net/projects/com0com/) and [OBDSim](https://icculus.org/obdgpslogger/obdsim.html) (baudrate is set to 9600bps).
 
 ## <a name="dependency">Dependency</a>
-* [SuperWebSocket](https://github.com/kerryjiang/SuperWebSocket)
 * [WebSocket4Net](https://github.com/kerryjiang/WebSocket4Net)
-* [log4net](https://logging.apache.org/log4net/)
 * [Json.NET](http://www.newtonsoft.com/json)
 
 ## <a name="raspi_trial">Try pre-installed image with raspberry pi</a>

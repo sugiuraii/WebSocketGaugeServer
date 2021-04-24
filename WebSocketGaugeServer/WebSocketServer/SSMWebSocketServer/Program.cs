@@ -1,26 +1,25 @@
 using System;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Hosting;
-using log4net;
-
-[assembly: log4net.Config.XmlConfigurator(ConfigFile = "log4net.config", Watch = true)]
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer
 {
     public class Program
     {
-        static ILog logger = LogManager.GetLogger(typeof(Program));
         public static void Main(string[] args)
         {
-            logger.Info("Start");
             var host =  CreateHostBuilder(args).Build();
+            var logger = host.Services.GetRequiredService<ILogger<Program>>();
+            logger.LogInformation("Host created.");
             try
             {
                 host.Run();
             }
             catch(OperationCanceledException ex)
             {
-                logger.Info(ex.Message);                
+                logger.LogInformation(ex.Message);                
             }
         }
 
