@@ -45,7 +45,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
 
             var cancellationToken = lifetime.ApplicationStopping;
 
-            this.elm327COM = new ELM327COM(loggerFactory);
+            var elm327ProtocolMode = configuration["elm327ProtocolMode"];
+            if(elm327ProtocolMode == null)
+                this.elm327COM = new ELM327COM(loggerFactory);
+            else
+                this.elm327COM = new ELM327COM(loggerFactory, elm327ProtocolMode);
+            
             this.elm327COM.PortName = comportName;
             this.elm327COM.overrideDefaultBaudRate(baudRate);
 
