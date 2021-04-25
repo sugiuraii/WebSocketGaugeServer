@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
+using System.Text.RegularExpressions;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
@@ -19,13 +20,15 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private const int INITIALIZE_FAILED_MAX = 30;
         private const int PID_COMMUNICATE_RETRY_MAX = 5;
 
+        private readonly string ELM327SetProtocolMode;
+
         //ELM327COM data received event
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
 
         private readonly ILogger logger;
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger) : base(logger)
+        public ELM327COM(ILoggerFactory logger, string elm327ProtocolStr) : base(logger)
         {
             this.logger = logger.CreateLogger<ELM327COM>();
             //Setup serial port
@@ -34,7 +37,13 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             ResetBaudRate = 4800;
             ReadTimeout = 500;
 
+            ELM327SetProtocolMode = elm327ProtocolStr;
+
             content_table = new OBDIIContentTable();
+        }
+
+        public ELM327COM(ILoggerFactory logger) : this(logger, String.Empty)
+        {
         }
 
         //Changing DefaultBaudRate is allowed in ELM327COM
@@ -145,6 +154,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     Write("ATL0\r");
                     logger.LogDebug("Call ATL0 to disable linefeed. Return Msg is " + ReadTo(">"));
 
+                    ELM327SetProtocol();
+
                     initializeFinished = true;
                 }
                 catch (TimeoutException ex)
@@ -163,6 +174,23 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     DiscardInBuffer();
                 }
             } while (!initializeFinished);
+        }
+
+        private void ELM327SetProtocol()
+        {
+            if(string.IsNullOrEmpty(ELM327SetProtocolMode))
+            {
+                logger.LogDebug("ELM327SetProtocolMode string is blank. ELM327 protocol set (AT SP) will be skipped.");
+                return;
+            }
+            if(ELM327SetProtocolMode.Length != 1)
+                logger.LogWarning("ELM327SetProtocolMode is not a signle character. AT SP command may fail.");
+            if(!Regex.IsMatch(ELM327SetProtocolMode, "[0-9]|[A-C]"))
+                logger.LogWarning("ELM327SetProtocolMode is not 0-9 or A-C. AT SP command may fail.");
+            
+            string setprotocolStr = "AT SP " + ELM327SetProtocolMode;
+            Write(setprotocolStr +"\r");
+            logger.LogDebug("Call " + setprotocolStr +" to set ELM327 protocol. Return Msg is " + ReadTo(">"));
         }
 
         protected override void communicate_main(bool slow_read_flag)
