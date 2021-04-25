@@ -7,6 +7,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Middleware;
+using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Model;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
 {
@@ -19,6 +20,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddSingleton<ELM327COMService>();
+            services.AddTransient<MemoryLoggerModel>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
