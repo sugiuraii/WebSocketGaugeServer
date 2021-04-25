@@ -34,7 +34,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
                 KeepAliveInterval = TimeSpan.FromSeconds(120)
             };
 
-            loggerFactory.AddMemory();
+            loggerFactory.AddMemory(LogLevel.Debug);
 
             // Handle WebSokect connection
             app.UseWebSockets(webSocketOptions);
