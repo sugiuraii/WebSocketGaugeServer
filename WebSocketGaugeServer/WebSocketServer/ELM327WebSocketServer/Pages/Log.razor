@@ -7,9 +7,12 @@
 <p>
     @foreach (var log in GetTimeLevelAndLog(LogLevelToGet))
     {
-        @(log.level)<br>
-        @(log.time)<br>
-        @(log.line)<br>
+        <div class="card @GetClassFromLogLevel(log.level) mb-2">
+            <div class="card-header">@log.time</div>
+            <div class="card-body">
+                @log.line
+            </div>
+        </div>
     }            
 </p>
 
@@ -17,7 +20,7 @@
 {
     private readonly List<LogLevel> LogLevelToGet = new List<LogLevel>(){LogLevel.Debug, LogLevel.Information, LogLevel.Warning, LogLevel.Error, LogLevel.Critical};
     
-    public List<(DateTime time, LogLevel level, string line)> GetTimeLevelAndLog(List<LogLevel> logLevelsToGet)
+    private List<(DateTime time, LogLevel level, string line)> GetTimeLevelAndLog(List<LogLevel> logLevelsToGet)
     {
         var returnVal = new List<(DateTime time, LogLevel level, string line)>();
         foreach(var level in logLevelsToGet)
@@ -27,4 +30,13 @@
         returnVal.Sort((e1, e2) => -DateTime.Compare(e1.time, e2.time));
         return returnVal;
     }
+
+    private string GetClassFromLogLevel(LogLevel level) => level switch
+    {
+        LogLevel.Information => "border-success",
+        LogLevel.Warning => "border-warning",
+        LogLevel.Error => "bg-danger text-white",
+        LogLevel.Critical => "bg-dark text-danger",
+        _ => "border-primary"
+    };
 }
