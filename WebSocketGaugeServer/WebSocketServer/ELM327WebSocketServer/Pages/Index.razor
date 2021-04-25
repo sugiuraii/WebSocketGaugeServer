@@ -1,5 +1,36 @@
 @page "/"
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration configuration
 
-<h1>Hello, world!</h1>
+<h1>ELM327WebSocketServer</h1>
 
-Welcome to your new app.
+
+<h2>Current setting</h2>
+<p>
+    <ul class="list-group">
+        <li class="list-group-item">COMPort name : @configuration["comport"]</li>
+        <li class="list-group-item">Baudrate : @configuration["baudrate"]</li>
+        <li class="list-group-item">ELM327 protocol mode : @configuration["elm327ProtocolMode"]</li>
+        <li class="list-group-item">
+            <pre>
+                ELM327 protocol setting.
+                (See the section of "AT SP" commandd in ELM327 data sheet)
+                (Use single character string to set this field.)
+
+                "0" - Automatic
+                "1" - SAE J1850 PWM (41.6 kbaud)
+                "2" - SAE J1850 VPW (10.4 kbaud)
+                "3" - ISO 9141-2  (5 baud init, 10.4 kbaud)
+                "4" - ISO 14230-4 KWP (5 baud init, 10.4 kbaud)
+                "5" - ISO 14230-4 KWP (fast init, 10.4 kbaud)
+                "6" - ISO 15765-4 CAN (11 bit ID, 500 kbaud)
+                "7" - ISO 15765-4 CAN (29 bit ID, 500 kbaud)
+                "8" - ISO 15765-4 CAN (11 bit ID, 250 kbaud)
+                "9" - ISO 15765-4 CAN (29 bit ID, 250 kbaud)
+                "A" - SAE J1939 CAN (29 bit ID, 250* kbaud)
+                "B" - USER1 CAN (11* bit ID, 125* kbaud)
+                "C" - USER2 CAN (11* bit ID, 50* kbaud)
+            </pre>
+        </li>
+    </ul>
+</p>
