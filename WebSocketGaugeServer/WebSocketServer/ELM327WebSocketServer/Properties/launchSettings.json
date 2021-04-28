@@ -1,10 +1,10 @@
-﻿{
+{
   "iisSettings": {
-    "windowsAuthentication": false, 
-    "anonymousAuthentication": true, 
+    "windowsAuthentication": false,
+    "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:26767",
-      "sslPort": 44303
+      "applicationUrl": "http://localhost:34546",
+      "sslPort": 44334
     }
   },
   "profiles": {
@@ -15,8 +15,9 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "ASPNetWebSocket": {
+    "ELM327WebSocketServer": {
       "commandName": "Project",
+      "dotnetRunMessages": "true",
       "launchBrowser": true,
       "applicationUrl": "https://localhost:5001;http://localhost:5000",
       "environmentVariables": {

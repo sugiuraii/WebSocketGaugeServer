@@ -7,6 +7,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Middleware;
+using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Model;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
 {
@@ -16,7 +17,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddRazorPages();
+            services.AddServerSideBlazor();
             services.AddSingleton<ELM327COMService>();
+            services.AddTransient<MemoryLoggerModel>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -32,14 +36,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
                 KeepAliveInterval = TimeSpan.FromSeconds(120)
             };
 
-            loggerFactory.AddMemory();
+            loggerFactory.AddMemory(LogLevel.Debug);
 
             // Handle WebSokect connection
             app.UseWebSockets(webSocketOptions);
             app.UseRouting();
             app.Use(async (context, next) =>
             {
-                if (context.WebSockets.IsWebSocketRequest)
+                if (context.WebSockets.IsWebSocketRequest && context.Request.Path != "/_blazor") // Ignore blazor signalR access
                 {
                     var cancellationToken = lifetime.ApplicationStopping;
                     var webSocket = await context.WebSockets.AcceptWebSocketAsync();
@@ -52,13 +56,17 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
                 }
             });
 
-            // Add static file with new extension mappings for bitmaptext fnt file
+            app.UseDefaultFiles();
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".fnt"] = "text/xml";
-            app.UseDefaultFiles();
-            app.UseStaticFiles(new StaticFileOptions
+            app.UseStaticFiles(new StaticFileOptions{ ContentTypeProvider = provider });
+            app.UseStaticFiles();
+
+            //app.UseHttpsRedirection();
+            app.UseEndpoints(endpoints =>
             {
-                ContentTypeProvider = provider
+                endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
     }
