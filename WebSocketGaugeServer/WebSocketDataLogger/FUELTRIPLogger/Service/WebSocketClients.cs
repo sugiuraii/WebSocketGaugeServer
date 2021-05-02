@@ -9,11 +9,11 @@ using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Defi;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Arduino;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.SSM;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.ELM327;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.Defi;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.Arduino;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.SSM;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.ELM327;
 using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service

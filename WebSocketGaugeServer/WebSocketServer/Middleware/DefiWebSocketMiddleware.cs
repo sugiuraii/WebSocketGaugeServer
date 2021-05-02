@@ -10,26 +10,28 @@ using Newtonsoft.Json;
 using System.Text;
 using System.IO;
 using System.Net;
-using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service;
+using SZ2.WebSocketGaugeServer.WebSocketServer.Service;
+using SZ2.WebSocketGaugeServer.WebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
-using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.JSONFormat;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
 using SZ2.WebSocketGaugeServer.WebSocketCommon;
-using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.SessionItems;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.Defi;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.Middleware;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
 {
-    public class FUELTRIPLoggerWebSocketMiddleware : IWebSocketHandleMiddleware
+    public class DefiWebSocketMiddleware : IWebSocketHandleMiddleware
     {
         private readonly ILogger logger;
 
-        public FUELTRIPLoggerWebSocketMiddleware(ILoggerFactory loggerFactory)
+        public DefiWebSocketMiddleware(ILoggerFactory loggerFactory)
         {
-            this.logger = loggerFactory.CreateLogger<FUELTRIPLoggerWebSocketMiddleware>();
+            this.logger = loggerFactory.CreateLogger<DefiWebSocketMiddleware>();
         }
+
         public async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {
-            var service = (FUELTRIPService)context.RequestServices.GetRequiredService(typeof(FUELTRIPService));
+            var service = (DefiCOMService)context.RequestServices.GetRequiredService(typeof(DefiCOMService));
             var connectionID = Guid.NewGuid();
             var destAddress = context.Connection.RemoteIpAddress;
 
@@ -39,7 +41,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware
 
             while (webSocket.State == WebSocketState.Open)
             {
-                await processReceivedMessage(webSocket, service, sessionParam, destAddress, ct);
+                await processReceivedMessage(webSocket, sessionParam, destAddress, ct);
             }
             service.RemoveWebSocket(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
@@ -53,7 +55,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware
             }
         }
 
-        private async Task processReceivedMessage(WebSocket ws, FUELTRIPService service, FUELTRIPWebSocketSessionParam sessionParam, IPAddress destAddress, CancellationToken ct)
+        private async Task processReceivedMessage(WebSocket ws, DefiCOMWebsocketSessionParam sessionParam, IPAddress destAddress, CancellationToken ct)
         {
             // Get mode code
             try
@@ -67,27 +69,24 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware
 
                     switch (receivedJSONmode)
                     {
-                        //SSM COM all reset
                         case (ResetJSONFormat.ModeCode):
-                            service.FUELTripCalculator.resetSectTripFuel();
-                            service.FUELTripCalculator.resetTotalTripFuel();
-                            await send_response_msg(ws, "FUELTRIPCalc AllRESET.", destAddress, ct);
+                            sessionParam.reset();
+                            await send_response_msg(ws, "Defi Websocket all parameter reset.", destAddress, ct);
                             break;
-                        case (SectResetJSONFormat.ModeCode):
-                            service.FUELTripCalculator.resetSectTripFuel();
-                            await send_response_msg(ws, "FUELTRIPCalcSectRESET.", destAddress, ct);
+                        case (DefiWSSendJSONFormat.ModeCode):
+                            DefiWSSendJSONFormat msg_obj_wssend = JsonConvert.DeserializeObject<DefiWSSendJSONFormat>(message);
+                            msg_obj_wssend.Validate();
+                            sessionParam.Sendlist[(DefiParameterCode)Enum.Parse(typeof(DefiParameterCode), msg_obj_wssend.code)] = msg_obj_wssend.flag;
+
+                            await send_response_msg(ws, "Defi Websocket send_flag for : " + msg_obj_wssend.code.ToString() + " set to : " + msg_obj_wssend.flag.ToString(), destAddress, ct);
                             break;
-                        case (SectSpanJSONFormat.ModeCode):
-                            SectSpanJSONFormat span_jsonobj = JsonConvert.DeserializeObject<SectSpanJSONFormat>(message);
-                            span_jsonobj.Validate();
-                            service.FUELTripCalculator.SectSpan = span_jsonobj.sect_span * 1000;
-                            await send_response_msg(ws, "FUELTRIPCalcSectSpan Set to : " + span_jsonobj.sect_span.ToString() + "sec", destAddress, ct);
-                            break;
-                        case (SectStoreMaxJSONFormat.ModeCode):
-                            SectStoreMaxJSONFormat storemax_jsonobj = JsonConvert.DeserializeObject<SectStoreMaxJSONFormat>(message);
-                            storemax_jsonobj.Validate();
-                            service.FUELTripCalculator.SectStoreMax = storemax_jsonobj.storemax;
-                            await send_response_msg(ws, "FUELTRIPCalc SectStoreMax Set to : " + storemax_jsonobj.storemax.ToString(), destAddress, ct);
+
+                        case (DefiWSIntervalJSONFormat.ModeCode):
+                            DefiWSIntervalJSONFormat msg_obj_interval = JsonConvert.DeserializeObject<DefiWSIntervalJSONFormat>(message);
+                            msg_obj_interval.Validate();
+                            sessionParam.SendInterval = msg_obj_interval.interval;
+
+                            await send_response_msg(ws, "Defi Websocket send_interval to : " + msg_obj_interval.interval.ToString(), destAddress, ct);
                             break;
                         default:
                             throw new JSONFormatsException("Unsuppoted mode property.");
@@ -97,6 +96,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware
             catch (Exception ex) when (ex is KeyNotFoundException || ex is JsonException || ex is JSONFormatsException || ex is NotSupportedException)
             {
                 await send_error_msg(ws, ex.GetType().ToString() + " " + ex.Message, destAddress, ct);
+                logger.LogWarning(ex.Message);
+                logger.LogWarning(ex.StackTrace);
             }
             catch (WebSocketException ex)
             {
