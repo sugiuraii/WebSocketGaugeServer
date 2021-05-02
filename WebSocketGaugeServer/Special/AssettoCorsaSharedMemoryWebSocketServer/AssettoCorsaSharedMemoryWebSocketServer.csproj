@@ -2,8 +2,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\WebSocketCommon\WebSocketCommon.csproj" />
-    <ProjectReference Include="..\..\ECUSensorCommunication\ECUSensorCommunication.csproj" />
-    <ProjectReference Include="..\..\Imported\AssettoCorsa_SharedMemory_Library\AssettoCorsa_SharedMemory_Library.csproj" />
   </ItemGroup>
 
   <ItemGroup>
@@ -14,5 +12,6 @@
   <PropertyGroup>
     <TargetFramework>net5.0</TargetFramework>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
 </Project>
