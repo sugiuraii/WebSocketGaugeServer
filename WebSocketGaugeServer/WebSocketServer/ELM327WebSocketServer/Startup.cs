@@ -12,6 +12,9 @@ using Microsoft.Extensions.Configuration;
 using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service;
 using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Service;
+using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Middleware;
+using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Middleware;
+using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Middleware;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
 {
@@ -31,15 +34,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             services.AddRazorPages();
             services.AddServerSideBlazor();
             services.AddTransient<MemoryLoggerModel>();
-            
+
             var serviceConfig = Configuration.GetSection("ServiceConfig");
-            if(bool.Parse(serviceConfig.GetSection("ELM327")["enabled"]))
+            if (bool.Parse(serviceConfig.GetSection("ELM327")["enabled"]))
                 services.AddSingleton<ELM327COMService>();
-            if(bool.Parse(serviceConfig.GetSection("Defi")["enabled"]))
+            if (bool.Parse(serviceConfig.GetSection("Defi")["enabled"]))
                 services.AddSingleton<DefiCOMService>();
-            if(bool.Parse(serviceConfig.GetSection("Arduino")["enabled"]))
+            if (bool.Parse(serviceConfig.GetSection("Arduino")["enabled"]))
                 services.AddSingleton<ArduinoCOMService>();
-            if(bool.Parse(serviceConfig.GetSection("SSM")["enabled"]))
+            if (bool.Parse(serviceConfig.GetSection("SSM")["enabled"]))
                 services.AddSingleton<SSMCOMService>();
 
         }
@@ -64,12 +67,50 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             app.UseRouting();
             app.Use(async (context, next) =>
             {
-                if (context.WebSockets.IsWebSocketRequest && context.Request.Path != "/_blazor") // Ignore blazor signalR access
+                if (context.WebSockets.IsWebSocketRequest)
                 {
-                    var cancellationToken = lifetime.ApplicationStopping;
-                    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    var middleware = new ELM327WebSocketMiddleware(loggerFactory);
-                    await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                    switch (context.Request.Path)
+                    {
+                        case ("/_blazor"):
+                            // Pass through blazor signalR access
+                            await next();
+                            break;
+                        case ("/elm327"):
+                            {
+                                var cancellationToken = lifetime.ApplicationStopping;
+                                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                                var middleware = new ELM327WebSocketMiddleware(loggerFactory);
+                                await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                                break;
+                            }
+                        case ("/defi"):
+                            {
+                                var cancellationToken = lifetime.ApplicationStopping;
+                                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                                var middleware = new DefiWebSocketMiddleware(loggerFactory);
+                                await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                                break;
+                            }
+                        case ("/ssm"):
+                            {
+                                var cancellationToken = lifetime.ApplicationStopping;
+                                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                                var middleware = new SSMWebSocketMiddleware(loggerFactory);
+                                await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                                break;
+                            }
+                        case ("/arduino"):
+                            {
+                                var cancellationToken = lifetime.ApplicationStopping;
+                                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                                var middleware = new ArduinoWebSocketMiddleware(loggerFactory);
+                                await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                                break;
+                            }
+                        default:
+                            await next();
+                            break;
+                    }
                 }
                 else
                 {
@@ -80,7 +121,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             app.UseDefaultFiles();
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".fnt"] = "text/xml";
-            app.UseStaticFiles(new StaticFileOptions{ ContentTypeProvider = provider });
+            app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = provider });
             app.UseStaticFiles();
 
             //app.UseHttpsRedirection();
