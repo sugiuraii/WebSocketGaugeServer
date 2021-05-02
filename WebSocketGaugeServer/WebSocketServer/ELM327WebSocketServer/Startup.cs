@@ -9,6 +9,9 @@ using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Middleware;
 using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Model;
 using Microsoft.Extensions.Configuration;
+using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service;
+using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service;
+using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Service;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
 {
@@ -32,6 +35,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             var serviceConfig = Configuration.GetSection("ServiceConfig");
             if(bool.Parse(serviceConfig.GetSection("ELM327")["enabled"]))
                 services.AddSingleton<ELM327COMService>();
+            if(bool.Parse(serviceConfig.GetSection("Defi")["enabled"]))
+                services.AddSingleton<DefiCOMService>();
+            if(bool.Parse(serviceConfig.GetSection("Arduino")["enabled"]))
+                services.AddSingleton<ArduinoCOMService>();
+            if(bool.Parse(serviceConfig.GetSection("SSM")["enabled"]))
+                services.AddSingleton<SSMCOMService>();
 
         }
 
