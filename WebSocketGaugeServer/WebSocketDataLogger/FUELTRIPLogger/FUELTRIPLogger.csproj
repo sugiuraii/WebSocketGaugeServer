@@ -2,7 +2,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\ECUSensorCommunication\ECUSensorCommunication.csproj" />
-    <ProjectReference Include="..\..\WebSocketServer\WebSocketCommon\WebSocketCommon.csproj" />
+    <ProjectReference Include="..\..\WebSocketCommon\WebSocketCommon.csproj" />
   </ItemGroup>
 
   <ItemGroup>
