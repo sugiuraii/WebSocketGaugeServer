@@ -10,7 +10,7 @@ using Microsoft.Extensions.Configuration;
 using SZ2.WebSocketGaugeServer.WebSocketServer.Middleware;
 using SZ2.WebSocketGaugeServer.WebSocketServer.Model;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
+namespace SZ2.WebSocketGaugeServer.WebSocketServer
 {
     public class Startup
     {

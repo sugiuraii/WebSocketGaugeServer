@@ -4,7 +4,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
+namespace SZ2.WebSocketGaugeServer.WebSocketServer
 {
     public class Program
     {
