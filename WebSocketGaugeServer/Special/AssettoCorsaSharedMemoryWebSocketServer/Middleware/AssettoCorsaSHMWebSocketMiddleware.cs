@@ -12,11 +12,11 @@ using System.Net;
 using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service;
 using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.AssettoCorsaSHM;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketCommon;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.AssettoCorsaSHM;
 using Microsoft.Extensions.Logging;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.Middleware;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.Middleware;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Middleware
 {

@@ -6,7 +6,7 @@ using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat
+namespace SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat
 {
     public abstract class JSONFormat
 	{

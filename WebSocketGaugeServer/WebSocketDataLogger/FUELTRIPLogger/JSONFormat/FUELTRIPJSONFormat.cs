@@ -1,8 +1,8 @@
-﻿using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+﻿using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.JSONFormat
 {
-    using JSONFormat = SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.JSONFormat;
+    using JSONFormat = SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.JSONFormat;
     public class FUELTRIPJSONFormat : JSONFormat
     {
         public double moment_gasmilage;

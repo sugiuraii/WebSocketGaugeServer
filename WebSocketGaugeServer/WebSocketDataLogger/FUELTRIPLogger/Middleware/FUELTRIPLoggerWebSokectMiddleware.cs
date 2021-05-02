@@ -11,11 +11,11 @@ using System.Text;
 using System.IO;
 using System.Net;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.JSONFormat;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
+using SZ2.WebSocketGaugeServer.WebSocketCommon;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.SessionItems;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.Middleware;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.Middleware;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware
 {

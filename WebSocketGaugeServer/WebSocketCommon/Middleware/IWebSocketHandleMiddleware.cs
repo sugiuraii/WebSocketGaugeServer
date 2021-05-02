@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.Middleware
+namespace SZ2.WebSocketGaugeServer.WebSocketCommon.Middleware
 {
     public interface IWebSocketHandleMiddleware
     {

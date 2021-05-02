@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using System.Net.WebSockets;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon
+namespace SZ2.WebSocketGaugeServer.WebSocketCommon
 {
     using WebSocket = System.Net.WebSockets.WebSocket;
     public class KeepAliveDMYMsgTimer

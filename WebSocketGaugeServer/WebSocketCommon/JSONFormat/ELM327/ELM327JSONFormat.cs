@@ -1,6 +1,6 @@
 ﻿using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.ELM327
+namespace SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.ELM327
 {
     public class ELM327COMReadJSONFormat : SlowFastCOMReadJSONFormat<OBDIIParameterCode>
     {

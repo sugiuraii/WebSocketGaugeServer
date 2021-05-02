@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.SessionItems
+namespace SZ2.WebSocketGaugeServer.WebSocketCommon.SessionItems
 {
     /// <summary>
     /// Class to store websocket session parameters.

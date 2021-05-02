@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat
+namespace SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat
 {
     public class WSSendJSONFormat<parameterCodeType> : JSONFormat 
         where parameterCodeType:struct

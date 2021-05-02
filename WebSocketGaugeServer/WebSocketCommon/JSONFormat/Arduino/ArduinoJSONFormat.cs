@@ -1,6 +1,6 @@
 ﻿using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Arduino
+namespace SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.Arduino
 {
     public class ArduinoWSSendJSONFormat : WSSendJSONFormat<ArduinoParameterCode>
     {

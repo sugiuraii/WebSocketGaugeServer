@@ -1,6 +1,6 @@
 ﻿using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Defi
+namespace SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.Defi
 {
     public class DefiWSSendJSONFormat : WSSendJSONFormat<DefiParameterCode>
     {

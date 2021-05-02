@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
 using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service
 {
