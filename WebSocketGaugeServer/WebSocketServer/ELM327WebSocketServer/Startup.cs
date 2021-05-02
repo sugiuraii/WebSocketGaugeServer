@@ -46,6 +46,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             if (bool.Parse(ServiceConfiguration.GetSection("SSM")["enabled"]))
                 services.AddSingleton<SSMCOMService>();
 
+            services.AddTransient<ServiceConfigurationModel>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
