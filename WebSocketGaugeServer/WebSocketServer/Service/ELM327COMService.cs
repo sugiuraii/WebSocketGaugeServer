@@ -6,13 +6,13 @@ using Newtonsoft.Json;
 using System.Threading.Tasks;
 using System.Threading;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
-using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.WebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
     public class ELM327COMService : IDisposable
     {

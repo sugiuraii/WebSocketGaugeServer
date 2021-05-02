@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.SessionItems
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.SessionItems
 {
     public class ELM327WebsocketSessionParam
     {

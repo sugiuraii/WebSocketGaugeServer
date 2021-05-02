@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.SessionItems
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.SessionItems
 {
     public class ArduinoCOMWebsocketSessionParam
     {

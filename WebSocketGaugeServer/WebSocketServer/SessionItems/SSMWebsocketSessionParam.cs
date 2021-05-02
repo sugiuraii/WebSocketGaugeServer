@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.SessionItems
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.SessionItems
 {
     public class SSMCOMWebsocketSessionParam
     {

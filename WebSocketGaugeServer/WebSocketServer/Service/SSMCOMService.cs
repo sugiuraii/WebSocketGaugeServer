@@ -5,14 +5,14 @@ using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Threading;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM;
-using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.WebSocketServer.SessionItems;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
     public class SSMCOMService : IDisposable
     {        

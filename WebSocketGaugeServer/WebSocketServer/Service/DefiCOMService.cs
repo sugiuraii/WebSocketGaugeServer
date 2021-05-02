@@ -5,14 +5,14 @@ using System.Net.WebSockets;
 using System.Threading.Tasks;
 using System.Threading;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi;
-using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.WebSocketServer.SessionItems;
 using Newtonsoft.Json;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
     public class DefiCOMService : IDisposable
     {
