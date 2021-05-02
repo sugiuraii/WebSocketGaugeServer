@@ -21,10 +21,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
     public class Startup
     {
         private readonly IConfiguration Configuration;
+        private readonly IConfiguration ServiceConfiguration;
 
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            ServiceConfiguration = Configuration.GetSection("ServiceConfig");
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -35,14 +37,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
             services.AddServerSideBlazor();
             services.AddTransient<MemoryLoggerModel>();
 
-            var serviceConfig = Configuration.GetSection("ServiceConfig");
-            if (bool.Parse(serviceConfig.GetSection("ELM327")["enabled"]))
+            if (bool.Parse(ServiceConfiguration.GetSection("ELM327")["enabled"]))
                 services.AddSingleton<ELM327COMService>();
-            if (bool.Parse(serviceConfig.GetSection("Defi")["enabled"]))
+            if (bool.Parse(ServiceConfiguration.GetSection("Defi")["enabled"]))
                 services.AddSingleton<DefiCOMService>();
-            if (bool.Parse(serviceConfig.GetSection("Arduino")["enabled"]))
+            if (bool.Parse(ServiceConfiguration.GetSection("Arduino")["enabled"]))
                 services.AddSingleton<ArduinoCOMService>();
-            if (bool.Parse(serviceConfig.GetSection("SSM")["enabled"]))
+            if (bool.Parse(ServiceConfiguration.GetSection("SSM")["enabled"]))
                 services.AddSingleton<SSMCOMService>();
 
         }
@@ -76,37 +77,49 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
                             await next();
                             break;
                         case ("/elm327"):
+                            if (bool.Parse(ServiceConfiguration.GetSection("ELM327")["enabled"]))
                             {
                                 var cancellationToken = lifetime.ApplicationStopping;
                                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                                 var middleware = new ELM327WebSocketMiddleware(loggerFactory);
                                 await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
-                                break;
                             }
+                            else
+                                logger.LogError("ELM327 websocket connection is requested. However, ELM327 service is disabled.");
+                            break;
                         case ("/defi"):
+                            if (bool.Parse(ServiceConfiguration.GetSection("Defi")["enabled"]))
                             {
                                 var cancellationToken = lifetime.ApplicationStopping;
                                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                                 var middleware = new DefiWebSocketMiddleware(loggerFactory);
                                 await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
-                                break;
                             }
+                            else
+                                logger.LogError("Defi websocket connection is requested. However, Defi service is disabled.");
+                            break;
                         case ("/ssm"):
+                            if (bool.Parse(ServiceConfiguration.GetSection("SSM")["enabled"]))
                             {
                                 var cancellationToken = lifetime.ApplicationStopping;
                                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                                 var middleware = new SSMWebSocketMiddleware(loggerFactory);
                                 await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
-                                break;
                             }
+                            else
+                                logger.LogError("SSM websocket connection is requested. However, SSM service is disabled.");
+                            break;
                         case ("/arduino"):
+                            if (bool.Parse(ServiceConfiguration.GetSection("Arduino")["enabled"]))
                             {
                                 var cancellationToken = lifetime.ApplicationStopping;
                                 var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                                 var middleware = new ArduinoWebSocketMiddleware(loggerFactory);
                                 await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
-                                break;
                             }
+                            else
+                                logger.LogError("Arduino websocket connection is requested. However, Arduino service is disabled.");
+                            break;
                         default:
                             await next();
                             break;
