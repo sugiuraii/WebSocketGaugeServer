@@ -39,8 +39,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Service
         public SSMCOM SSMCOM { get { return ssmCOM; } }
         public SSMCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<SSMCOMService> logger)
         {
+            var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("SSM");
+
             this.logger = logger;
-            var comportName = configuration["comport"];
+            var comportName = serviceSetting["comport"];
 
             this.ssmCOM = new SSMCOM(loggerFactory);
             this.ssmCOM.PortName = comportName;

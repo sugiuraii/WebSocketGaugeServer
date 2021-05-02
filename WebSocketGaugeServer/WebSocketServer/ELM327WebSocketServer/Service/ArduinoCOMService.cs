@@ -37,8 +37,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Servic
         public ArduinoCOM ArduinoCOM { get { return arduinoCOM; } }
         public ArduinoCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<ArduinoCOMService> logger)
         {
+            var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("Arduino");
+
             this.logger = logger;
-            var comportName = configuration["comport"];
+            var comportName = serviceSetting["comport"];
             this.arduinoCOM = new ArduinoCOM(loggerFactory);
             this.arduinoCOM.PortName = comportName;
 

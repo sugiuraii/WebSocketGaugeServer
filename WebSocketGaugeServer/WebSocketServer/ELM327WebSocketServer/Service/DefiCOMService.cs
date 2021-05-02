@@ -38,8 +38,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Service
         public DefiCOM DefiCOM { get { return defiCOM; } }
         public DefiCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<DefiCOMService> logger)
         {
+            var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("Defi");
+
             this.logger = logger;
-            var comportName = configuration["comport"];
+            var comportName = serviceSetting["comport"];
 
             this.defiCOM = new DefiCOM(loggerFactory);
             this.defiCOM.PortName = comportName;
