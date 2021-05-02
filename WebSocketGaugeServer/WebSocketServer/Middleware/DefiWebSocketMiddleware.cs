@@ -18,7 +18,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.Defi;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.Middleware;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Middleware
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
 {
     public class DefiWebSocketMiddleware : IWebSocketHandleMiddleware
     {

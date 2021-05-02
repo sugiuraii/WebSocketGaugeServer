@@ -18,7 +18,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.ELM327
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.Middleware;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Middleware
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
 {
     public class ELM327WebSocketMiddleware : IWebSocketHandleMiddleware
     {

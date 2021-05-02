@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using Microsoft.Extensions.Configuration;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Model
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.Model
 {
     public class ServiceConfigurationModel
     {

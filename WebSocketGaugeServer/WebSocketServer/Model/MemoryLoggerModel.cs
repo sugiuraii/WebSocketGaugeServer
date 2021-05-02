@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using Logging.Memory;
 using Microsoft.Extensions.Logging;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Model
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.Model
 {
     public class MemoryLoggerModel
     {

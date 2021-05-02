@@ -6,12 +6,9 @@ using Microsoft.Extensions.Hosting;
 using SZ2.WebSocketGaugeServer.WebSocketServer.Service;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
-using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Middleware;
-using SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Model;
 using Microsoft.Extensions.Configuration;
-using SZ2.WebSocketGaugeServer.WebSocketServer.DefiWebSocketServer.Middleware;
-using SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Middleware;
-using SZ2.WebSocketGaugeServer.WebSocketServer.ArduinoWebSocketServer.Middleware;
+using SZ2.WebSocketGaugeServer.WebSocketServer.Middleware;
+using SZ2.WebSocketGaugeServer.WebSocketServer.Model;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer
 {

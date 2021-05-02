@@ -18,7 +18,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.SSM;
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.Middleware;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.SSMWebSocketServer.Middleware
+namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
 {
     public class SSMWebSocketMiddleware : IWebSocketHandleMiddleware
     {
