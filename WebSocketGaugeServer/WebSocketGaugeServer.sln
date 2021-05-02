@@ -5,11 +5,15 @@ VisualStudioVersion = 15.0.26124.0
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ECUSensorCommunication", "ECUSensorCommunication\ECUSensorCommunication.csproj", "{0078FAE7-AE5F-4B9E-AD9B-F6436494635A}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSocketServer", "WebSocketServer", "{65D7EDB4-6EAB-4113-8AD6-CA862F057796}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "WebSocketDataLogger", "WebSocketDataLogger", "{921794E3-6DB2-4647-A7D0-C80F3C23FDC9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FUELTRIPLogger", "WebSocketDataLogger\FUELTRIPLogger\FUELTRIPLogger.csproj", "{344BFD8A-8A44-42F9-91E8-0BAB2DDC243F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Special", "Special", "{B7D6FBB1-92B2-4225-9D7A-5843D16E7574}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AssettoCorsaSharedMemoryWebSocketServer", "Special\AssettoCorsaSharedMemoryWebSocketServer\AssettoCorsaSharedMemoryWebSocketServer.csproj", "{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WebSocketServer", "WebSocketServer\WebSocketServer.csproj", "{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}"
 EndProject
 Global
 	GlobalSection(SolutionProperties) = preSolution
@@ -48,8 +52,33 @@ Global
 		{344BFD8A-8A44-42F9-91E8-0BAB2DDC243F}.Release|x64.Build.0 = Release|Any CPU
 		{344BFD8A-8A44-42F9-91E8-0BAB2DDC243F}.Release|x86.ActiveCfg = Release|Any CPU
 		{344BFD8A-8A44-42F9-91E8-0BAB2DDC243F}.Release|x86.Build.0 = Release|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Debug|x64.Build.0 = Debug|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Debug|x86.Build.0 = Debug|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Release|x64.ActiveCfg = Release|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Release|x64.Build.0 = Release|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Release|x86.ActiveCfg = Release|Any CPU
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A}.Release|x86.Build.0 = Release|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Debug|x64.Build.0 = Debug|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Debug|x86.Build.0 = Debug|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Release|x64.ActiveCfg = Release|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Release|x64.Build.0 = Release|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Release|x86.ActiveCfg = Release|Any CPU
+		{A0A5D6FC-EC01-4955-87EB-40E87ABE6C43}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{344BFD8A-8A44-42F9-91E8-0BAB2DDC243F} = {921794E3-6DB2-4647-A7D0-C80F3C23FDC9}
+		{BD4BBB7B-5E52-41C7-85B9-9A6272E6532A} = {B7D6FBB1-92B2-4225-9D7A-5843D16E7574}
 	EndGlobalSection
 EndGlobal
