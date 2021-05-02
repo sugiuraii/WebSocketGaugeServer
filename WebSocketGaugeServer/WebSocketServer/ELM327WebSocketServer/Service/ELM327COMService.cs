@@ -39,13 +39,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.ELM327WebSocketServer.Service
         public ELM327COM ELM327COM { get { return elm327COM; } }
         public ELM327COMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<ELM327COMService> logger)
         {
+            var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("ELM327");
+                        
             this.logger = logger;
-            var comportName = configuration["comport"];
-            var baudRate = Int32.Parse(configuration["baudrate"]);
+            var comportName = serviceSetting["comport"];
+            var baudRate = Int32.Parse(serviceSetting["baudrate"]);
 
             var cancellationToken = lifetime.ApplicationStopping;
 
-            var elm327ProtocolMode = configuration["elm327ProtocolMode"];
+            var elm327ProtocolMode = serviceSetting["elm327ProtocolMode"];
             if(elm327ProtocolMode == null)
                 this.elm327COM = new ELM327COM(loggerFactory);
             else
