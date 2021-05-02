@@ -11,12 +11,12 @@ using System.IO;
 using System.Net;
 using SZ2.WebSocketGaugeServer.WebSocketServer.Service;
 using SZ2.WebSocketGaugeServer.WebSocketServer.SessionItems;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.JSONFormat.ELM327;
+using SZ2.WebSocketGaugeServer.WebSocketCommon;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.ELM327;
 using Microsoft.Extensions.Logging;
-using SZ2.WebSocketGaugeServer.WebSocketServer.WebSocketCommon.Middleware;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.Middleware;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
 {
