@@ -4,6 +4,10 @@
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
     <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
+  <Target Name="Create bundles" BeforeTargets="BeforeBuild">
+    <Exec Command="npm install" WorkingDirectory="npmjs" />
+    <Exec Command="npm run build" WorkingDirectory="npmjs"/>
+  </Target>  
   <ItemGroup>
     <ProjectReference Include="..\WebSocketCommon\WebSocketCommon.csproj" />
   </ItemGroup>
