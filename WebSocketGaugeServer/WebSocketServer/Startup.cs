@@ -9,6 +9,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Configuration;
 using SZ2.WebSocketGaugeServer.WebSocketServer.Middleware;
 using SZ2.WebSocketGaugeServer.WebSocketServer.Model;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer
 {
@@ -129,7 +131,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
             app.UseDefaultFiles();
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".fnt"] = "text/xml";
-            app.UseStaticFiles(new StaticFileOptions { ContentTypeProvider = provider });
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                ContentTypeProvider = provider,
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "clientfiles")),
+                RequestPath = "/clientfiles"
+            });
+
             app.UseStaticFiles();
 
             //app.UseHttpsRedirection();
