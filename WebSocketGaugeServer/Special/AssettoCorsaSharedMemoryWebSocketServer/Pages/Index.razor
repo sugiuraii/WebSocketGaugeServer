@@ -1,0 +1,16 @@
+@page "/"
+@namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Pages
+@using SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Model
+@inject ServiceConfigurationModel ConfigModel
+
+<h1>AssettoCorsa shared memory websocket server</h1>
+
+<h2>Service setting</h2>
+<div class="card">
+    <div class="card-header">Shared memory read settings</div>
+    <div class="card-body">
+        <li class="list-group-item">Physical data read interval(ms)": @ConfigModel.ServiceConfig["physicaInterval"]</li>
+        <li class="list-group-item">Graphics data read interval(ms)": @ConfigModel.ServiceConfig["graphicsInterval"]</li>
+        <li class="list-group-item">Static info data read interval(ms)": @ConfigModel.ServiceConfig["staticInfoInterval"]</li>
+    </div>
+</div>
