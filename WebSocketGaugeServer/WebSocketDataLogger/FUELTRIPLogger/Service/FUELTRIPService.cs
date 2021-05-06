@@ -21,7 +21,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
         private readonly WebSocketClients wsClients;
         private readonly FuelTripCalculator fuelTripCalc;
         private readonly Dictionary<Guid, (WebSocket WebSocket, FUELTRIPWebSocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, FUELTRIPWebSocketSessionParam SessionParam)>();
-
+        private readonly FUELTRIPLoggerSettings appSettings;
+        public FUELTRIPLoggerSettings AppSettings { get => appSettings; }
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
         {
             this.WebSocketDictionary.Add(sessionGuid, (websocket, new FUELTRIPWebSocketSessionParam()));
@@ -42,7 +43,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
         public FUELTRIPService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<FUELTRIPService> logger)
         {
             this.logger = logger;
-            var appSettings = JsonConvert.DeserializeObject<FUELTRIPLoggerSettings>(File.ReadAllText("./fueltriplogger_settings.jsonc"));
+            this.appSettings = JsonConvert.DeserializeObject<FUELTRIPLoggerSettings>(File.ReadAllText("./fueltriplogger_settings.jsonc"));
             this.fuelTripCalc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod);
 
             //Websocket clients setup

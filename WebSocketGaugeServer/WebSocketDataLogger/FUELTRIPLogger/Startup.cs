@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware;
+using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Model;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
 {
@@ -16,6 +17,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddSingleton<FUELTRIPService>();
+            services.AddTransient<MemoryLoggerModel>();
+            services.AddTransient<ServiceConfigurationModel>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
