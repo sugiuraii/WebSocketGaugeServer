@@ -46,15 +46,30 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
-                    var cancellationToken = lifetime.ApplicationStopping;
-                    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    var middleware = new FUELTRIPLoggerWebSocketMiddleware(loggerFactory);
-                    await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                    switch (context.Request.Path)
+                    {
+                        case ("/_blazor"):
+                            // Pass through blazor signalR access
+                            await next();
+                            break;
+                        default:
+                            var cancellationToken = lifetime.ApplicationStopping;
+                            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                            var middleware = new FUELTRIPLoggerWebSocketMiddleware(loggerFactory);
+                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                            break;
+                    }
                 }
                 else
                 {
                     await next();
                 }
+            });
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
     }
