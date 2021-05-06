@@ -7,6 +7,9 @@ using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Service;
 using SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Middleware;
+using SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Model;
+using Microsoft.Extensions.FileProviders;
+using System.IO;
 
 namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer
 {
@@ -16,6 +19,11 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddRazorPages();
+            services.AddServerSideBlazor();
+
+            services.AddTransient<MemoryLoggerModel>();
+            services.AddTransient<ServiceConfigurationModel>();
             services.AddSingleton<AssettoCorsaSHMService>();
         }
 
@@ -36,14 +44,27 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
             // Handle WebSokect connection 
             app.UseWebSockets(webSocketOptions);
             app.UseRouting();
+
             app.Use(async (context, next) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
-                    var cancellationToken = lifetime.ApplicationStopping;
-                    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    var middleware = new AssettoCorsaSHMWebSocketMiddleware(loggerFactory);
-                    await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                    switch (context.Request.Path)
+                    {
+                        case ("/_blazor"):
+                            // Pass through blazor signalR access
+                            await next();
+                            break;
+                        case ("/assettocorsa_ws"):
+                            var cancellationToken = lifetime.ApplicationStopping;
+                            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                            var middleware = new AssettoCorsaSHMWebSocketMiddleware(loggerFactory);
+                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                            break;
+                        default:
+                            await next();
+                            break;    
+                    }
                 }
                 else
                 {
@@ -51,13 +72,22 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
                 }
             });
 
-            // Add static file with new extension mappings for bitmaptext fnt file
+            app.UseDefaultFiles();
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".fnt"] = "text/xml";
-            app.UseDefaultFiles();
             app.UseStaticFiles(new StaticFileOptions
             {
-                ContentTypeProvider = provider
+                ContentTypeProvider = provider,
+                FileProvider = new PhysicalFileProvider(Path.Combine(env.ContentRootPath, "clientfiles")),
+                RequestPath = "/clientfiles"
+            });
+
+            app.UseStaticFiles();
+            //app.UseHttpsRedirection();
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
     }

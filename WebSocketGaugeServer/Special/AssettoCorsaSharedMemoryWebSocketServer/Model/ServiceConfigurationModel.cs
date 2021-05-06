@@ -6,11 +6,11 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
 {
     public class ServiceConfigurationModel
     {
-        private readonly IConfiguration ServiceConfiguration;
-        public IConfiguration ServiceConfig {get => ServiceConfiguration; }
+        private readonly IConfiguration Configuration;
+        public IConfiguration Config {get => Configuration; }
         public ServiceConfigurationModel(IConfiguration configuration)
         {
-            ServiceConfiguration = configuration.GetSection("ServiceConfig");
+            Configuration = configuration;
         }
     }
 }

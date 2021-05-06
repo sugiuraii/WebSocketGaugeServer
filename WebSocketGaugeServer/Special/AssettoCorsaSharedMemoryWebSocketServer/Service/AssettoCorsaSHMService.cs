@@ -19,10 +19,6 @@ namespace SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketSer
 
         private readonly Dictionary<Guid, (WebSocket WebSocket, AssettoCorsaWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, AssettoCorsaWebsocketSessionParam SessionParam)>();
 
-        public AssettoCorsaSHMService(ILogger<AssettoCorsaSHMService> logger)
-        {
-            this.logger = logger;
-        }
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
         {
             this.WebSocketDictionary.Add(sessionGuid, (websocket, new AssettoCorsaWebsocketSessionParam()));
@@ -38,8 +34,9 @@ namespace SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketSer
             return this.WebSocketDictionary[guid].SessionParam;
         }
         public AssetoCorsaSHMBackgroundCommunicator AssettoCorsaCOM { get { return this.assettoCorsaCOM; } }
-        public AssettoCorsaSHMService(IConfiguration configuration, IHostApplicationLifetime lifetime)
+        public AssettoCorsaSHMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILogger<AssettoCorsaSHMService> logger)
         {
+            this.logger = logger;
             double physicaInterval = Double.Parse(configuration["physicaInterval"]);
             double graphicsInterval = Double.Parse(configuration["graphicsInterval"]);
             double staticInfoInterval = Double.Parse(configuration["staticInfoInterval"]);
