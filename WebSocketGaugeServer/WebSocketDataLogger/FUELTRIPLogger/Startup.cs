@@ -6,6 +6,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware;
+using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Model;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
 {
@@ -15,7 +16,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
+            services.AddRazorPages();
+            services.AddServerSideBlazor();
+
             services.AddSingleton<FUELTRIPService>();
+            services.AddTransient<MemoryLoggerModel>();
+            services.AddTransient<ServiceConfigurationModel>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -35,23 +41,36 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
             app.UseWebSockets(webSocketOptions);
 
             app.UseRouting();
-
-            // Create and Startup FUELTRIP, by requresting singleton service.
-            app.ApplicationServices.GetService<FUELTRIPService>();
+            app.UseStaticFiles();
 
             app.Use(async (context, next) =>
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
-                    var cancellationToken = lifetime.ApplicationStopping;
-                    var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                    var middleware = new FUELTRIPLoggerWebSocketMiddleware(loggerFactory);
-                    await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                    switch (context.Request.Path)
+                    {
+                        case ("/_blazor"):
+                            // Pass through blazor signalR access
+                            await next();
+                            break;
+                        default:
+                            var cancellationToken = lifetime.ApplicationStopping;
+                            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                            var middleware = new FUELTRIPLoggerWebSocketMiddleware(loggerFactory);
+                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                            break;
+                    }
                 }
                 else
                 {
                     await next();
                 }
+            });
+
+            app.UseEndpoints(endpoints =>
+            {
+                endpoints.MapBlazorHub();
+                endpoints.MapFallbackToPage("/_Host");
             });
         }
     }
