@@ -11,7 +11,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Model
         private readonly IConfiguration ServiceConfiguration;
         private readonly FUELTRIPLoggerSettings fUELTRIPLoggerSettings;
         public IConfiguration ServiceConfig {get => ServiceConfiguration; }
-
+        public FUELTRIPLoggerSettings FUELTRIPLoggerSettings {get => fUELTRIPLoggerSettings; }
         public ServiceConfigurationModel(IConfiguration configuration, FUELTRIPService service)
         {
             ServiceConfiguration = configuration.GetSection("ServiceConfig");
