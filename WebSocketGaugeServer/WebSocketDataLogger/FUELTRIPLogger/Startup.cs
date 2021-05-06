@@ -53,11 +53,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
                             // Pass through blazor signalR access
                             await next();
                             break;
-                        default:
+                        case ("/fueltrip"):
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                             var middleware = new FUELTRIPLoggerWebSocketMiddleware(loggerFactory);
                             await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                            break;
+                        default:
+                            await next();
                             break;
                     }
                 }
