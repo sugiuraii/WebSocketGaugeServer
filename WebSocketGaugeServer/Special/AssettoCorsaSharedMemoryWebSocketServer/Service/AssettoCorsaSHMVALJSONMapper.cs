@@ -1,11 +1,11 @@
 ﻿using AssettoCorsaSharedMemory;
 using System;
 using System.Collections.Generic;
-using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
-using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.SharedMemoryCommunication;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service
+namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Service
 {
     public class AssettoCorsaSHMVALJSONMapper
     {
