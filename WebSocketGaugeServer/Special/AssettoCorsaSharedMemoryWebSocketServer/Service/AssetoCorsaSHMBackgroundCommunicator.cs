@@ -1,10 +1,8 @@
-
 using AssettoCorsaSharedMemory;
-using SZ2.WebSocketGaugeServer.ECUSensorCommunication;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service
+namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Service
 {
-    public class AssetoCorsaSHMBackgroundCommunicator : IBackgroundCommunicate
+    public class AssetoCorsaSHMBackgroundCommunicator
     {
         public readonly AssettoCorsa AssettoCorsaSharedMemory;
 

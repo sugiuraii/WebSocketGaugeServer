@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM
+namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.SharedMemoryCommunication
 {
     public enum AssettoCorsaSHMPhysicsParameterCode
     {

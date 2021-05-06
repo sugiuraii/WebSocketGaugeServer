@@ -5,20 +5,20 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using System.Net.WebSockets;
 using System.Threading;
-using Newtonsoft.Json;
 using System.Text;
 using System.IO;
 using System.Net;
-using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Service;
-using SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
-using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
+using Newtonsoft.Json;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
 using SZ2.WebSocketGaugeServer.WebSocketCommon;
-using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat.AssettoCorsaSHM;
+using SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.JSONFormat;
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.Middleware;
+using SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Service;
+using SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
+using SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.SharedMemoryCommunication;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.Middleware
+namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Middleware
 {
     public class AssettoCorsaSHMWebSocketMiddleware : IWebSocketHandleMiddleware
     {

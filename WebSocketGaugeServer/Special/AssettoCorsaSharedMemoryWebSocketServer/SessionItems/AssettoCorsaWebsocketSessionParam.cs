@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using SZ2.WebSocketGaugeServer.ECUSensorCommunication.AssettoCorsaSHM;
+using SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.SharedMemoryCommunication;
 
-namespace SZ2.WebSocketGaugeServer.WebSocketServer.AssettoCorsaSharedMemoryWebSocketServer.SessionItems
+namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.SessionItems
 {
     /// <summary>
     /// Property data for AssettoCorsaWebsocket sessions.
