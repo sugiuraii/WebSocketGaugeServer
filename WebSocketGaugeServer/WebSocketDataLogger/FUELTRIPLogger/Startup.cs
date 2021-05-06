@@ -41,9 +41,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
             app.UseWebSockets(webSocketOptions);
 
             app.UseRouting();
-
-            // Create and Startup FUELTRIP, by requresting singleton service.
-            app.ApplicationServices.GetService<FUELTRIPService>();
+            app.UseStaticFiles();
 
             app.Use(async (context, next) =>
             {
