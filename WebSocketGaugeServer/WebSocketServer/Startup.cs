@@ -60,6 +60,11 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
 
             loggerFactory.AddMemory(LogLevel.Debug);
 
+            // Set urlpath for listening websocket connection
+            string elm327urlpath = GetELM327URLPath(logger);
+            string arduinourlpath = GetArduinoURLPath(logger);
+            string defiurlpath = GetDefiURLPath(logger);
+            string ssmurlpath = GetSSMURLPath(logger);
             // Handle WebSokect connection
             app.UseWebSockets(webSocketOptions);
             app.UseRouting();
@@ -67,60 +72,59 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
             {
                 if (context.WebSockets.IsWebSocketRequest)
                 {
-                    switch (context.Request.Path)
+                    if (context.Request.Path.Equals("/_blazor"))
+                        // Pass through blazor signalR access
+                        await next();
+                    else if (context.Request.Path.Equals(elm327urlpath))
                     {
-                        case ("/_blazor"):
-                            // Pass through blazor signalR access
-                            await next();
-                            break;
-                        case ("/elm327"):
-                            if (bool.Parse(ServiceConfiguration.GetSection("ELM327")["enabled"]))
-                            {
-                                var cancellationToken = lifetime.ApplicationStopping;
-                                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                                var middleware = new ELM327WebSocketMiddleware(loggerFactory);
-                                await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
-                            }
-                            else
-                                logger.LogError("ELM327 websocket connection is requested. However, ELM327 service is disabled.");
-                            break;
-                        case ("/defi"):
-                            if (bool.Parse(ServiceConfiguration.GetSection("Defi")["enabled"]))
-                            {
-                                var cancellationToken = lifetime.ApplicationStopping;
-                                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                                var middleware = new DefiWebSocketMiddleware(loggerFactory);
-                                await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
-                            }
-                            else
-                                logger.LogError("Defi websocket connection is requested. However, Defi service is disabled.");
-                            break;
-                        case ("/ssm"):
-                            if (bool.Parse(ServiceConfiguration.GetSection("SSM")["enabled"]))
-                            {
-                                var cancellationToken = lifetime.ApplicationStopping;
-                                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                                var middleware = new SSMWebSocketMiddleware(loggerFactory);
-                                await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
-                            }
-                            else
-                                logger.LogError("SSM websocket connection is requested. However, SSM service is disabled.");
-                            break;
-                        case ("/arduino"):
-                            if (bool.Parse(ServiceConfiguration.GetSection("Arduino")["enabled"]))
-                            {
-                                var cancellationToken = lifetime.ApplicationStopping;
-                                var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                                var middleware = new ArduinoWebSocketMiddleware(loggerFactory);
-                                await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
-                            }
-                            else
-                                logger.LogError("Arduino websocket connection is requested. However, Arduino service is disabled.");
-                            break;
-                        default:
-                            await next();
-                            break;
+                        if (bool.Parse(ServiceConfiguration.GetSection("ELM327")["enabled"]))
+                        {
+                            var cancellationToken = lifetime.ApplicationStopping;
+                            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                            var middleware = new ELM327WebSocketMiddleware(loggerFactory);
+                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                        }
+                        else
+                            logger.LogError("ELM327 websocket connection is requested. However, ELM327 service is disabled.");
                     }
+                    else if (context.Request.Path.Equals(defiurlpath))
+                    {
+                        if (bool.Parse(ServiceConfiguration.GetSection("Defi")["enabled"]))
+                        {
+                            var cancellationToken = lifetime.ApplicationStopping;
+                            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                            var middleware = new DefiWebSocketMiddleware(loggerFactory);
+                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                        }
+                        else
+                            logger.LogError("Defi websocket connection is requested. However, Defi service is disabled.");
+                    }
+                    else if (context.Request.Path.Equals(ssmurlpath))
+                    {
+                        if (bool.Parse(ServiceConfiguration.GetSection("SSM")["enabled"]))
+                        {
+                            var cancellationToken = lifetime.ApplicationStopping;
+                            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                            var middleware = new SSMWebSocketMiddleware(loggerFactory);
+                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                        }
+                        else
+                            logger.LogError("SSM websocket connection is requested. However, SSM service is disabled.");
+                    }
+                    else if (context.Request.Path.Equals(arduinourlpath))
+                    {
+                        if (bool.Parse(ServiceConfiguration.GetSection("Arduino")["enabled"]))
+                        {
+                            var cancellationToken = lifetime.ApplicationStopping;
+                            var webSocket = await context.WebSockets.AcceptWebSocketAsync();
+                            var middleware = new ArduinoWebSocketMiddleware(loggerFactory);
+                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                        }
+                        else
+                            logger.LogError("Arduino websocket connection is requested. However, Arduino service is disabled.");
+                    }
+                    else
+                        await next();
                 }
                 else
                 {
@@ -146,6 +150,48 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+        }
+
+        private string GetELM327URLPath(ILogger logger)
+        {
+            string path = ServiceConfiguration.GetSection("ELM327")["urlpath"];
+            if (path == null)
+            {
+                logger.LogWarning("URL path of ELM327 service is not found in appsettings json file. use /elm327 instead.");
+                path = "/elm327";
+            }
+            return path;
+        }
+
+        private string GetArduinoURLPath(ILogger logger)
+        {
+            string path = ServiceConfiguration.GetSection("Arduino")["urlpath"];
+            if (path == null)
+            {
+                logger.LogWarning("URL path of Arduino service is not found in appsettings json file. use /arduino instead.");
+                path = "/arduino";
+            }
+            return path;
+        }
+        private string GetDefiURLPath(ILogger logger)
+        {
+            string path = ServiceConfiguration.GetSection("Defi")["urlpath"];
+            if (path == null)
+            {
+                logger.LogWarning("URL path of Defi service is not found in appsettings json file. use /defi instead.");
+                path = "/defi";
+            }
+            return path;
+        }
+        private string GetSSMURLPath(ILogger logger)
+        {
+            string path = ServiceConfiguration.GetSection("SSM")["urlpath"];
+            if (path == null)
+            {
+                logger.LogWarning("URL path of SSM service is not found in appsettings json file. use /ssm instead.");
+                path = "/ssm";
+            }
+            return path;
         }
     }
 }
