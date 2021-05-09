@@ -159,10 +159,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     logger.LogDebug("Call ATL0 to disable linefeed. Return Msg is " + ReadTo(">"));
 
                     ELM327SetProtocol();
-
-
-                    Write("ATST04\r");
-                    logger.LogDebug("Call ATST16 to set timeout. Return Msg is " + ReadTo(">"));
+                    ELM327TimingControlSet();
 
                     initializeFinished = true;
                 }
@@ -208,8 +205,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 logger.LogWarning("ELM327 Adaptive timing mode is not 0-2. AT AT command may fail.");
 
             Write("ATAT"+ELM327AdaptiveTimingMode.ToString()+"\r");
-                logger.LogDebug("Call AT AT" + ELM327AdaptiveTimingMode.ToString() + "to set adaptive timing control mode. Return Msg is " + ReadTo(">"));
+            logger.LogDebug("Call AT AT" + ELM327AdaptiveTimingMode.ToString() + " to set adaptive timing control mode. Return Msg is " + ReadTo(">"));
 
+            // Timeout set
             int timeoutToSet = this.ELM327Timeout;
             if(timeoutToSet < 0)
             {
@@ -221,8 +219,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 logger.LogWarning("ELM327 Timeout needs to be less than 256. Set 255 instead.");
                 timeoutToSet = 255;
             }
+
             Write("ATST"+timeoutToSet.ToString("X2")+"\r");
-                logger.LogDebug("Call AT ST" + ELM327AdaptiveTimingMode.ToString("X2") + "to set timeout. Return Msg is " + ReadTo(">"));
+            logger.LogDebug("Call AT ST" + timeoutToSet.ToString("X2") + " to set timeout. Return Msg is " + ReadTo(">"));
         }
 
         protected override void communicate_main(bool slow_read_flag)
