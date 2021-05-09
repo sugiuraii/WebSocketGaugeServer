@@ -21,6 +21,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private const int PID_COMMUNICATE_RETRY_MAX = 5;
 
         private readonly string ELM327SetProtocolMode;
+        private readonly int ELM327AdaptiveTimingMode;
+        private readonly int ELM327Timeout;
 
         //ELM327COM data received event
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
@@ -28,7 +30,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly ILogger logger;
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger, string elm327ProtocolStr) : base(logger)
+        public ELM327COM(ILoggerFactory logger, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout) : base(logger)
         {
             this.logger = logger.CreateLogger<ELM327COM>();
             //Setup serial port
@@ -38,11 +40,13 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             ReadTimeout = 500;
 
             ELM327SetProtocolMode = elm327ProtocolStr;
+            ELM327AdaptiveTimingMode = elm327AdaptiveTimingMode;
+            ELM327Timeout = elm327Timeout;
 
             content_table = new OBDIIContentTable();
         }
 
-        public ELM327COM(ILoggerFactory logger) : this(logger, String.Empty)
+        public ELM327COM(ILoggerFactory logger) : this(logger, String.Empty, 1, 32)
         {
         }
 
@@ -155,6 +159,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     logger.LogDebug("Call ATL0 to disable linefeed. Return Msg is " + ReadTo(">"));
 
                     ELM327SetProtocol();
+                    ELM327TimingControlSet();
 
                     initializeFinished = true;
                 }
@@ -191,6 +196,32 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             string setprotocolStr = "AT SP " + ELM327SetProtocolMode;
             Write(setprotocolStr +"\r");
             logger.LogDebug("Call " + setprotocolStr +" to set ELM327 protocol. Return Msg is " + ReadTo(">"));
+        }
+
+        private void ELM327TimingControlSet()
+        {
+            // Adaptive timing control set
+            if(this.ELM327AdaptiveTimingMode < 0 || this.ELM327AdaptiveTimingMode > 2)
+                logger.LogWarning("ELM327 Adaptive timing mode is not 0-2. AT AT command may fail.");
+
+            Write("ATAT"+ELM327AdaptiveTimingMode.ToString()+"\r");
+            logger.LogDebug("Call AT AT" + ELM327AdaptiveTimingMode.ToString() + " to set adaptive timing control mode. Return Msg is " + ReadTo(">"));
+
+            // Timeout set
+            int timeoutToSet = this.ELM327Timeout;
+            if(timeoutToSet < 0)
+            {
+                logger.LogWarning("ELM327 Timeout is not positive. Set 0 instead.");
+                timeoutToSet = 0;
+            }
+            if(timeoutToSet > 255)
+            {
+                logger.LogWarning("ELM327 Timeout needs to be less than 256. Set 255 instead.");
+                timeoutToSet = 255;
+            }
+
+            Write("ATST"+timeoutToSet.ToString("X2")+"\r");
+            logger.LogDebug("Call AT ST" + timeoutToSet.ToString("X2") + " to set timeout. Return Msg is " + ReadTo(">"));
         }
 
         protected override void communicate_main(bool slow_read_flag)

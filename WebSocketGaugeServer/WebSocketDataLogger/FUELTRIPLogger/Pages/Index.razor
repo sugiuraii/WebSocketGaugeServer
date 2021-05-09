@@ -1,0 +1,41 @@
+@page "/"
+@namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Pages
+@using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Model
+@inject ServiceConfigurationModel ConfigModel
+
+<h1>FUELTRIPLogger</h1>
+
+<h2>Service setting</h2>
+<div class="card">
+    <div class="card-header">Websocket Server URLs </div>
+    <div class="card-body">
+        <li class="list-group-item">Defi server URL: @ConfigModel.FUELTRIPLoggerSettings.defiserver_url</li>
+        <li class="list-group-item">SSM server URL : @ConfigModel.FUELTRIPLoggerSettings.ssmserver_url</li>
+        <li class="list-group-item">Arduino server URL : @ConfigModel.FUELTRIPLoggerSettings.arduinoserver_url</li>
+        <li class="list-group-item">ELM327 server URL : @ConfigModel.FUELTRIPLoggerSettings.elm327server_url</li>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">Calculation method and options</div>
+    <div class="card-body">
+        <li class="list-group-item">FUELTRIPCalculationMethod: @ConfigModel.FUELTRIPLoggerSettings.Calculation.FuelCalculationMethod</li>
+        <li class="list-group-item">Trip Correction factor: @ConfigModel.FUELTRIPLoggerSettings.Calculation.CalculationOption.TripCorrectionFactor</li>
+        <li class="list-group-item">Fuel Correction factor: @ConfigModel.FUELTRIPLoggerSettings.Calculation.CalculationOption.FuelCorrectionFactor</li>
+        <li class="list-group-item">Num Cylinder: @ConfigModel.FUELTRIPLoggerSettings.Calculation.CalculationOption.NumCylinder</li>
+        <li class="list-group-item">Injection latency(ms): @ConfigModel.FUELTRIPLoggerSettings.Calculation.CalculationOption.InjectionLatency</li>
+        <li class="list-group-item">Injector capacity(cc): @ConfigModel.FUELTRIPLoggerSettings.Calculation.CalculationOption.InjectorCapacity</li>    
+    </div>
+</div>
+<div class="card">
+    <div class="card-header">DataSource</div>
+    <div class="card-body">
+        <li class="list-group-item">Vehicle speed: @ConfigModel.FUELTRIPLoggerSettings.Calculation.DataSource.VehicleSpeedSource</li>
+        <li class="list-group-item">Engine speed: @ConfigModel.FUELTRIPLoggerSettings.Calculation.DataSource.RPMSource</li>
+        <li class="list-group-item">Injection pulse width: @ConfigModel.FUELTRIPLoggerSettings.Calculation.DataSource.InjectionPWSource</li>
+        <li class="list-group-item">Mass air flow: @ConfigModel.FUELTRIPLoggerSettings.Calculation.DataSource.MassAirFlowSource</li>
+        <li class="list-group-item">AFRatio: @ConfigModel.FUELTRIPLoggerSettings.Calculation.DataSource.AFRatioSource</li>
+        <li class="list-group-item">FuelRate speed: @ConfigModel.FUELTRIPLoggerSettings.Calculation.DataSource.FuelRateSource</li>
+    </div>
+</div>
+
