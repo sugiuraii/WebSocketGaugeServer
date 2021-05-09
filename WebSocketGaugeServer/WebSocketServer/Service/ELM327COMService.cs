@@ -48,10 +48,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             var cancellationToken = lifetime.ApplicationStopping;
 
             var elm327ProtocolMode = serviceSetting["elm327ProtocolMode"];
-            if(elm327ProtocolMode == null)
+            var elm327AdaptiveTimingMode = serviceSetting["elm327AdaptiveTimingControl"];
+            var elm327Timeout = serviceSetting["elm327Timeout"];
+            
+            if(elm327ProtocolMode == null || elm327AdaptiveTimingMode == null || elm327Timeout == null)
                 this.elm327COM = new ELM327COM(loggerFactory);
             else
-                this.elm327COM = new ELM327COM(loggerFactory, elm327ProtocolMode);
+                this.elm327COM = new ELM327COM(loggerFactory, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout));
             
             this.elm327COM.PortName = comportName;
             this.elm327COM.overrideDefaultBaudRate(baudRate);
