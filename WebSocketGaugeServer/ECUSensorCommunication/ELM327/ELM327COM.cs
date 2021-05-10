@@ -289,7 +289,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             String outMsg;
             String outPID = content_table[code].PID.ToString("X2");
             int returnByteLength = content_table[code].ReturnByteLength;
-            outMsg = MODECODE.ToString("X2") + outPID + returnByteLength.ToString("X1");
+            outMsg = MODECODE.ToString("X2") + outPID;
+            // Wait receiving only single message (for speed up)
+            outMsg.Concat("1");
             Write(outMsg + "\r");
             //logger.LogDebug("ELM327OUT:" + outMsg);
             String inMsg = "";
