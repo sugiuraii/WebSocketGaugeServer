@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
-    public class ELM327COM : COMCommon
+    public class ELM327COM : COMCommon, IELM327COM
     {
         private OBDIIContentTable content_table;
         public const byte MODECODE = 0x01;

@@ -5,7 +5,7 @@ using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 {
-    public class DefiCOM : COMCommon
+    public class DefiCOM : COMCommon, IDefiCOM
     {
         private DefiContentTable content_table;
 

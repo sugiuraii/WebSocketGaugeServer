@@ -4,7 +4,7 @@ using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 {
-    public class ArduinoCOM : COMCommon
+    public class ArduinoCOM : COMCommon, IArduinoCOM
     {
         private ArduinoContentTable content_table;
 

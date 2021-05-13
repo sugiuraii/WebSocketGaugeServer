@@ -6,7 +6,7 @@ using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 {
-    public class SSMCOM : COMCommon
+    public class SSMCOM : COMCommon, ISSMCOM
     {
         private SSMContentTable content_table;
 
