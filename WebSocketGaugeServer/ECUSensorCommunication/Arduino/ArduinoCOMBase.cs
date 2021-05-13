@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO.Ports;
 using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
