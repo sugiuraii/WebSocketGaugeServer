@@ -22,7 +22,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 
         public void SetSwitch(SSMSwitchCode code, bool value)
         {
-            var masterNumericCode = content_table[code].
+            var masterNumericCode = content_table[code].MasterNumericContent;
+            int bit_index = content_table[code].BitIndex;
+            var rawNumericVal = masterNumericCode.RawValue;
+            var newRawNumericVal = (rawNumericVal & ~(1U << bit_index)) | ((value?1U:0U) << bit_index);
+            masterNumericCode.RawValue = newRawNumericVal;
         }
 
         protected override void communicate_main(bool slow_read)
