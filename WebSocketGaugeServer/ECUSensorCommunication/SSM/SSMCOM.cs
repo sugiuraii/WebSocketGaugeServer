@@ -9,12 +9,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
     public class SSMCOM : SSMCOMBase
     {
         private readonly ILogger logger;
-        //コンストラクタ
         public SSMCOM(ILoggerFactory logger) : base(logger)
         {
             this.logger = logger.CreateLogger<SSMCOM>();
 
-            //シリアルポート設定
             DefaultBaudRate = 4800;
             ResetBaudRate = 4800;
             ReadTimeout = 500;
@@ -28,42 +26,38 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 
                 byte[] outbuf;
 
-                //クエリするSSM_codeリストの作成
+                //Create list of SSM code to communicate
 				List<SSMParameterCode> query_SSM_code_list = new List<SSMParameterCode>();
 
-                //送信バッファの作成
+                //Create send buffer
                 outbuf = create_outbuf(slow_read, query_SSM_code_list);
                     
-                //クエリするSSM_codeがない場合は抜ける
+                //Exit if no SSM codes to query
                 if (query_SSM_code_list.Count <= 0)
                 {
-                    //SSM_codeがない場合、すぐに抜けると直後にcommunicate_mainが呼び出されCPUを占有するので、500ms待つ
-                    //SlowReadの場合、この処理はしない
+                    //Wait500ms to avoid 100% CPU usage
+                    //Skip this on slow_read = true
                     if(!slow_read)
                         Thread.Sleep(500);
                     return;
                 }
 
-                //エコーバックサイズの設定
                 int echoback_length = outbuf.Length;
 
-                //入力データ長の設定(ヘッダ、サイズ、コマンド、チェックサムで7バイト、1アドレスあたり3バイト、から計算)
+                //Set input data length(header + size +  command + checksum = 7bytes、3bytes/1adddress)
                 int inbuf_length = echoback_length + (outbuf.Length - 7) / 3 + 6;
                 byte[] inbuf = new byte[inbuf_length];
 
-                //シリアルポート入力バッファ掃除
                 DiscardInBuffer();
 
-                //クエリ送信
                 Write(outbuf, 0, outbuf.Length);
 
-                //受信
+                //Receive
                 for (i = 0; i < inbuf_length; i++)
                 {
                     inbuf[i] = (byte)ReadByte();
                 }
 
-                //読み出しオフセットの設定(エコーバックとヘッダを飛ばす）
                 int read_offset = echoback_length + 5;
 
                 read_inbuf(inbuf, read_offset, query_SSM_code_list);
@@ -117,18 +111,17 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
                 }
             }
 
-            //datasize計算 (チェックサムは含まれない?)
+            //datasize calculation (exclude checksum)
             int datasize =  command_byte.Length + padding_byte.Length + address_bytes.Length;
             datasize_byte = new byte[] { (byte)datasize };
 
-            //連結
             outbuf = outbuf.Concat(header_bytes).ToArray();
             outbuf = outbuf.Concat(datasize_byte).ToArray();
             outbuf = outbuf.Concat(command_byte).ToArray();
             outbuf = outbuf.Concat(padding_byte).ToArray();
             outbuf = outbuf.Concat(address_bytes).ToArray();
 
-            //チェックサム計算
+            //Calc checksum
             for (i = 0; i < outbuf.Length; i++)
             {
                 outbuf_sum = outbuf_sum + (int)outbuf[i];
@@ -146,7 +139,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
             int get_offset = read_offset;
             foreach (SSMParameterCode code in query_code_list)
             {
-                //アドレス3バイトあたりデータ1バイト
+                //Address 3bytes -> 1bytes
                 int read_byte_length = content_table[code].AddressLength / 3;
 
                 UInt32 temp_buf = inbuf[get_offset];
