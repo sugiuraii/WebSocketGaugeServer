@@ -16,6 +16,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             this.WaitTime = WaitTime;
         }
 
+        public void SetRawValue(OBDIIParameterCode code, UInt32 rawValue)
+        {
+            content_table[code].RawValue = rawValue;
+        }
+        
         protected override void communicate_initialize()
         {
             base.communicate_initialize();
@@ -42,7 +47,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     }
                 }
             }
-            
+
             //Invoke SSMDatareceived event
             ELM327DataReceivedEventArgs elm327_received_eventargs = new ELM327DataReceivedEventArgs();
             elm327_received_eventargs.Slow_read_flag = slow_read_flag;
