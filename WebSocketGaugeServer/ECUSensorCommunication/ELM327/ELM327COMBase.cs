@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using Microsoft.Extensions.Logging;
-using System.Text.RegularExpressions;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
