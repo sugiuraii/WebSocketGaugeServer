@@ -7,9 +7,8 @@ using System.Text.RegularExpressions;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
-    public class ELM327COM : COMCommon, IELM327COM
+    public class ELM327COM : ELM327COMBase
     {
-        private OBDIIContentTable content_table;
         public const byte MODECODE = 0x01;
         //Wait time after calling ATZ command (in milliseconds)
         private const int WAIT_AFTER_ATZ = 4000;
@@ -23,9 +22,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly string ELM327SetProtocolMode;
         private readonly int ELM327AdaptiveTimingMode;
         private readonly int ELM327Timeout;
-
-        //ELM327COM data received event
-        public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
 
         private readonly ILogger logger;
 
@@ -42,8 +38,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             ELM327SetProtocolMode = elm327ProtocolStr;
             ELM327AdaptiveTimingMode = elm327AdaptiveTimingMode;
             ELM327Timeout = elm327Timeout;
-
-            content_table = new OBDIIContentTable();
         }
 
         public ELM327COM(ILoggerFactory logger) : this(logger, String.Empty, 1, 32)
@@ -54,65 +48,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         public void overrideDefaultBaudRate(int baudRate)
         {
             DefaultBaudRate = baudRate;
-        }
-
-        public double get_value(OBDIIParameterCode code)
-        {
-            return content_table[code].Value;
-        }
-
-        public UInt32 get_raw_value(OBDIIParameterCode code)
-        {
-            return content_table[code].RawValue;
-        }
-
-        public string get_unit(OBDIIParameterCode code)
-        {
-            return content_table[code].Unit;
-        }
-
-        public bool get_slowread_flag(OBDIIParameterCode code)
-        {
-            return content_table[code].SlowReadEnable;
-        }
-
-        public bool get_fastread_flag(OBDIIParameterCode code)
-        {
-            return content_table[code].FastReadEnable;
-        }
-
-        public void set_slowread_flag(OBDIIParameterCode code, bool flag)
-        {
-            set_slowread_flag(code, flag, false);
-        }
-        public void set_slowread_flag(OBDIIParameterCode code, bool flag, bool quiet)
-        {
-            if (!quiet)
-                logger.LogDebug("Slowread flag of " + code.ToString() + "is enabled.");
-            content_table[code].SlowReadEnable = flag;
-        }
-
-        public void set_fastread_flag(OBDIIParameterCode code, bool flag)
-        {
-            set_fastread_flag(code, flag, false);
-        }
-        public void set_fastread_flag(OBDIIParameterCode code, bool flag, bool quiet)
-        {
-            if (!quiet)
-                logger.LogDebug("Fastread flag of " + code.ToString() + "is enabled.");
-            content_table[code].FastReadEnable = flag;
-        }
-
-        public void set_all_disable()
-        {
-            set_all_disable(false);
-        }
-
-        public void set_all_disable(bool quiet)
-        {
-            if (!quiet)
-                logger.LogDebug("All flag reset.");
-            content_table.setAllDisable();
         }
 
         protected override void communicate_initialize()
@@ -266,7 +201,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 ELM327DataReceivedEventArgs elm327_received_eventargs = new ELM327DataReceivedEventArgs();
                 elm327_received_eventargs.Slow_read_flag = slow_read_flag;
                 elm327_received_eventargs.Received_Parameter_Code = new List<OBDIIParameterCode>(query_OBDII_code_list);
-                ELM327DataReceived(this, elm327_received_eventargs);
+                OnELM327DataReceived(this, elm327_received_eventargs);
             }
             catch (TimeoutException ex)
             {
