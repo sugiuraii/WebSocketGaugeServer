@@ -9,7 +9,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
     {
         private readonly ILogger logger;
         private readonly int WaitTime;
-        private CancellationTokenSource cancellationTokenSource;
         
         public VirtualDefiCOM(ILoggerFactory logger, int WaitTime) : base(logger)
         {
