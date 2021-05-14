@@ -6,12 +6,8 @@ using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 {
-    public class SSMCOM : COMCommon, ISSMCOM
+    public class SSMCOM : SSMCOMBase
     {
-        private SSMContentTable content_table;
-
-		//SSMCOM data received event
-		public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
         private readonly ILogger logger;
         //コンストラクタ
         public SSMCOM(ILoggerFactory logger) : base(logger)
@@ -22,72 +18,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
             DefaultBaudRate = 4800;
             ResetBaudRate = 4800;
             ReadTimeout = 500;
-
-            content_table = new SSMContentTable();
-        }
-
-        public double get_value(SSMParameterCode code)
-        {
-            return content_table[code].Value;
-        }
-
-        public UInt32 get_raw_value(SSMParameterCode code)
-        {
-            return content_table[code].RawValue;
-        }
-
-        public bool get_switch(SSMSwitchCode code)
-        {
-            return content_table[code].Value;
-        }
-
-        public string get_unit(SSMParameterCode code)
-        {
-            return content_table[code].Unit;
-        }
-
-		public bool get_slowread_flag(SSMParameterCode code)
-		{
-			return content_table[code].SlowReadEnable;
-		}
-
-		public bool get_fastread_flag(SSMParameterCode code)
-		{
-			return content_table[code].FastReadEnable;
-		}
-
-		public void set_slowread_flag(SSMParameterCode code, bool flag)
-        {
-            set_slowread_flag(code, flag, false);
-        }
-        public void set_slowread_flag(SSMParameterCode code, bool flag, bool quiet)
-        {
-            if(!quiet)
-                logger.LogDebug("Slowread flag of " + code.ToString() + "is enabled.");
-            content_table[code].SlowReadEnable = flag;
-        }
-
-		public void set_fastread_flag(SSMParameterCode code, bool flag)
-        {
-            set_fastread_flag(code, flag, false);
-        }
-        public void set_fastread_flag(SSMParameterCode code, bool flag, bool quiet)
-        {
-            if(!quiet)
-                logger.LogDebug("Fastread flag of " + code.ToString() + "is enabled.");
-            content_table[code].FastReadEnable = flag;
-        }
-
-        public void set_all_disable()
-        {
-            set_all_disable(false);
-        }
-
-        public void set_all_disable(bool quiet)
-        {
-            if(!quiet)
-                logger.LogDebug("All flag reset.");
-            content_table.setAllDisable();
         }
 
         protected override void communicate_main(bool slow_read)
@@ -142,7 +72,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 				SSMCOMDataReceivedEventArgs ssm_received_eventargs = new SSMCOMDataReceivedEventArgs();
 				ssm_received_eventargs.Slow_read_flag = slow_read;
 				ssm_received_eventargs.Received_Parameter_Code = new List<SSMParameterCode>(query_SSM_code_list);
-				SSMDataReceived(this,ssm_received_eventargs);
+				OnSSMDataReceived(this,ssm_received_eventargs);
             }
             catch (TimeoutException ex)
             {
