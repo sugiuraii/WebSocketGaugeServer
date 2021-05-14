@@ -5,7 +5,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 {
     public abstract class ArduinoCOMBase : COMCommon, IArduinoCOM
     {
-        protected ArduinoContentTable content_table;
+        protected readonly ArduinoContentTable content_table;
         public event EventHandler ArduinoPacketReceived;
         private readonly ILogger logger;
         //Constructor

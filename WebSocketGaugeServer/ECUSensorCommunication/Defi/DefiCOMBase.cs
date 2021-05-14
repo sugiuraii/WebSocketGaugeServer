@@ -5,7 +5,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 {
     public abstract class DefiCOMBase : COMCommon, IDefiCOM
     {
-        protected DefiContentTable content_table;
+        protected readonly DefiContentTable content_table;
 
 		// Defilink received Event
 		public event EventHandler DefiPacketReceived;
