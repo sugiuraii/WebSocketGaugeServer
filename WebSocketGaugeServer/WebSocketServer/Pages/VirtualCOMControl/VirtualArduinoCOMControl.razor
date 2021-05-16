@@ -1,0 +1,34 @@
+@page "/virtualarduino"
+@using System.ComponentModel
+@using SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl
+@inject VirtualArduinoCOMControlModel Model
+@inject IJSRuntime JsRuntime
+@implements IDisposable
+
+<h1>ArduinoTachoPulseGeneratorGUI</h1>
+
+<div>
+    <h2>Set value</h2>
+    <p>
+        <label>Boost</label>
+        <input type="range" min="0" max="4095" style="width:80%" @bind="Model.ManifoldAbsolutePressureValue.Value" @bind:event="oninput" />
+        <label>@Model.ManifoldAbsolutePressureValue.Value</label>
+    </p>
+</div>
+
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Model.PropertyChanged += StateChanged;
+    }
+    private void StateChanged(object s, PropertyChangedEventArgs e)
+    {
+        InvokeAsync(() => StateHasChanged());
+    }
+    public void Dispose()
+    {
+        Model.PropertyChanged -= StateChanged;
+    }
+}
