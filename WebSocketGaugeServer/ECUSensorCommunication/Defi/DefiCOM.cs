@@ -10,10 +10,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
         //DefiLink packet byte size
         const int DEFI_PACKET_SIZE = 35;
         private readonly ILogger logger;
-        public DefiCOM(ILoggerFactory logger) : base(logger)
+        public DefiCOM(ILoggerFactory logger, string comPortName) : base(logger)
         {
             this.logger = logger.CreateLogger<DefiCOM>();
-
+            
+            PortName = comPortName;
             DefaultBaudRate = 19200;
             //Baudrate on resetting serialport(ref: communticate_reset())
             //On using FT232RL baurate is allowed only the case of 3000000/n (n is integer or integer + 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)

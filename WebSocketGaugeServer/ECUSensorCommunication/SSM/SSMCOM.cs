@@ -9,10 +9,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
     public class SSMCOM : SSMCOMBase
     {
         private readonly ILogger logger;
-        public SSMCOM(ILoggerFactory logger) : base(logger)
+        public SSMCOM(ILoggerFactory logger, string comPortName) : base(logger)
         {
             this.logger = logger.CreateLogger<SSMCOM>();
 
+            PortName = comPortName;
             DefaultBaudRate = 4800;
             ResetBaudRate = 4800;
             ReadTimeout = 500;
