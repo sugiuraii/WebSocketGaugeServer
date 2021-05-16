@@ -11,6 +11,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.Middleware;
 using SZ2.WebSocketGaugeServer.WebSocketServer.Model;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
+using SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer
 {
@@ -41,6 +42,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                 services.AddSingleton<ArduinoCOMService>();
             if (bool.Parse(ServiceConfiguration.GetSection("SSM")["enabled"]))
                 services.AddSingleton<SSMCOMService>();
+
+            services.AddTransient<VirtualArduinoCOMControlModel>();
 
             services.AddTransient<ServiceConfigurationModel>();
         }
