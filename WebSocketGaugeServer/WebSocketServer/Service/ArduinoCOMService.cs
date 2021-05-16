@@ -16,7 +16,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
     public class ArduinoCOMService : IDisposable
     {
         private readonly ILogger logger;
-        private readonly ArduinoCOM arduinoCOM;
+        private readonly IArduinoCOM arduinoCOM;
         private readonly Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)>();
 
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
@@ -34,15 +34,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             return this.WebSocketDictionary[guid].SessionParam;
         }
 
-        public ArduinoCOM ArduinoCOM { get { return arduinoCOM; } }
+        public IArduinoCOM ArduinoCOM { get { return arduinoCOM; } }
         public ArduinoCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<ArduinoCOMService> logger)
         {
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("Arduino");
 
             this.logger = logger;
             var comportName = serviceSetting["comport"];
-            this.arduinoCOM = new ArduinoCOM(loggerFactory);
-            this.arduinoCOM.PortName = comportName;
+            this.arduinoCOM = new ArduinoCOM(loggerFactory, comportName);
 
             var cancellationToken = lifetime.ApplicationStopping;
 

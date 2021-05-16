@@ -52,11 +52,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             var elm327Timeout = serviceSetting["elm327Timeout"];
             
             if(elm327ProtocolMode == null || elm327AdaptiveTimingMode == null || elm327Timeout == null)
-                this.elm327COM = new ELM327COM(loggerFactory);
+                this.elm327COM = new ELM327COM(loggerFactory, comportName);
             else
-                this.elm327COM = new ELM327COM(loggerFactory, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout));
+                this.elm327COM = new ELM327COM(loggerFactory, comportName, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout));
             
-            this.elm327COM.PortName = comportName;
             this.elm327COM.overrideDefaultBaudRate(baudRate);
 
             // Register websocket broad cast

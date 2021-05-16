@@ -44,8 +44,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             this.logger = logger;
             var comportName = serviceSetting["comport"];
 
-            this.ssmCOM = new SSMCOM(loggerFactory);
-            this.ssmCOM.PortName = comportName;
+            this.ssmCOM = new SSMCOM(loggerFactory, comportName);
 
             var cancellationToken = lifetime.ApplicationStopping;
 

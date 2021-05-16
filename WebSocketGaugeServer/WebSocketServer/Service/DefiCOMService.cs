@@ -43,8 +43,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             this.logger = logger;
             var comportName = serviceSetting["comport"];
 
-            this.defiCOM = new DefiCOM(loggerFactory);
-            this.defiCOM.PortName = comportName;
+            this.defiCOM = new DefiCOM(loggerFactory, comportName);
 
             var cancellationToken = lifetime.ApplicationStopping;
             // Register websocket broad cast
