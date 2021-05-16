@@ -4,8 +4,11 @@ using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 {
-    public class ArduinoCOM : ArduinoCOMBase
+    public class ArduinoCOM : COMCommon, IArduinoCOM
     {
+        private readonly ArduinoContentTable content_table;
+        public event EventHandler ArduinoPacketReceived;
+
         // Number of row sent from arduino by 1cycle (Tacho + Speed + ADC6ch = 8ch)
         private const int NUM_ROWS_PER_CYCLE = 8;
         // Arduino received Event
@@ -14,6 +17,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
         public ArduinoCOM(ILoggerFactory logger, string comPortName) : base(logger)
         {
             this.logger = logger.CreateLogger<ArduinoCOM>();
+            this.content_table = new ArduinoContentTable();
 
             PortName = comPortName;
             //Default baudrate (can be overrided by setting xml file)
@@ -89,7 +93,22 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
                 }
             }
             // Invoke PacketReceived Event
-            OnArduinoPacketReceived(this, EventArgs.Empty);
+            ArduinoPacketReceived(this, EventArgs.Empty);
+        }
+
+        public double get_value(ArduinoParameterCode code)
+        {
+            return content_table[code].Value;
+        }
+
+        public UInt32 get_raw_value(ArduinoParameterCode code)
+        {
+            return content_table[code].RawValue;
+        }
+
+        public string get_unit(ArduinoParameterCode code)
+        {
+            return content_table[code].Unit;
         }
     }
 }

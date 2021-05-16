@@ -5,15 +5,19 @@ using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 {
-    public class VirtualArduinoCOM : ArduinoCOMBase
+    public class VirtualArduinoCOM : IArduinoCOM
     {
+        private readonly ArduinoContentTable content_table;
+        public event EventHandler ArduinoPacketReceived;
         private readonly ILogger logger;
         private readonly int WaitTime;
-        private CancellationTokenSource cancellationTokenSource;
-        
-        public VirtualArduinoCOM(ILoggerFactory logger, int WaitTime) : base(logger)
+
+        private CancellationTokenSource BackGroundCommunicateCancellationTokenSource = new CancellationTokenSource();
+        public bool IsCommunitateThreadAlive { get; private set;} = false;
+        public VirtualArduinoCOM(ILoggerFactory logger, int WaitTime)
         {
             this.logger = logger.CreateLogger<VirtualArduinoCOM>();
+            this.content_table = new ArduinoContentTable();
             this.WaitTime = WaitTime;
         }
         
@@ -21,11 +25,40 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
         {
             content_table[code].RawValue = rawValue;
         }
-
-        protected override void communicate_main(bool slowread_flag) //slowread flag is ignored on arduinoCOM
+        public void BackgroundCommunicateStart()
         {
-            OnArduinoPacketReceived(this, EventArgs.Empty);
-            Thread.Sleep(WaitTime);
+            Task.Run(() => communicate_main(BackGroundCommunicateCancellationTokenSource.Token));
+            IsCommunitateThreadAlive = true;
+        }
+
+        public void BackgroundCommunicateStop()
+        {
+            BackGroundCommunicateCancellationTokenSource.Cancel();
+            IsCommunitateThreadAlive = false;
+        }
+
+        private async Task communicate_main(CancellationToken ct) //slowread flag is ignored on arduinoCOM
+        {
+            while(!ct.IsCancellationRequested)
+            {
+                ArduinoPacketReceived(this, EventArgs.Empty);
+                await Task.Delay(WaitTime);
+            }
+        }
+
+        public double get_value(ArduinoParameterCode code)
+        {
+            return content_table[code].Value;
+        }
+
+        public UInt32 get_raw_value(ArduinoParameterCode code)
+        {
+            return content_table[code].RawValue;
+        }
+
+        public string get_unit(ArduinoParameterCode code)
+        {
+            return content_table[code].Unit;
         }
     }
 }
