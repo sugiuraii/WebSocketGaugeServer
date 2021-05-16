@@ -53,9 +53,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 
             this.logger = logger;
             var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            logger.LogInformation("ArduinoCOM service is started.");
             if(useVirtual)
             {
+                logger.LogInformation("ArduinoCOM is started with virtual mode.");
                 int virtualArduinoCOMWait = 15;
+                logger.LogInformation("VirtualArduinoCOM wait time is set to " + virtualArduinoCOMWait.ToString() + " ms.");
                 var virtualCOM = new VirtualArduinoCOM(loggerFactory, virtualArduinoCOMWait);
                 this.arduinoCOM = virtualCOM;
                 this.virtualArduinoCOM = virtualCOM;
@@ -63,7 +66,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             }
             else
             {
+                logger.LogInformation("ArduinoCOM is started with physical mode.");
                 var comportName = serviceSetting["comport"];
+                logger.LogInformation("ArduinoCOM COMPort is set to: " + comportName);
                 this.arduinoCOM = new ArduinoCOM(loggerFactory, comportName);
                 this.virtualArduinoCOM = null;
             }
