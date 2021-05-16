@@ -18,6 +18,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
         void set_all_disable();
         void set_all_disable(bool quiet);
         void BackgroundCommunicateStart();
-        void BackGroundCommunicateStop();
+        void BackgroundCommunicateStop();
     }
 }

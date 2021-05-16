@@ -17,6 +17,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         void set_all_disable();
         void set_all_disable(bool quiet);
         void BackgroundCommunicateStart();
-        void BackGroundCommunicateStop();
+        void BackgroundCommunicateStop();
     }
 }

@@ -91,7 +91,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 
         public void Dispose()
         {
-            var stopTask = Task.Run(() => this.DefiCOM.BackGroundCommunicateStop());
+            var stopTask = Task.Run(() => this.DefiCOM.BackgroundCommunicateStop());
             Task.WhenAny(stopTask, Task.Delay(10000));
         }
     }

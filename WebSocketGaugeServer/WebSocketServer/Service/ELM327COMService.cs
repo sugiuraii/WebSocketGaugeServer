@@ -139,7 +139,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
         }
         public void Dispose()
         {
-            var stopTask = Task.Run(() => this.ELM327COM.BackGroundCommunicateStop());
+            var stopTask = Task.Run(() => this.ELM327COM.BackgroundCommunicateStop());
             Task.WhenAny(stopTask, Task.Delay(10000));
         }
     }
