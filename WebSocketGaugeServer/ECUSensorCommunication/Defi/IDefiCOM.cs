@@ -8,5 +8,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
         double get_value(DefiParameterCode code);
         UInt32 get_raw_value(DefiParameterCode code);
         string get_unit(DefiParameterCode code);
+        void BackgroundCommunicateStart();
+        void BackGroundCommunicateStop();
     }
 }

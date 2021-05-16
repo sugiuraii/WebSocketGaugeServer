@@ -16,5 +16,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         void set_fastread_flag(OBDIIParameterCode code, bool flag, bool quiet);
         void set_all_disable();
         void set_all_disable(bool quiet);
+        void BackgroundCommunicateStart();
+        void BackGroundCommunicateStop();
     }
 }

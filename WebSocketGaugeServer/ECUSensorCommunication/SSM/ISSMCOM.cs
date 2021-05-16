@@ -17,5 +17,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
         void set_fastread_flag(SSMParameterCode code, bool flag, bool quiet);
         void set_all_disable();
         void set_all_disable(bool quiet);
+        void BackgroundCommunicateStart();
+        void BackGroundCommunicateStop();
     }
 }

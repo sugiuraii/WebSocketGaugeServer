@@ -8,5 +8,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
         double get_value(ArduinoParameterCode code);
         UInt32 get_raw_value(ArduinoParameterCode code);
         string get_unit(ArduinoParameterCode code);
+        void BackgroundCommunicateStart();
+        void BackGroundCommunicateStop();
     }
 }
