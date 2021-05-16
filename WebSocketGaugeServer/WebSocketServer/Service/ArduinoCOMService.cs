@@ -17,6 +17,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
     {
         private readonly ILogger logger;
         private readonly IArduinoCOM arduinoCOM;
+        private readonly VirtualArduinoCOM virtualArduinoCOM;
         private readonly Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)>();
 
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
@@ -34,14 +35,38 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             return this.WebSocketDictionary[guid].SessionParam;
         }
 
-        public IArduinoCOM ArduinoCOM { get { return arduinoCOM; } }
+        public IArduinoCOM ArduinoCOM { get => arduinoCOM; }
+
+        public VirtualArduinoCOM VirtualArduinoCOM { 
+            get 
+            {
+                if(virtualArduinoCOM != null)
+                    return virtualArduinoCOM;
+                else
+                    throw new InvalidOperationException("Virtual arduino COM is null. Virtual com mode is not be enabled.");
+            }
+        }
+
         public ArduinoCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<ArduinoCOMService> logger)
         {
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("Arduino");
 
             this.logger = logger;
-            var comportName = serviceSetting["comport"];
-            this.arduinoCOM = new ArduinoCOM(loggerFactory, comportName);
+            var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            if(useVirtual)
+            {
+                int virtualArduinoCOMWait = 15;
+                var virtualCOM = new VirtualArduinoCOM(loggerFactory, virtualArduinoCOMWait);
+                this.arduinoCOM = virtualCOM;
+                this.virtualArduinoCOM = virtualCOM;
+                
+            }
+            else
+            {
+                var comportName = serviceSetting["comport"];
+                this.arduinoCOM = new ArduinoCOM(loggerFactory, comportName);
+                this.virtualArduinoCOM = null;
+            }
 
             var cancellationToken = lifetime.ApplicationStopping;
 
