@@ -27,23 +27,28 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
         }
         public void BackgroundCommunicateStart()
         {
-            Task.Run(() => communicate_main(BackGroundCommunicateCancellationTokenSource.Token));
-            IsCommunitateThreadAlive = true;
+            if(!IsCommunitateThreadAlive)
+                Task.Run(() => communicate_main(BackGroundCommunicateCancellationTokenSource.Token));
+            else
+                throw new InvalidOperationException("BackgroundCommunicateStart() is called. Howevre, background communicate task is already running.");
         }
-
         public void BackgroundCommunicateStop()
         {
-            BackGroundCommunicateCancellationTokenSource.Cancel();
-            IsCommunitateThreadAlive = false;
+            if(IsCommunitateThreadAlive)
+                BackGroundCommunicateCancellationTokenSource.Cancel();
+            else
+                throw new InvalidOperationException("BackgroundCommunicateStop(). However, background communicate task is already stopped.");
         }
 
-        private async Task communicate_main(CancellationToken ct) //slowread flag is ignored on arduinoCOM
+        private async Task communicate_main(CancellationToken ct)
         {
+            IsCommunitateThreadAlive = true;
             while(!ct.IsCancellationRequested)
             {
                 ArduinoPacketReceived(this, EventArgs.Empty);
                 await Task.Delay(WaitTime);
             }
+            IsCommunitateThreadAlive = false;
         }
 
         public double get_value(ArduinoParameterCode code)
