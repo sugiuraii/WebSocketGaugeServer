@@ -9,7 +9,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
     public class SSMCOM : COMCommon, ISSMCOM
     {
         private readonly ILogger logger;
-        protected readonly SSMContentTable content_table;
+        private readonly SSMContentTable content_table;
 
         //SSMCOM data received event
         public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;

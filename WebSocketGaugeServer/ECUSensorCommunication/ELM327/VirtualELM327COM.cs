@@ -101,6 +101,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 ELM327DataReceived(this, elm327_received_eventargs);
                 await Task.Delay(WaitTime);
             }
+            
+            IsCommunitateThreadAlive = false;
         }
 
         public double get_value(OBDIIParameterCode code)
