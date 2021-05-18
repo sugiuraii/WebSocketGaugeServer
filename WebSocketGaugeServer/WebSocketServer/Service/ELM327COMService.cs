@@ -16,7 +16,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
     public class ELM327COMService : IDisposable
     {
-        private readonly ELM327COM elm327COM;
+        private readonly IELM327COM elm327COM;
+        private readonly VirtualELM327COM virtualElm327COM;
         private readonly Timer update_obdflag_timer;
         private readonly Dictionary<Guid, (WebSocket WebSocket, ELM327WebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, ELM327WebsocketSessionParam SessionParam)>();
         private readonly ILogger logger;
@@ -36,28 +37,55 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             return this.WebSocketDictionary[guid].SessionParam;
         }
 
-        public ELM327COM ELM327COM { get { return elm327COM; } }
+        public IELM327COM ELM327COM { get  => elm327COM; }
+        public VirtualELM327COM VirtualELM327COM { 
+            get 
+            {
+                if(virtualElm327COM != null)
+                    return virtualElm327COM;
+                else
+                    throw new InvalidOperationException("Virtual ELM327 COM is null. Virtual com mode is not be enabled.");
+            }
+        }
+
         public ELM327COMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<ELM327COMService> logger)
         {
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("ELM327");
                         
             this.logger = logger;
-            var comportName = serviceSetting["comport"];
-            var baudRate = Int32.Parse(serviceSetting["baudrate"]);
+            var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            logger.LogInformation("ELM327COM service is started.");
+            if(useVirtual)
+            {
+                logger.LogInformation("ELM327COM is started with virtual mode.");
+                int comWait = 15;
+                logger.LogInformation("VirtualELM327COM wait time is set to " + comWait.ToString() + " ms.");
+                var virtualCOM = new VirtualELM327COM(loggerFactory, comWait);
+                this.elm327COM = virtualCOM;
+                this.virtualElm327COM = virtualCOM;               
+            }
+            else
+            {
+                var comportName = serviceSetting["comport"];
+                var baudRate = Int32.Parse(serviceSetting["baudrate"]);
+                var elm327ProtocolMode = serviceSetting["elm327ProtocolMode"];
+                var elm327AdaptiveTimingMode = serviceSetting["elm327AdaptiveTimingControl"];
+                var elm327Timeout = serviceSetting["elm327Timeout"];
+                
+                ELM327COM elm327COM;
+                if(elm327ProtocolMode == null || elm327AdaptiveTimingMode == null || elm327Timeout == null)
+                    elm327COM = new ELM327COM(loggerFactory, comportName);
+                else
+                    elm327COM = new ELM327COM(loggerFactory, comportName, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout));
+                
+                elm327COM.overrideDefaultBaudRate(baudRate);
+
+                this.elm327COM = elm327COM;
+                this.virtualElm327COM = null;
+            }
 
             var cancellationToken = lifetime.ApplicationStopping;
-
-            var elm327ProtocolMode = serviceSetting["elm327ProtocolMode"];
-            var elm327AdaptiveTimingMode = serviceSetting["elm327AdaptiveTimingControl"];
-            var elm327Timeout = serviceSetting["elm327Timeout"];
             
-            if(elm327ProtocolMode == null || elm327AdaptiveTimingMode == null || elm327Timeout == null)
-                this.elm327COM = new ELM327COM(loggerFactory, comportName);
-            else
-                this.elm327COM = new ELM327COM(loggerFactory, comportName, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout));
-            
-            this.elm327COM.overrideDefaultBaudRate(baudRate);
-
             // Register websocket broad cast
             this.elm327COM.ELM327DataReceived += async (sender, args) =>
             {
