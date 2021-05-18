@@ -16,7 +16,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
     public class SSMCOMService : IDisposable
     {        
-        private readonly SSMCOM ssmCOM;
+        private readonly ISSMCOM ssmCOM;
+        private readonly VirtualSSMCOM virtualSSMCOM;
         private readonly Timer update_ssmflag_timer;
         private readonly Dictionary<Guid, (WebSocket WebSocket, SSMCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, SSMCOMWebsocketSessionParam SessionParam)>();
         private readonly ILogger logger;
@@ -35,16 +36,42 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
         {
             return this.WebSocketDictionary[guid].SessionParam;
         }
-
-        public SSMCOM SSMCOM { get { return ssmCOM; } }
+        public ISSMCOM SSMCOM { get => ssmCOM; }
+        public VirtualSSMCOM VirtualSSMCOM { 
+            get 
+            {
+                if(virtualSSMCOM != null)
+                    return virtualSSMCOM;
+                else
+                    throw new InvalidOperationException("VirtualSSMCOM is null. Virtual com mode is not be enabled.");
+            }
+        }
+        
         public SSMCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<SSMCOMService> logger)
         {
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("SSM");
 
             this.logger = logger;
-            var comportName = serviceSetting["comport"];
 
-            this.ssmCOM = new SSMCOM(loggerFactory, comportName);
+            var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            logger.LogInformation("SSMCOM service is started.");
+            if(useVirtual)
+            {
+                logger.LogInformation("SSMCOM is started with virtual mode.");
+                int comWait = 15;
+                logger.LogInformation("VirtualSSMCOM wait time is set to " + comWait.ToString() + " ms.");
+                var virtualCOM = new VirtualSSMCOM(loggerFactory, comWait);
+                this.ssmCOM = virtualCOM;
+                this.virtualSSMCOM = virtualCOM;               
+            }
+            else
+            {
+                logger.LogInformation("SSMCOM is started with physical mode.");
+                var comportName = serviceSetting["comport"];
+                logger.LogInformation("SSMCOM COMPort is set to: " + comportName);
+                this.ssmCOM = new SSMCOM(loggerFactory, comportName);
+                this.virtualSSMCOM = null;
+            }
 
             var cancellationToken = lifetime.ApplicationStopping;
 

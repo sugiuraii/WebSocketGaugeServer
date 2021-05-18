@@ -66,12 +66,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             }
             else
             {
+                logger.LogInformation("ELM327COM is started with physical mode.");
                 var comportName = serviceSetting["comport"];
                 var baudRate = Int32.Parse(serviceSetting["baudrate"]);
                 var elm327ProtocolMode = serviceSetting["elm327ProtocolMode"];
                 var elm327AdaptiveTimingMode = serviceSetting["elm327AdaptiveTimingControl"];
                 var elm327Timeout = serviceSetting["elm327Timeout"];
-                
+                logger.LogInformation("ELM327COM COMPort is set to: " + comportName);
+
                 ELM327COM elm327COM;
                 if(elm327ProtocolMode == null || elm327AdaptiveTimingMode == null || elm327Timeout == null)
                     elm327COM = new ELM327COM(loggerFactory, comportName);
@@ -85,7 +87,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             }
 
             var cancellationToken = lifetime.ApplicationStopping;
-            
+
             // Register websocket broad cast
             this.elm327COM.ELM327DataReceived += async (sender, args) =>
             {
