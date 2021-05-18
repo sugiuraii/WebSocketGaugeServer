@@ -61,8 +61,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 logger.LogInformation("VirtualArduinoCOM wait time is set to " + virtualArduinoCOMWait.ToString() + " ms.");
                 var virtualCOM = new VirtualArduinoCOM(loggerFactory, virtualArduinoCOMWait);
                 this.arduinoCOM = virtualCOM;
-                this.virtualArduinoCOM = virtualCOM;
-                
+                this.virtualArduinoCOM = virtualCOM;               
             }
             else
             {
