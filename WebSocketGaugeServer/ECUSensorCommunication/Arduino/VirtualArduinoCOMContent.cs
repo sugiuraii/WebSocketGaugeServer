@@ -5,7 +5,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 {
     public class VirtualArduinoContentTable
     {
-        private readonly Dictionary<ArduinoParameterCode, VirtualArduinoCOMContent> contentTable;
+        private readonly Dictionary<ArduinoParameterCode, VirtualArduinoCOMContent> contentTable = new Dictionary<ArduinoParameterCode, VirtualArduinoCOMContent>();
         public VirtualArduinoCOMContent this[ArduinoParameterCode code] { get => contentTable[code]; }
         private void initializeContentTable()
         {
