@@ -7,7 +7,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 {
     public class VirtualArduinoCOM : IArduinoCOM
     {
-        private readonly ArduinoContentTable content_table;
+        private readonly VirtualArduinoContentTable content_table;
         public event EventHandler ArduinoPacketReceived;
         private readonly ILogger logger;
         private readonly int WaitTime;
@@ -17,13 +17,13 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
         public VirtualArduinoCOM(ILoggerFactory logger, int WaitTime)
         {
             this.logger = logger.CreateLogger<VirtualArduinoCOM>();
-            this.content_table = new ArduinoContentTable();
+            this.content_table = new VirtualArduinoContentTable();
             this.WaitTime = WaitTime;
         }
         
-        public void SetRawValue(ArduinoParameterCode code, UInt32 rawValue)
+        public void SetValue(ArduinoParameterCode code, double value)
         {
-            content_table[code].RawValue = rawValue;
+            content_table[code].Value = value;
         }
         public void BackgroundCommunicateStart()
         {
@@ -54,11 +54,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
         public double get_value(ArduinoParameterCode code)
         {
             return content_table[code].Value;
-        }
-
-        public UInt32 get_raw_value(ArduinoParameterCode code)
-        {
-            return content_table[code].RawValue;
         }
 
         public string get_unit(ArduinoParameterCode code)
