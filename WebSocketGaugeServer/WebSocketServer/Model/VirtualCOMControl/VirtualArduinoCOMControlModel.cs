@@ -20,7 +20,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl
         public readonly (double Min, double Max) VehicleSpeedRange = (Min : 0.0, Max : 20000.0);
         public ReactivePropertySlim<double> ManifoldAbsolutePressure { get; private set; }
         public readonly string ManifoldAbsolutePressureUnit;
-        public readonly (double Min, double Max) ManifoldAbsolutePressureRange = (Min : -100, Max : 400);
+        public readonly (double Min, double Max) ManifoldAbsolutePressureRange = (Min : 0, Max : 400);
         public ReactivePropertySlim<double> CoolantTemperature { get; private set; }
         public readonly string CoolantTemperatureUnit;
         public readonly (double Min, double Max) CoolantTemperatureRange = (Min : -40, Max : 200);      
