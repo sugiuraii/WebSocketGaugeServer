@@ -6,7 +6,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
     {
         event EventHandler ArduinoPacketReceived;
         double get_value(ArduinoParameterCode code);
-        UInt32 get_raw_value(ArduinoParameterCode code);
+        // Not used -> Delete
+        // UInt32 get_raw_value(ArduinoParameterCode code); 
         string get_unit(ArduinoParameterCode code);
     }
 }
