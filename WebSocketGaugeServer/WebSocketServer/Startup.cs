@@ -44,6 +44,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                 services.AddSingleton<SSMCOMService>();
 
             services.AddTransient<VirtualArduinoCOMControlModel>();
+            services.AddTransient<VirtualDefiCOMControlModel>();
 
             services.AddTransient<ServiceConfigurationModel>();
         }
