@@ -5,10 +5,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 {
     public class VirtualArduinoContentTable
     {
-        private readonly Dictionary<ArduinoParameterCode, VirtualArduinoCOMContent> contentTable = new Dictionary<ArduinoParameterCode, VirtualArduinoCOMContent>();
+        private readonly Dictionary<ArduinoParameterCode, VirtualArduinoCOMContent> contentTable;
         public VirtualArduinoCOMContent this[ArduinoParameterCode code] { get => contentTable[code]; }
-        private void initializeContentTable()
+        public VirtualArduinoContentTable()
         {
+            contentTable = new Dictionary<ArduinoParameterCode, VirtualArduinoCOMContent>();
             contentTable.Add(ArduinoParameterCode.Engine_Speed, new VirtualArduinoCOMContent("rpm"));
             contentTable.Add(ArduinoParameterCode.Vehicle_Speed, new VirtualArduinoCOMContent("km/h"));
             contentTable.Add(ArduinoParameterCode.Manifold_Absolute_Pressure, new VirtualArduinoCOMContent("kPa"));
