@@ -45,6 +45,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
 
             services.AddTransient<VirtualArduinoCOMControlModel>();
             services.AddTransient<VirtualDefiCOMControlModel>();
+            services.AddTransient<VirtualELM327COMControlModel>();
 
             services.AddTransient<ServiceConfigurationModel>();
         }
