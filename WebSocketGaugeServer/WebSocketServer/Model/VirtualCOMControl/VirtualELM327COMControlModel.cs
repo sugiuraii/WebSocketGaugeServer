@@ -13,8 +13,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl
         private readonly ILogger logger;
         private readonly ELM327COMService Service;
         public ReactivePropertySlim<OBDIIParameterCode> ParameterCodeToSet { get; private set; }
-        public ReadOnlyReactivePropertySlim<int> ValueByteLength { get; private set; }
         public ReactivePropertySlim<uint> SetValue { get; private set; }
+        public ReadOnlyReactivePropertySlim<uint> MaxValue { get; private set; }
         public ReadOnlyReactivePropertySlim<double> PhysicalValue {get; private set;}
         public ReadOnlyReactivePropertySlim<string> PhysicalUnit {get; private set;}
         
@@ -28,7 +28,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl
             this.SetValue = GetDefaultReactivePropertySlim<uint>(0, "SetValue");
             this.SetValue.Subscribe(v => vElm327COM.SetRawValue(ParameterCodeToSet.Value, v));
 
-            this.ValueByteLength = ParameterCodeToSet.Select(code => vElm327COM.get_Value_ByteLength(code)).ToReadOnlyReactivePropertySlim();
+            this.MaxValue= ParameterCodeToSet.Select(code => ((1U << (vElm327COM.get_Value_ByteLength(code)*8)) - 1)).ToReadOnlyReactivePropertySlim();
             this.PhysicalUnit = ParameterCodeToSet.Select(code => vElm327COM.get_unit(code)).ToReadOnlyReactivePropertySlim();
             
             this.ParameterCodeToSet.Subscribe(cd => SetValue.Value = vElm327COM.get_raw_value(cd));
@@ -38,7 +38,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl
         public void Dispose()
         {
             this.ParameterCodeToSet.Dispose();
-            this.ValueByteLength.Dispose();
+            this.MaxValue.Dispose();
             this.SetValue.Dispose();
             this.PhysicalUnit.Dispose();
             this.PhysicalValue.Dispose();

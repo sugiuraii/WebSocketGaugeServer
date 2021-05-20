@@ -1,0 +1,64 @@
+@page "/ecusimcontroller"
+@namespace ECUSimGUI.Pages
+@using System.ComponentModel
+@using SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl
+@using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
+@inject VirtualELM327COMControlModel Model
+@inject IJSRuntime JsRuntime;
+@implements IDisposable
+
+<h1>VirtualELM327COM control</h1>
+
+<div class="card border-primary mb-2">
+    <div class="card-header">Parameter select</div>
+    <div class="card-body">
+        <select @bind="@Model.ParameterCodeToSet.Value" >
+        @foreach (var value in Enum.GetValues(typeof(OBDIIParameterCode)))
+        {
+            <option>@value</option>
+        }
+        </select>
+    </div>
+    <div class="card-footer">
+        Selected code:@Model.ParameterCodeToSet.Value
+    </div>
+</div>
+
+<div class="card border-primary mb-2">
+    <div class="card-header">Set value</div>
+    <div class="card-body">
+        <input type="range" min="0" max="@Model.MaxValue.Value" style="width:100%" @bind="Model.SetValue.Value" @bind:event="oninput" />
+    </div>
+    <div class="card-footer">
+            <p>
+                <label>Raw value : </label>
+                <label>@Model.SetValue.Value</label>
+            </p>
+            <p>
+                <label>Physical value:</label>
+                <label>@Model.PhysicalValue.Value.ToString("F2")</label>
+                <label>@Model.PhysicalUnit.Value</label>
+            </p>
+    </div>
+</div>
+
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Model.PropertyChanged += StateChanged;
+    }
+    private void StateChanged(object s, PropertyChangedEventArgs e)
+    {
+        InvokeAsync(() => StateHasChanged());
+    }
+    private void CommunicationErrorOccured(object s, Exception e)
+    {
+        JsRuntime.InvokeAsync<bool>("alert", e.Message);
+    }
+
+    public void Dispose()
+    {
+        Model.PropertyChanged -= StateChanged;
+    }
+}
