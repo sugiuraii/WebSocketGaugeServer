@@ -105,6 +105,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             IsCommunitateThreadAlive = false;
         }
 
+        public int get_Value_ByteLength(OBDIIParameterCode code)
+        {
+            return content_table[code].ReturnByteLength;
+        }
+
         public double get_value(OBDIIParameterCode code)
         {
             return content_table[code].Value;
