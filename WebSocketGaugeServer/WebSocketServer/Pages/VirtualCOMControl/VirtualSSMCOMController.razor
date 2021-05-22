@@ -44,6 +44,30 @@
     </div>
 </div>
 
+<div class="card border-primary mb-2">
+    <div class="card-header">Switch set</div>
+    <div class="card-body">
+        <div class="card border-primary mb-2">
+            <div class="card-header">Switch code select</div>
+            <div class="card-body">
+                <select @bind="@Model.SwitchCodeToSet.Value" >
+                @foreach (var value in Enum.GetValues(typeof(SSMSwitchCode)))
+                    {<option>@value</option>}
+                </select>
+            </div>
+            <div class="card-footer">
+                Selected code:@Model.SwitchCodeToSet.Value
+            </div>
+        </div>
+        <div class="card border-primary mb-2">
+            <div class="card-header">Set switch</div>
+            <div class="card-body">
+                <input type="checkbox" @bind="Model.SetSwitch.Value" @bind:event="oninput" />
+            </div>
+        </div>
+    </div>
+</div>
+
 @code {
     protected override void OnInitialized()
     {
