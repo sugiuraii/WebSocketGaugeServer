@@ -56,7 +56,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             logger.LogInformation("Communication Started.");
         }
 
-        public void BackGroundCommunicateStop()
+        public void BackgroundCommunicateStop()
         {
             //通信スレッドを終了させる(フラグをfalseに)
             communicateRealtimeIsRunning = false;

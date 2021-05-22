@@ -2,7 +2,7 @@ using System;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 {
-    public interface ISSMCOM
+    public interface ISSMCOM : IBackgroundCommunicate
     {
         event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
         double get_value(SSMParameterCode code);
@@ -17,5 +17,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
         void set_fastread_flag(SSMParameterCode code, bool flag, bool quiet);
         void set_all_disable();
         void set_all_disable(bool quiet);
+        int SlowReadInterval {get; set;}
     }
 }

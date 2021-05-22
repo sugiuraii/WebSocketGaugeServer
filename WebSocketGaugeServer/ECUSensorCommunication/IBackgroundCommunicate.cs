@@ -9,7 +9,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
     public interface IBackgroundCommunicate
     {
         void BackgroundCommunicateStart();
-        void BackGroundCommunicateStop();
+        void BackgroundCommunicateStop();
         bool IsCommunitateThreadAlive { get; }
     }
 }

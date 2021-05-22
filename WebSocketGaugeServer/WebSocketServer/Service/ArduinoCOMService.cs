@@ -16,7 +16,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
     public class ArduinoCOMService : IDisposable
     {
         private readonly ILogger logger;
-        private readonly ArduinoCOM arduinoCOM;
+        private readonly IArduinoCOM arduinoCOM;
+        private readonly VirtualArduinoCOM virtualArduinoCOM;
         private readonly Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)>();
 
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
@@ -34,15 +35,42 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             return this.WebSocketDictionary[guid].SessionParam;
         }
 
-        public ArduinoCOM ArduinoCOM { get { return arduinoCOM; } }
+        public IArduinoCOM ArduinoCOM { get => arduinoCOM; }
+
+        public VirtualArduinoCOM VirtualArduinoCOM { 
+            get 
+            {
+                if(virtualArduinoCOM != null)
+                    return virtualArduinoCOM;
+                else
+                    throw new InvalidOperationException("Virtual arduino COM is null. Virtual com mode is not be enabled.");
+            }
+        }
+
         public ArduinoCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<ArduinoCOMService> logger)
         {
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("Arduino");
 
             this.logger = logger;
-            var comportName = serviceSetting["comport"];
-            this.arduinoCOM = new ArduinoCOM(loggerFactory);
-            this.arduinoCOM.PortName = comportName;
+            var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            logger.LogInformation("ArduinoCOM service is started.");
+            if(useVirtual)
+            {
+                logger.LogInformation("ArduinoCOM is started with virtual mode.");
+                int virtualArduinoCOMWait = 15;
+                logger.LogInformation("VirtualArduinoCOM wait time is set to " + virtualArduinoCOMWait.ToString() + " ms.");
+                var virtualCOM = new VirtualArduinoCOM(loggerFactory, virtualArduinoCOMWait);
+                this.arduinoCOM = virtualCOM;
+                this.virtualArduinoCOM = virtualCOM;               
+            }
+            else
+            {
+                logger.LogInformation("ArduinoCOM is started with physical mode.");
+                var comportName = serviceSetting["comport"];
+                logger.LogInformation("ArduinoCOM COMPort is set to: " + comportName);
+                this.arduinoCOM = new ArduinoCOM(loggerFactory, comportName);
+                this.virtualArduinoCOM = null;
+            }
 
             var cancellationToken = lifetime.ApplicationStopping;
 
@@ -90,7 +118,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 
         public void Dispose()
         {
-            var stopTask = Task.Run(() => this.ArduinoCOM.BackGroundCommunicateStop());
+            var stopTask = Task.Run(() => this.ArduinoCOM.BackgroundCommunicateStop());
             Task.WhenAny(stopTask, Task.Delay(10000));
         }
     }

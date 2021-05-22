@@ -1,0 +1,115 @@
+@page "/virtualarduino"
+@using System.ComponentModel
+@using SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl
+@inject VirtualArduinoCOMControlModel Model
+@inject IJSRuntime JsRuntime
+@implements IDisposable
+
+<h1>VirtualArduinoCOM control</h1>
+
+<div>
+    <h2>Set value</h2>
+    <div class="card border-primary mb-2">
+        <div class="card-header">Engine speed</div>
+        <div class="card-body">
+            <input type="range" min="@Model.EngineSpeedRange.Min" max="@Model.EngineSpeedRange.Max" style="width:100%" @bind="Model.EngineSpeed.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.EngineSpeed.Value</label>
+            <label>@Model.EngineSpeedUnit</label>
+        </div>
+    </div>
+
+    <div class="card border-primary mb-2">
+        <div class="card-header">Vehicle speed</div>
+        <div class="card-body">
+            <input type="range" min="@Model.VehicleSpeedRange.Min" max="@Model.VehicleSpeedRange.Max" style="width:100%" @bind="Model.VehicleSpeed.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.VehicleSpeed.Value</label>
+            <label>@Model.VehicleSpeedUnit</label>
+        </div>
+    </div>
+    
+    <div class="card border-primary mb-2">
+        <div class="card-header">Manufold absolute pressure</div>
+        <div class="card-body">
+            <input type="range" min="@Model.ManifoldAbsolutePressureRange.Min" max="@Model.ManifoldAbsolutePressureRange.Max" style="width:100%" @bind="Model.ManifoldAbsolutePressure.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.ManifoldAbsolutePressure.Value</label>
+            <label>@Model.ManifoldAbsolutePressureUnit</label>
+        </div>
+    </div>
+    
+    <div class="card border-primary mb-2">
+        <div class="card-header">Coolant temperature</div>
+        <div class="card-body">
+            <input type="range" min="@Model.CoolantTemperatureRange.Min" max="@Model.CoolantTemperatureRange.Max" style="width:100%" @bind="Model.CoolantTemperature.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.CoolantTemperature.Value</label>
+            <label>@Model.CoolantTemperatureUnit</label>
+        </div>
+    </div>
+
+    <div class="card border-primary mb-2">
+        <div class="card-header">Oil temperature</div>
+        <div class="card-body">
+            <input type="range" min="@Model.OilTemperatureRange.Min" max="@Model.OilTemperatureRange.Max" style="width:100%" @bind="Model.OilTemperature.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.OilTemperature.Value</label>
+            <label>@Model.OilTemperatureUnit</label>
+        </div>
+    </div>
+
+    <div class="card border-primary mb-2">
+        <div class="card-header">Oil temperature2</div>
+        <div class="card-body">
+            <input type="range" min="@Model.OilTemperature2Range.Min" max="@Model.OilTemperature2Range.Max" style="width:100%" @bind="Model.OilTemperature2.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.OilTemperature2.Value</label>
+            <label>@Model.OilTemperatureUnit2</label>
+        </div>
+    </div>
+
+    <div class="card border-primary mb-2">
+        <div class="card-header">Oil pressure</div>
+        <div class="card-body">
+            <input type="range" min="@Model.OilPressureRange.Min" max="@Model.OilPressureRange.Max" step=0.01 style="width:100%" @bind="Model.OilPressure.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.OilPressure.Value</label>
+            <label>@Model.OilPressureUnit</label>
+        </div>
+    </div>
+
+    <div class="card border-primary mb-2">
+        <div class="card-header">Fuel rail pressure</div>
+        <div class="card-body">
+            <input type="range" min="@Model.FuelRailPressureRange.Min" max="@Model.FuelRailPressureRange.Max" step=0.01 style="width:100%" @bind="Model.FuelRailPressure.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.FuelRailPressure.Value</label>
+            <label>@Model.FuelRailPressureUnit</label>
+        </div>
+    </div>
+
+</div>
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Model.PropertyChanged += StateChanged;
+    }
+    private void StateChanged(object s, PropertyChangedEventArgs e)
+    {
+        InvokeAsync(() => StateHasChanged());
+    }
+    public void Dispose()
+    {
+        Model.PropertyChanged -= StateChanged;
+    }
+}

@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
-    public class ELM327COM : ELM327COMBase
+    public class ELM327COM : COMCommon, IELM327COM
     {
         public const byte MODECODE = 0x01;
         //Wait time after calling ATZ command (in milliseconds)
@@ -22,14 +22,18 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly string ELM327SetProtocolMode;
         private readonly int ELM327AdaptiveTimingMode;
         private readonly int ELM327Timeout;
-
+        private readonly OBDIIContentTable content_table;
+        public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
         private readonly ILogger logger;
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout) : base(logger)
+        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout) : base(logger)
         {
             this.logger = logger.CreateLogger<ELM327COM>();
+            this.content_table = new OBDIIContentTable();
+
             //Setup serial port
+            PortName = comPortName;
             DefaultBaudRate = 115200;
 
             ResetBaudRate = 4800;
@@ -40,7 +44,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             ELM327Timeout = elm327Timeout;
         }
 
-        public ELM327COM(ILoggerFactory logger) : this(logger, String.Empty, 1, 32)
+        public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, String.Empty, 1, 32)
         {
         }
 
@@ -102,7 +106,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 {
                     logger.LogError("Timeout is occured during ELM327 initialization AT command settings. Wait 2sec and retry.. : " + ex.Message);
                     initializeFailedCount++;
-                    if(initializeFailedCount > INITIALIZE_FAILED_MAX)
+                    if (initializeFailedCount > INITIALIZE_FAILED_MAX)
                     {
                         throw new InvalidOperationException("ELM327 initialization AT command setting is failed over " + INITIALIZE_FAILED_MAX + "counts.");
                     }
@@ -118,44 +122,44 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
         private void ELM327SetProtocol()
         {
-            if(string.IsNullOrEmpty(ELM327SetProtocolMode))
+            if (string.IsNullOrEmpty(ELM327SetProtocolMode))
             {
                 logger.LogDebug("ELM327SetProtocolMode string is blank. ELM327 protocol set (AT SP) will be skipped.");
                 return;
             }
-            if(ELM327SetProtocolMode.Length != 1)
+            if (ELM327SetProtocolMode.Length != 1)
                 logger.LogWarning("ELM327SetProtocolMode is not a signle character. AT SP command may fail.");
-            if(!Regex.IsMatch(ELM327SetProtocolMode, "[0-9]|[A-C]"))
+            if (!Regex.IsMatch(ELM327SetProtocolMode, "[0-9]|[A-C]"))
                 logger.LogWarning("ELM327SetProtocolMode is not 0-9 or A-C. AT SP command may fail.");
-            
+
             string setprotocolStr = "AT SP " + ELM327SetProtocolMode;
-            Write(setprotocolStr +"\r");
-            logger.LogDebug("Call " + setprotocolStr +" to set ELM327 protocol. Return Msg is " + ReadTo(">"));
+            Write(setprotocolStr + "\r");
+            logger.LogDebug("Call " + setprotocolStr + " to set ELM327 protocol. Return Msg is " + ReadTo(">"));
         }
 
         private void ELM327TimingControlSet()
         {
             // Adaptive timing control set
-            if(this.ELM327AdaptiveTimingMode < 0 || this.ELM327AdaptiveTimingMode > 2)
+            if (this.ELM327AdaptiveTimingMode < 0 || this.ELM327AdaptiveTimingMode > 2)
                 logger.LogWarning("ELM327 Adaptive timing mode is not 0-2. AT AT command may fail.");
 
-            Write("ATAT"+ELM327AdaptiveTimingMode.ToString()+"\r");
+            Write("ATAT" + ELM327AdaptiveTimingMode.ToString() + "\r");
             logger.LogDebug("Call AT AT" + ELM327AdaptiveTimingMode.ToString() + " to set adaptive timing control mode. Return Msg is " + ReadTo(">"));
 
             // Timeout set
             int timeoutToSet = this.ELM327Timeout;
-            if(timeoutToSet < 0)
+            if (timeoutToSet < 0)
             {
                 logger.LogWarning("ELM327 Timeout is not positive. Set 0 instead.");
                 timeoutToSet = 0;
             }
-            if(timeoutToSet > 255)
+            if (timeoutToSet > 255)
             {
                 logger.LogWarning("ELM327 Timeout needs to be less than 256. Set 255 instead.");
                 timeoutToSet = 255;
             }
 
-            Write("ATST"+timeoutToSet.ToString("X2")+"\r");
+            Write("ATST" + timeoutToSet.ToString("X2") + "\r");
             logger.LogDebug("Call AT ST" + timeoutToSet.ToString("X2") + " to set timeout. Return Msg is " + ReadTo(">"));
         }
 
@@ -192,7 +196,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     return;
                 }
 
-                foreach( OBDIIParameterCode code in query_OBDII_code_list)
+                foreach (OBDIIParameterCode code in query_OBDII_code_list)
                 {
                     communicateOnePID(code);
                 }
@@ -201,7 +205,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 ELM327DataReceivedEventArgs elm327_received_eventargs = new ELM327DataReceivedEventArgs();
                 elm327_received_eventargs.Slow_read_flag = slow_read_flag;
                 elm327_received_eventargs.Received_Parameter_Code = new List<OBDIIParameterCode>(query_OBDII_code_list);
-                OnELM327DataReceived(this, elm327_received_eventargs);
+                ELM327DataReceived(this, elm327_received_eventargs);
             }
             catch (TimeoutException ex)
             {
@@ -234,7 +238,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             try
             {
                 //inMsg = ReadTo("\r");
-                
+
                 // Read to next prompt char of '>'
                 inMsg = ReadTo(">");
                 // Discard after the char of \r
@@ -243,10 +247,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 inMsg = discardStringAfterChar(inMsg, '\r');
 
                 //logger.LogDebug("ELM327IN:" + inMsg);
-                
+
                 // Get ECU data.
-                inMsg = inMsg.Replace(">","").Replace("\n","").Replace("\r","");
-                
+                inMsg = inMsg.Replace(">", "").Replace("\n", "").Replace("\r", "");
+
                 // Check ECU data format.
                 if (inMsg.Equals(""))
                     throw new FormatException("Return message at communicateOnePID() is empty.");
@@ -267,12 +271,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
                 content_table[code].RawValue = returnValue;
             }
-            catch(TimeoutException ex)
+            catch (TimeoutException ex)
             {
                 logger.LogError("ELM327COM timeout. " + ex.GetType().ToString() + " " + ex.Message);
                 communicateRealtimeIsError = true;
             }
-            catch(FormatException ex)
+            catch (FormatException ex)
             {
                 logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
                 if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
@@ -286,12 +290,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     communicateRealtimeIsError = true;
                 }
             }
-            catch(ArgumentOutOfRangeException ex)
+            catch (ArgumentOutOfRangeException ex)
             {
                 logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
                 if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
                 {
-                    logger.LogWarning("Retry communication"  + " OutPID :" + outPID + " Code : " + code.ToString());
+                    logger.LogWarning("Retry communication" + " OutPID :" + outPID + " Code : " + code.ToString());
                     communicateOnePID(code, errorRetryCount + 1);
                 }
                 else
@@ -306,7 +310,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         {
             int index = instr.IndexOf(delimiter);
             string instrTemp;
-            
+
             //Remove 1st char if the 1st char is delimiter
             if (index == 0)
                 instrTemp = instr.Remove(0, 1);
@@ -318,7 +322,65 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             if (index < 0)
                 return instrTemp;
             else
-                return instrTemp.Substring(0,index);
+                return instrTemp.Substring(0, index);
+        }
+        public double get_value(OBDIIParameterCode code)
+        {
+            return content_table[code].Value;
+        }
+
+        public UInt32 get_raw_value(OBDIIParameterCode code)
+        {
+            return content_table[code].RawValue;
+        }
+
+        public string get_unit(OBDIIParameterCode code)
+        {
+            return content_table[code].Unit;
+        }
+
+        public bool get_slowread_flag(OBDIIParameterCode code)
+        {
+            return content_table[code].SlowReadEnable;
+        }
+
+        public bool get_fastread_flag(OBDIIParameterCode code)
+        {
+            return content_table[code].FastReadEnable;
+        }
+
+        public void set_slowread_flag(OBDIIParameterCode code, bool flag)
+        {
+            set_slowread_flag(code, flag, false);
+        }
+        public void set_slowread_flag(OBDIIParameterCode code, bool flag, bool quiet)
+        {
+            if (!quiet)
+                logger.LogDebug("Slowread flag of " + code.ToString() + "is enabled.");
+            content_table[code].SlowReadEnable = flag;
+        }
+
+        public void set_fastread_flag(OBDIIParameterCode code, bool flag)
+        {
+            set_fastread_flag(code, flag, false);
+        }
+        public void set_fastread_flag(OBDIIParameterCode code, bool flag, bool quiet)
+        {
+            if (!quiet)
+                logger.LogDebug("Fastread flag of " + code.ToString() + "is enabled.");
+            content_table[code].FastReadEnable = flag;
+        }
+
+        public void set_all_disable()
+        {
+            set_all_disable(false);
+        }
+
+        public void set_all_disable(bool quiet)
+        {
+            if (!quiet)
+                logger.LogDebug("All flag reset.");
+            content_table.setAllDisable();
         }
 
     }

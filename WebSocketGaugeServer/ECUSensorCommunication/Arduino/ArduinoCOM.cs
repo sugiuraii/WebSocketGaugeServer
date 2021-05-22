@@ -4,20 +4,25 @@ using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 {
-    public class ArduinoCOM : ArduinoCOMBase
+    public class ArduinoCOM : COMCommon, IArduinoCOM
     {
+        private readonly ArduinoContentTable content_table;
+        public event EventHandler ArduinoPacketReceived;
+
         // Number of row sent from arduino by 1cycle (Tacho + Speed + ADC6ch = 8ch)
         private const int NUM_ROWS_PER_CYCLE = 8;
         // Arduino received Event
         private readonly ILogger logger;
         //Constructor
-        public ArduinoCOM(ILoggerFactory logger) : base(logger)
+        public ArduinoCOM(ILoggerFactory logger, string comPortName) : base(logger)
         {
             this.logger = logger.CreateLogger<ArduinoCOM>();
+            this.content_table = new ArduinoContentTable();
 
+            PortName = comPortName;
             //Default baudrate (can be overrided by setting xml file)
             DefaultBaudRate = 38400;
-            //Baudrate on emergency reset(refer communticate_reset()参)
+            //Baudrate on emergency reset(refer communticate_reset())
             //On using FT232RL, baudrate should be 3000000/n (n is integer or x.125, x.25, x.375, x.5, x.625, x.75, x.875)
             ResetBaudRate = 9600;
 
@@ -88,7 +93,22 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
                 }
             }
             // Invoke PacketReceived Event
-            OnArduinoPacketReceived(this, EventArgs.Empty);
+            ArduinoPacketReceived(this, EventArgs.Empty);
+        }
+
+        public double get_value(ArduinoParameterCode code)
+        {
+            return content_table[code].Value;
+        }
+
+        public UInt32 get_raw_value(ArduinoParameterCode code)
+        {
+            return content_table[code].RawValue;
+        }
+
+        public string get_unit(ArduinoParameterCode code)
+        {
+            return content_table[code].Unit;
         }
     }
 }

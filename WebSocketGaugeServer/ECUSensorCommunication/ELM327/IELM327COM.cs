@@ -2,7 +2,7 @@ using System;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
-    public interface IELM327COM
+    public interface IELM327COM : IBackgroundCommunicate
     {
         event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
         double get_value(OBDIIParameterCode code);
@@ -16,5 +16,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         void set_fastread_flag(OBDIIParameterCode code, bool flag, bool quiet);
         void set_all_disable();
         void set_all_disable(bool quiet);
+        int SlowReadInterval {get; set;}
     }
 }

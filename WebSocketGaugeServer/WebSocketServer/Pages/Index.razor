@@ -14,7 +14,10 @@
     <div class="card-body">
         <li class="list-group-item">Enabled: @ConfigModel.ELM327ServiceConfig["enabled"]</li>
         <li class="list-group-item">Listen URL: @((ConfigModel.ConfigRoot["urls"]).Replace("http", "ws") + @ConfigModel.ELM327ServiceConfig["urlpath"])</li>
-        <li class="list-group-item">COMPort name : @ConfigModel.ELM327ServiceConfig["comport"]</li>
+        @if(ConfigModel.ELM327VirtualCOMEnabled)
+            {<li class="list-group-item text-light bg-dark">VirtualCOM mode</li>}           
+        else
+            {<li class="list-group-item">COMPort name : @ConfigModel.ELM327ServiceConfig["comport"]</li>}
         <li class="list-group-item">Baudrate : @ConfigModel.ELM327ServiceConfig["baudrate"]</li>
         <li class="list-group-item">
             ELM327 protocol mode : @ConfigModel.ELM327ServiceConfig["elm327ProtocolMode"]<br>
@@ -64,7 +67,10 @@
     <div class="card-body">
         <li class="list-group-item">Enabled: @ConfigModel.ArduinoServiceConfig["enabled"]</li>
         <li class="list-group-item">Listen URL: @((ConfigModel.ConfigRoot["urls"]).Replace("http", "ws") + @ConfigModel.ArduinoServiceConfig["urlpath"])</li>
-        <li class="list-group-item">COMPort name : @ConfigModel.ArduinoServiceConfig["comport"]</li>
+        @if(ConfigModel.ArduinoVirtualCOMEnabled)
+            {<li class="list-group-item text-light bg-dark">VirtualCOM mode</li>}            
+        else
+            {<li class="list-group-item">COMPort name : @ConfigModel.ArduinoServiceConfig["comport"]</li>}
     </div>
 </div>
 <div class="card">
@@ -74,7 +80,11 @@
     <div class="card-body">
         <li class="list-group-item">Enabled: @ConfigModel.DefiServiceConfig["enabled"]</li>
         <li class="list-group-item">Listen URL: @((ConfigModel.ConfigRoot["urls"]).Replace("http", "ws") + @ConfigModel.DefiServiceConfig["urlpath"])</li>
-        <li class="list-group-item">COMPort name : @ConfigModel.DefiServiceConfig["comport"]</li>
+        @if(ConfigModel.DefiVirtualCOMEnabled)
+            {<li class="list-group-item text-light bg-dark">VirtualCOM mode</li>}
+        else
+            {<li class="list-group-item">COMPort name : @ConfigModel.DefiServiceConfig["comport"]</li>}
+
     </div>
 </div>
 <div class="card">
@@ -84,7 +94,10 @@
     <div class="card-body">
         <li class="list-group-item">Enabled: @ConfigModel.SSMServiceConfig["enabled"]</li>
         <li class="list-group-item">Listen URL: @((ConfigModel.ConfigRoot["urls"]).Replace("http", "ws") + @ConfigModel.SSMServiceConfig["urlpath"])</li>
-        <li class="list-group-item">COMPort name : @ConfigModel.SSMServiceConfig["comport"]</li>
+        @if(ConfigModel.SSMVirtualCOMEnabled)
+            {<li class="list-group-item text-light bg-dark">VirtualCOM mode</li>}
+        else
+            {<li class="list-group-item">COMPort name : @ConfigModel.SSMServiceConfig["comport"]</li>}
     </div>
 </div>
 

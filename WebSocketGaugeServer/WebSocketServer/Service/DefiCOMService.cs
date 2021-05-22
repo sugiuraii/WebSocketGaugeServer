@@ -17,7 +17,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
     public class DefiCOMService : IDisposable
     {
         private readonly ILogger logger;
-        private readonly DefiCOM defiCOM;
+        private readonly IDefiCOM defiCOM;
+        private readonly VirtualDefiCOM virtualDefiCOM;
         private readonly Dictionary<Guid, (WebSocket WebSocket, DefiCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, DefiCOMWebsocketSessionParam SessionParam)>();
 
         public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
@@ -35,17 +36,41 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             return this.WebSocketDictionary[guid].SessionParam;
         }
 
-        public DefiCOM DefiCOM { get { return defiCOM; } }
+        public IDefiCOM DefiCOM { get => defiCOM; }
+        public VirtualDefiCOM VirtualDefiCOM { 
+            get 
+            {
+                if(virtualDefiCOM != null)
+                    return virtualDefiCOM;
+                else
+                    throw new InvalidOperationException("Virtual Defi COM is null. Virtual com mode is not be enabled.");
+            }
+        }
         public DefiCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<DefiCOMService> logger)
         {
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("Defi");
 
             this.logger = logger;
-            var comportName = serviceSetting["comport"];
-
-            this.defiCOM = new DefiCOM(loggerFactory);
-            this.defiCOM.PortName = comportName;
-
+            var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            logger.LogInformation("DefiCOM service is started.");
+            if(useVirtual)
+            {
+                logger.LogInformation("DefiCOM is started with virtual mode.");
+                int virtualDefiCOMWait = 15;
+                logger.LogInformation("VirtualDefiCOM wait time is set to " + virtualDefiCOMWait.ToString() + " ms.");
+                var virtualCOM = new VirtualDefiCOM(loggerFactory, virtualDefiCOMWait);
+                this.defiCOM = virtualCOM;
+                this.virtualDefiCOM = virtualCOM;     
+            }
+            else
+            {
+                logger.LogInformation("DefiCOM is started with physical mode.");
+                var comportName = serviceSetting["comport"];
+                logger.LogInformation("DefiCOM COMPort is set to: " + comportName);
+                this.defiCOM = new DefiCOM(loggerFactory, comportName);
+                this.virtualDefiCOM = null;
+            }
+            
             var cancellationToken = lifetime.ApplicationStopping;
             // Register websocket broad cast
             this.defiCOM.DefiPacketReceived += async (sender, args) =>
@@ -91,7 +116,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 
         public void Dispose()
         {
-            var stopTask = Task.Run(() => this.DefiCOM.BackGroundCommunicateStop());
+            var stopTask = Task.Run(() => this.DefiCOM.BackgroundCommunicateStop());
             Task.WhenAny(stopTask, Task.Delay(10000));
         }
     }

@@ -5,15 +5,21 @@ using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 {
-    public class DefiCOM : DefiCOMBase
+    public class DefiCOM : COMCommon, IDefiCOM
     {
         //DefiLink packet byte size
         const int DEFI_PACKET_SIZE = 35;
         private readonly ILogger logger;
-        public DefiCOM(ILoggerFactory logger) : base(logger)
+        private readonly DefiContentTable content_table;
+
+		// Defilink received Event
+		public event EventHandler DefiPacketReceived;
+        public DefiCOM(ILoggerFactory logger, string comPortName) : base(logger)
         {
             this.logger = logger.CreateLogger<DefiCOM>();
+            this.content_table = new DefiContentTable();
 
+            PortName = comPortName;
             DefaultBaudRate = 19200;
             //Baudrate on resetting serialport(ref: communticate_reset())
             //On using FT232RL baurate is allowed only the case of 3000000/n (n is integer or integer + 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)
@@ -22,7 +28,20 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
             Parity = Parity.Even;
             ReadTimeout = 500;
         }
+        public double get_value(DefiParameterCode code)
+        {
+            return content_table[code].Value;
+        }
 
+        public UInt32 get_raw_value(DefiParameterCode code)
+        {
+            return content_table[code].RawValue;
+        }
+
+        public string get_unit(DefiParameterCode code)
+        {
+            return content_table[code].Unit;
+        }
         protected override void communicate_main(bool slowread_flag)
         {
             byte[] firstInbuf = new byte[1];
@@ -104,7 +123,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
             }
 
             // Invoke PacketReceived Event
-            OnDefiPacketReceived(this, EventArgs.Empty);
+            DefiPacketReceived(this, EventArgs.Empty);
         }
     }
 }

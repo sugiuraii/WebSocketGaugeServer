@@ -2,7 +2,7 @@ using System;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 {
-    public interface IDefiCOM
+    public interface IDefiCOM : IBackgroundCommunicate
     {
         event EventHandler DefiPacketReceived;
         double get_value(DefiParameterCode code);
