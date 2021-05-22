@@ -120,6 +120,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
             return content_table[code].RawValue;
         }
 
+        public int get_raw_value_ByteLength(SSMParameterCode code)
+        {
+            return content_table[code].ReadAddress.Length/3;
+        }
+
         public bool get_switch(SSMSwitchCode code)
         {
             return content_table[code].Value;
