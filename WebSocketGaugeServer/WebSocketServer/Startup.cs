@@ -11,6 +11,7 @@ using SZ2.WebSocketGaugeServer.WebSocketServer.Middleware;
 using SZ2.WebSocketGaugeServer.WebSocketServer.Model;
 using Microsoft.Extensions.FileProviders;
 using System.IO;
+using SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer
 {
@@ -34,13 +35,29 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
             services.AddTransient<MemoryLoggerModel>();
 
             if (bool.Parse(ServiceConfiguration.GetSection("ELM327")["enabled"]))
+            {
                 services.AddSingleton<ELM327COMService>();
+                if(bool.Parse(ServiceConfiguration.GetSection("ELM327")["usevirtual"]))
+                    services.AddTransient<VirtualELM327COMControlModel>();
+            }
             if (bool.Parse(ServiceConfiguration.GetSection("Defi")["enabled"]))
+            {
                 services.AddSingleton<DefiCOMService>();
+                if(bool.Parse(ServiceConfiguration.GetSection("Defi")["usevirtual"]))
+                    services.AddTransient<VirtualDefiCOMControlModel>();
+            }
             if (bool.Parse(ServiceConfiguration.GetSection("Arduino")["enabled"]))
+            {
                 services.AddSingleton<ArduinoCOMService>();
+                if(bool.Parse(ServiceConfiguration.GetSection("Arduino")["usevirtual"]))
+                    services.AddTransient<VirtualArduinoCOMControlModel>();    
+            }
             if (bool.Parse(ServiceConfiguration.GetSection("SSM")["enabled"]))
+            {
                 services.AddSingleton<SSMCOMService>();
+                if(bool.Parse(ServiceConfiguration.GetSection("SSM")["usevirtual"]))
+                    services.AddTransient<VirtualSSMCOMControlModel>();
+            }
 
             services.AddTransient<ServiceConfigurationModel>();
         }

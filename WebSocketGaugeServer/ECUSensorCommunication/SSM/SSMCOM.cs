@@ -6,88 +6,22 @@ using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 {
-    public class SSMCOM : COMCommon
+    public class SSMCOM : COMCommon, ISSMCOM
     {
-        private SSMContentTable content_table;
-
-		//SSMCOM data received event
-		public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
         private readonly ILogger logger;
-        //コンストラクタ
-        public SSMCOM(ILoggerFactory logger) : base(logger)
+        private readonly SSMContentTable content_table;
+
+        //SSMCOM data received event
+        public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
+        public SSMCOM(ILoggerFactory logger, string comPortName) : base(logger)
         {
             this.logger = logger.CreateLogger<SSMCOM>();
+            this.content_table = new SSMContentTable();
 
-            //シリアルポート設定
+            PortName = comPortName;
             DefaultBaudRate = 4800;
             ResetBaudRate = 4800;
             ReadTimeout = 500;
-
-            content_table = new SSMContentTable();
-        }
-
-        public double get_value(SSMParameterCode code)
-        {
-            return content_table[code].Value;
-        }
-
-        public UInt32 get_raw_value(SSMParameterCode code)
-        {
-            return content_table[code].RawValue;
-        }
-
-        public bool get_switch(SSMSwitchCode code)
-        {
-            return content_table[code].Value;
-        }
-
-        public string get_unit(SSMParameterCode code)
-        {
-            return content_table[code].Unit;
-        }
-
-		public bool get_slowread_flag(SSMParameterCode code)
-		{
-			return content_table[code].SlowReadEnable;
-		}
-
-		public bool get_fastread_flag(SSMParameterCode code)
-		{
-			return content_table[code].FastReadEnable;
-		}
-
-		public void set_slowread_flag(SSMParameterCode code, bool flag)
-        {
-            set_slowread_flag(code, flag, false);
-        }
-        public void set_slowread_flag(SSMParameterCode code, bool flag, bool quiet)
-        {
-            if(!quiet)
-                logger.LogDebug("Slowread flag of " + code.ToString() + "is enabled.");
-            content_table[code].SlowReadEnable = flag;
-        }
-
-		public void set_fastread_flag(SSMParameterCode code, bool flag)
-        {
-            set_fastread_flag(code, flag, false);
-        }
-        public void set_fastread_flag(SSMParameterCode code, bool flag, bool quiet)
-        {
-            if(!quiet)
-                logger.LogDebug("Fastread flag of " + code.ToString() + "is enabled.");
-            content_table[code].FastReadEnable = flag;
-        }
-
-        public void set_all_disable()
-        {
-            set_all_disable(false);
-        }
-
-        public void set_all_disable(bool quiet)
-        {
-            if(!quiet)
-                logger.LogDebug("All flag reset.");
-            content_table.setAllDisable();
         }
 
         protected override void communicate_main(bool slow_read)
@@ -98,51 +32,47 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 
                 byte[] outbuf;
 
-                //クエリするSSM_codeリストの作成
-				List<SSMParameterCode> query_SSM_code_list = new List<SSMParameterCode>();
+                //Create list of SSM code to communicate
+                List<SSMParameterCode> query_SSM_code_list = new List<SSMParameterCode>();
 
-                //送信バッファの作成
+                //Create send buffer
                 outbuf = create_outbuf(slow_read, query_SSM_code_list);
-                    
-                //クエリするSSM_codeがない場合は抜ける
+
+                //Exit if no SSM codes to query
                 if (query_SSM_code_list.Count <= 0)
                 {
-                    //SSM_codeがない場合、すぐに抜けると直後にcommunicate_mainが呼び出されCPUを占有するので、500ms待つ
-                    //SlowReadの場合、この処理はしない
-                    if(!slow_read)
+                    //Wait500ms to avoid 100% CPU usage
+                    //Skip this on slow_read = true
+                    if (!slow_read)
                         Thread.Sleep(500);
                     return;
                 }
 
-                //エコーバックサイズの設定
                 int echoback_length = outbuf.Length;
 
-                //入力データ長の設定(ヘッダ、サイズ、コマンド、チェックサムで7バイト、1アドレスあたり3バイト、から計算)
+                //Set input data length(header + size +  command + checksum = 7bytes、3bytes/1adddress)
                 int inbuf_length = echoback_length + (outbuf.Length - 7) / 3 + 6;
                 byte[] inbuf = new byte[inbuf_length];
 
-                //シリアルポート入力バッファ掃除
                 DiscardInBuffer();
 
-                //クエリ送信
                 Write(outbuf, 0, outbuf.Length);
 
-                //受信
+                //Receive
                 for (i = 0; i < inbuf_length; i++)
                 {
                     inbuf[i] = (byte)ReadByte();
                 }
 
-                //読み出しオフセットの設定(エコーバックとヘッダを飛ばす）
                 int read_offset = echoback_length + 5;
 
                 read_inbuf(inbuf, read_offset, query_SSM_code_list);
 
-				//Invoke SSMDatareceived event
-				SSMCOMDataReceivedEventArgs ssm_received_eventargs = new SSMCOMDataReceivedEventArgs();
-				ssm_received_eventargs.Slow_read_flag = slow_read;
-				ssm_received_eventargs.Received_Parameter_Code = new List<SSMParameterCode>(query_SSM_code_list);
-				SSMDataReceived(this,ssm_received_eventargs);
+                //Invoke SSMDatareceived event
+                SSMCOMDataReceivedEventArgs ssm_received_eventargs = new SSMCOMDataReceivedEventArgs();
+                ssm_received_eventargs.Slow_read_flag = slow_read;
+                ssm_received_eventargs.Received_Parameter_Code = new List<SSMParameterCode>(query_SSM_code_list);
+                SSMDataReceived(this, ssm_received_eventargs);
             }
             catch (TimeoutException ex)
             {
@@ -151,11 +81,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
             }
         }
 
-		private byte[] create_outbuf(bool slow_read, List<SSMParameterCode> query_code_list)
+        private byte[] create_outbuf(bool slow_read, List<SSMParameterCode> query_code_list)
         {
             int i;
             int outbuf_sum = 0;
-            byte[]outbuf = new byte[] { };
+            byte[] outbuf = new byte[] { };
 
 
             // outbuf packet = header_bytes + datasize_byte + command_byte(A8=read single addresses) + padding byte(0x00) + address_bytes + checksum_byte
@@ -164,7 +94,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
             byte[] command_byte = new byte[] { 0xA8 };
             byte[] padding_byte = new byte[] { 0x00 };
             byte[] checksum_byte;
-            byte[] address_bytes = new byte[]{};
+            byte[] address_bytes = new byte[] { };
 
 
             foreach (SSMParameterCode code in Enum.GetValues(typeof(SSMParameterCode)))
@@ -187,18 +117,17 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
                 }
             }
 
-            //datasize計算 (チェックサムは含まれない?)
-            int datasize =  command_byte.Length + padding_byte.Length + address_bytes.Length;
+            //datasize calculation (exclude checksum)
+            int datasize = command_byte.Length + padding_byte.Length + address_bytes.Length;
             datasize_byte = new byte[] { (byte)datasize };
 
-            //連結
             outbuf = outbuf.Concat(header_bytes).ToArray();
             outbuf = outbuf.Concat(datasize_byte).ToArray();
             outbuf = outbuf.Concat(command_byte).ToArray();
             outbuf = outbuf.Concat(padding_byte).ToArray();
             outbuf = outbuf.Concat(address_bytes).ToArray();
 
-            //チェックサム計算
+            //Calc checksum
             for (i = 0; i < outbuf.Length; i++)
             {
                 outbuf_sum = outbuf_sum + (int)outbuf[i];
@@ -211,12 +140,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
             return outbuf;
         }
 
-		private void read_inbuf(byte[] inbuf, int read_offset, List<SSMParameterCode> query_code_list)
+        private void read_inbuf(byte[] inbuf, int read_offset, List<SSMParameterCode> query_code_list)
         {
             int get_offset = read_offset;
             foreach (SSMParameterCode code in query_code_list)
             {
-                //アドレス3バイトあたりデータ1バイト
+                //Address 3bytes -> 1bytes
                 int read_byte_length = content_table[code].AddressLength / 3;
 
                 UInt32 temp_buf = inbuf[get_offset];
@@ -230,11 +159,68 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
                 get_offset += read_byte_length;
             }
         }
-    }
+        public double get_value(SSMParameterCode code)
+        {
+            return content_table[code].Value;
+        }
 
-    public class SSMCOMDataReceivedEventArgs : EventArgs
-    {
-	    public bool Slow_read_flag { get; set; }
-	    public List<SSMParameterCode> Received_Parameter_Code { get; set; }
-	}
+        public UInt32 get_raw_value(SSMParameterCode code)
+        {
+            return content_table[code].RawValue;
+        }
+
+        public bool get_switch(SSMSwitchCode code)
+        {
+            return content_table[code].Value;
+        }
+
+        public string get_unit(SSMParameterCode code)
+        {
+            return content_table[code].Unit;
+        }
+
+        public bool get_slowread_flag(SSMParameterCode code)
+        {
+            return content_table[code].SlowReadEnable;
+        }
+
+        public bool get_fastread_flag(SSMParameterCode code)
+        {
+            return content_table[code].FastReadEnable;
+        }
+
+        public void set_slowread_flag(SSMParameterCode code, bool flag)
+        {
+            set_slowread_flag(code, flag, false);
+        }
+        public void set_slowread_flag(SSMParameterCode code, bool flag, bool quiet)
+        {
+            if (!quiet)
+                logger.LogDebug("Slowread flag of " + code.ToString() + "is enabled.");
+            content_table[code].SlowReadEnable = flag;
+        }
+
+        public void set_fastread_flag(SSMParameterCode code, bool flag)
+        {
+            set_fastread_flag(code, flag, false);
+        }
+        public void set_fastread_flag(SSMParameterCode code, bool flag, bool quiet)
+        {
+            if (!quiet)
+                logger.LogDebug("Fastread flag of " + code.ToString() + "is enabled.");
+            content_table[code].FastReadEnable = flag;
+        }
+
+        public void set_all_disable()
+        {
+            set_all_disable(false);
+        }
+
+        public void set_all_disable(bool quiet)
+        {
+            if (!quiet)
+                logger.LogDebug("All flag reset.");
+            content_table.setAllDisable();
+        }
+    }
 }
