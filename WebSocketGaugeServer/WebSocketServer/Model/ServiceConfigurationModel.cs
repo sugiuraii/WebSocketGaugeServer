@@ -19,6 +19,11 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Model
         public bool SSMVirtualCOMEnabled {get => Boolean.Parse(SSMServiceConfig["usevirtual"]);}
         public bool ArduinoVirtualCOMEnabled {get => Boolean.Parse(ArduinoServiceConfig["usevirtual"]);}
         public bool DefiVirtualCOMEnabled {get => Boolean.Parse(DefiServiceConfig["usevirtual"]);}
+
+        public bool ELM327COMEnabled {get => Boolean.Parse(ELM327ServiceConfig["enabled"]);}
+        public bool SSMCOMEnabled {get => Boolean.Parse(SSMServiceConfig["enabled"]);}
+        public bool ArduinoCOMEnabled {get => Boolean.Parse(ArduinoServiceConfig["enabled"]);}
+        public bool DefiCOMEnabled {get => Boolean.Parse(DefiServiceConfig["enabled"]);}
         public ServiceConfigurationModel(IConfiguration configuration)
         {
             ConfigurationRoot = configuration;

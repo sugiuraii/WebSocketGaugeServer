@@ -1,4 +1,6 @@
 ﻿@namespace SZ2.WebSocketGaugeServer.WebSocketServer.Shared
+@using SZ2.WebSocketGaugeServer.WebSocketServer.Model
+@inject ServiceConfigurationModel ConfigModel
 
 <div class="top-row pl-4 navbar navbar-dark">
     <a class="navbar-brand" href="">WebSocketGaugeServer</a>
@@ -19,28 +21,40 @@
                 <span class="oi oi-list" aria-hidden="true"></span> Log
             </NavLink>
         </li>
+        @if(ConfigModel.ArduinoVirtualCOMEnabled && ConfigModel.ArduinoCOMEnabled)
+        {
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="virtualarduino">
+                    <span class="oi oi-media-play" aria-hidden="true"></span> VirtualArduinoControl
+                </NavLink>
+            </li>
+        }
+        @if(ConfigModel.DefiVirtualCOMEnabled && ConfigModel.DefiCOMEnabled)
+        {
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="virtualdefi">
+                    <span class="oi oi-media-play" aria-hidden="true"></span> VirtualDefiControl
+                </NavLink>
+            </li>
+        }
+        @if(ConfigModel.ELM327VirtualCOMEnabled && ConfigModel.ELM327COMEnabled)
+        {
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="virtualelm327">
+                    <span class="oi oi-media-play" aria-hidden="true"></span> VirtualELM327Control
+                </NavLink>
+            </li>
+        }
+        @if(ConfigModel.SSMVirtualCOMEnabled && ConfigModel.SSMCOMEnabled)
+        {        
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" href="virtualssm">
+                    <span class="oi oi-media-play" aria-hidden="true"></span> VirtualSSMControl
+                </NavLink>
+            </li>
+        }
         <li class="nav-item px-3">
-            <NavLink class="nav-link" href="virtualarduino">
-                <span class="oi oi-media-play" aria-hidden="true"></span> VirtualControl
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="virtualdefi">
-                <span class="oi oi-media-play" aria-hidden="true"></span> VirtualDefiControl
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="virtualelm327">
-                <span class="oi oi-media-play" aria-hidden="true"></span> VirtualELM327Control
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="virtualssm">
-                <span class="oi oi-media-play" aria-hidden="true"></span> VirtualSSMControl
-            </NavLink>
-        </li>
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" href="clientfiles/index.html">
+            <NavLink class="nav-link" target="_blank" rel=”noopener” href="clientfiles/index.html">
                 <span class="oi oi-media-play" aria-hidden="true"></span> Gauge clients
             </NavLink>
         </li>
