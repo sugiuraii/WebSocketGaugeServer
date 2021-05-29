@@ -157,13 +157,11 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
             logger.LogDebug("Gauge client content path setting is " + contentPathSetting);
             var exportPath = Path.IsPathRooted(contentPathSetting)?contentPathSetting:Path.Combine(env.ContentRootPath, contentPathSetting);
             logger.LogInformation("Gauge client content path is set to " + exportPath);            
-            var accessURLRelativePath = Configuration.GetSection("clientFiles")["accessURLRelativePath"];
-            logger.LogInformation("Gauge client access path is set to " + accessURLRelativePath);            
             app.UseStaticFiles(new StaticFileOptions
             {
                 ContentTypeProvider = provider,
                 FileProvider = new PhysicalFileProvider(exportPath),
-                RequestPath = accessURLRelativePath
+                RequestPath = "/clientfiles"
             });
 
             app.UseStaticFiles();
