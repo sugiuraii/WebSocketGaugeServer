@@ -73,20 +73,20 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 
             while (!ct.IsCancellationRequested)
             {
+                if(readCount > SlowReadInterval)
+                {
+                    slow_read = true;
+                    readCount = 0;
+                }
+                else
+                {
+                    slow_read = false;
+                    readCount++;
+                }
+
                 var query_SSM_code_list = new List<SSMParameterCode>();
                 foreach (SSMParameterCode code in Enum.GetValues(typeof(SSMParameterCode)))
                 {
-                    if(readCount > SlowReadInterval)
-                    {
-                        slow_read = true;
-                        readCount = 0;
-                    }
-                    else
-                    {
-                        slow_read = false;
-                        readCount++;
-                    }
-
                     if (slow_read)
                     {
                         if (content_table[code].SlowReadEnable)
