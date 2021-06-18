@@ -28,11 +28,16 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl
             this.SetValue = GetDefaultReactivePropertySlim<uint>(0, "SetValue");
             this.SetValue.Subscribe(v => vElm327COM.SetRawValue(ParameterCodeToSet.Value, v));
 
-            this.MaxValue= ParameterCodeToSet.Select(code => ((1U << (vElm327COM.get_Value_ByteLength(code)*8)) - 1)).ToReadOnlyReactivePropertySlim();
+            this.MaxValue= ParameterCodeToSet.Select(code => getMaxUint(vElm327COM.get_Value_ByteLength(code)*8)).ToReadOnlyReactivePropertySlim();
             this.PhysicalUnit = ParameterCodeToSet.Select(code => vElm327COM.get_unit(code)).ToReadOnlyReactivePropertySlim();
             
             this.ParameterCodeToSet.Subscribe(cd => SetValue.Value = vElm327COM.get_raw_value(cd));
             this.PhysicalValue = SetValue.Select(_ => vElm327COM.get_value(ParameterCodeToSet.Value)).ToReadOnlyReactivePropertySlim();   
+        }
+
+        private uint getMaxUint(int bit)
+        {
+            return 0xFFFFFFFF >> (32 - bit);
         }
 
         public void Dispose()
