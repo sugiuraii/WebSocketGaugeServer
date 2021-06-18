@@ -23,7 +23,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         }
 
         public byte PID { get { return _pid; } }
-        public int ReturnByteLength { get { return _returnByteLength; } } 
+        public int ReturnByteLength { get { return _returnByteLength; } }
 
         public bool SlowReadEnable { get; set; }
         public bool FastReadEnable { get; set; }
@@ -51,7 +51,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             byte upperByte = (byte)(intX >> 8);
 
             return (double)upperByte;
-         }
+        }
 
         private double getValueOfLowerByte(double x)
         {
@@ -120,14 +120,14 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             _numeric_content_table.Add(OBDIIParameterCode.Actual_engine_percent_torque, new OBDIINumericContent(0x62, 1, A => (double)A - 125, "%"));
             _numeric_content_table.Add(OBDIIParameterCode.Engine_reference_torque, new OBDIINumericContent(0x63, 2, A => (double)A, "Nm"));
 
-            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_1_Air_Fuel_Correction, new OBDIINumericContent(0x14, 2, A => ((double)(A & 0xFF)) / 128 - 100, "%"));
-            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_2_Air_Fuel_Correction, new OBDIINumericContent(0x15, 2, A => ((double)(A & 0xFF)) / 128 - 100, "%"));
-            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_3_Air_Fuel_Correction, new OBDIINumericContent(0x16, 2, A => ((double)(A & 0xFF)) / 128 - 100, "%"));
-            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_4_Air_Fuel_Correction, new OBDIINumericContent(0x17, 2, A => ((double)(A & 0xFF)) / 128 - 100, "%"));
-            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_5_Air_Fuel_Correction, new OBDIINumericContent(0x18, 2, A => ((double)(A & 0xFF)) / 128 - 100, "%"));
-            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_6_Air_Fuel_Correction, new OBDIINumericContent(0x19, 2, A => ((double)(A & 0xFF)) / 128 - 100, "%"));
-            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_7_Air_Fuel_Correction, new OBDIINumericContent(0x1A, 2, A => ((double)(A & 0xFF)) / 128 - 100, "%"));
-            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_8_Air_Fuel_Correction, new OBDIINumericContent(0x1B, 2, A => ((double)(A & 0xFF)) / 128 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_1_Air_Fuel_Correction, new OBDIINumericContent(0x14, 2, A => (((double)(A & 0xFF)) / 128) * 100 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_2_Air_Fuel_Correction, new OBDIINumericContent(0x15, 2, A => (((double)(A & 0xFF)) / 128) * 100 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_3_Air_Fuel_Correction, new OBDIINumericContent(0x16, 2, A => (((double)(A & 0xFF)) / 128) * 100 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_4_Air_Fuel_Correction, new OBDIINumericContent(0x17, 2, A => (((double)(A & 0xFF)) / 128) * 100 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_5_Air_Fuel_Correction, new OBDIINumericContent(0x18, 2, A => (((double)(A & 0xFF)) / 128) * 100 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_6_Air_Fuel_Correction, new OBDIINumericContent(0x19, 2, A => (((double)(A & 0xFF)) / 128) * 100 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_7_Air_Fuel_Correction, new OBDIINumericContent(0x1A, 2, A => (((double)(A & 0xFF)) / 128) * 100 - 100, "%"));
+            _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_8_Air_Fuel_Correction, new OBDIINumericContent(0x1B, 2, A => (((double)(A & 0xFF)) / 128) * 100 - 100, "%"));
 
             _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_1_Air_Fuel_Ratio, new OBDIINumericContent(0x24, 4, A => ((double)(A >> 16)) / 65536 * 2, "Lambda"));
             _numeric_content_table.Add(OBDIIParameterCode.O2Sensor_2_Air_Fuel_Ratio, new OBDIINumericContent(0x25, 4, A => ((double)(A >> 16)) / 65536 * 2, "Lambda"));
