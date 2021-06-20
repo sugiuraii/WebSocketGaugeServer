@@ -4,12 +4,10 @@ Calculation method            : RPM_INJECTION_PW
 Get sensor data from          : RPM from Defi, VehicleSpeed, Injection pulse width from SSM
 */
 {
-  //"defiserver_url": "ws://127.0.0.1:2012/",
-  //"ssmserver_url": "ws://127.0.0.1:2013/",
-  "defiserver_url": "ws://192.168.122.16:2012/",
-  "ssmserver_url": "ws://192.168.122.16:2013/",
-  "arduinoserver_url": "ws://127.0.0.1:2015/",
-  "elm327server_url": "ws://127.0.0.1:2016/",
+  "defiserver_url": "ws://127.0.0.1:2016/defi",
+  "ssmserver_url": "ws://127.0.0.1:2016/ssm",
+  "arduinoserver_url": "ws://127.0.0.1:2016/arduino",
+  "elm327server_url": "ws://127.0.0.1:2016/elm327",
   "Calculation": {
       /*
         Fuel calculation method. Candidates :
