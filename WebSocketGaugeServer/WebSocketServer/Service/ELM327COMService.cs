@@ -123,7 +123,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                     logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
                     logger.LogWarning(ex.StackTrace);
                 }
-                catch (TaskCanceledException ex)
+                catch (OperationCanceledException ex)
                 {
                     logger.LogInformation(ex.Message);
                 }
