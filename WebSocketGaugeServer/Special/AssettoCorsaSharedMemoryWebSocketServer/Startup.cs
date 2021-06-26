@@ -75,6 +75,7 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
             app.UseDefaultFiles();
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".fnt"] = "text/xml";
+            provider.Mappings[".jsonc"] = "text/xml";
             app.UseStaticFiles(new StaticFileOptions
             {
                 ContentTypeProvider = provider,
