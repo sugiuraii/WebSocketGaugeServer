@@ -153,6 +153,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
             app.UseDefaultFiles();
             var provider = new FileExtensionContentTypeProvider();
             provider.Mappings[".fnt"] = "text/xml";
+            provider.Mappings[".jsonc"] = "text/xml";
             var contentPathSetting = Configuration.GetSection("clientFiles")["contentPath"];
             logger.LogDebug("Gauge client content path setting is " + contentPathSetting);
             var exportPath = Path.IsPathRooted(contentPathSetting)?contentPathSetting:Path.Combine(env.ContentRootPath, contentPathSetting);
