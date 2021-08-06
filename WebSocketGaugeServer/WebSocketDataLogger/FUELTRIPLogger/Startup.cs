@@ -22,6 +22,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
             services.AddSingleton<FUELTRIPService>();
             services.AddTransient<MemoryLoggerModel>();
             services.AddTransient<ServiceConfigurationModel>();
+            services.AddTransient<FUELTRIPDataViewModel>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
