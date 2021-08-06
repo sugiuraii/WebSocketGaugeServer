@@ -1,0 +1,43 @@
+@page "/servicestatus"
+@namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Pages
+@using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Model
+@using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
+@using System.Threading
+@inject FUELTRIPDataViewModel ViewModel
+@inject FUELTRIPService Service
+
+<h1>FUELTRIPLogger status view</h1>
+
+<h2>Current status</h2>
+<div class="card">
+    <div class="card-header">FUELTRIP status </div>
+    <div class="card-body">
+        <li class="list-group-item">Total trip: @ViewModel.TotalTrip.ToString("F3")</li>
+        <li class="list-group-item">Total fuel : @ViewModel.TotalFuelConsumption.ToString("F3")</li>
+        <li class="list-group-item">Total trip per fiel : @ViewModel.TotalTripPerFuel.ToString("F3")</li>
+        <li class="list-group-item">Sect span: @ViewModel.SectSpan</li>
+        <li class="list-group-item">Sect trip per fuel: @renderArray(ViewModel.SectTripPerFuelArray)</li>
+    </div>
+</div>
+
+@code {
+    private const int UpdatePeriodInMillisecond = 500;
+    protected override void OnInitialized()
+    {
+        var timer = new Timer((_) => InvokeAsync(() => StateHasChanged()), null, 0, UpdatePeriodInMillisecond);
+        base.OnInitialized();
+    }
+
+    private string renderArray(double[] array)
+    {
+        string outstr = "";
+        for(int i = 0; i < array.Length; i++)
+        {
+            outstr += array[i].ToString("F3");
+            if(i != array.Length - 1)
+                outstr += ",";
+        }
+
+        return outstr;
+    }
+}
