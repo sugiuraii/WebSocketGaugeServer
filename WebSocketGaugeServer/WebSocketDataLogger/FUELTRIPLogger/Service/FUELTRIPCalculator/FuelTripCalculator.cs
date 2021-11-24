@@ -3,7 +3,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Xml;
 using System.Diagnostics;
-
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FUELTripCalculator
 {
@@ -39,9 +39,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FU
     /// </summary>
 	public class FuelTripCalculator : IDisposable
 	{	
-        private FuelTripCalculatorOption calculatorOption;
+        private readonly ILogger logger;
+        
+		private FuelTripCalculatorOption calculatorOption;
         private FuelCalculationMethod calculationMethod;
-
 		private Stopwatch stopWatch;
         
         /// <summary>
@@ -262,11 +263,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FU
         /// </summary>
         /// <param name="option">Calculation option.</param>
         /// <param name="calculationMethod">Calclation method</param>
-		public FuelTripCalculator(FuelTripCalculatorOption option, FuelCalculationMethod calculationMethod)
+		public FuelTripCalculator(FuelTripCalculatorOption option, FuelCalculationMethod calculationMethod, string logStoreFolderPath, ILogger logger)
 		{
+			this.logger = logger;
+
             this.calculatorOption = option;
             this.calculationMethod = calculationMethod;
-
 			totalTripFuel = new TripFuelContent ();
 
 			sectElapsed = 0;
@@ -279,7 +281,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FU
 			saveElapsedTime = 0;
 
 			//Set data folder and file path.
-			folderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			//folderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			folderPath = logStoreFolderPath;
 			filePath = Path.Combine( folderPath, "." + "FUELTRIP_Logger");
 
 			loadTripFuel();
@@ -429,7 +432,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FU
 				}
 				catch (XmlException ex)
 				{
-					Console.WriteLine(ex.Message);
+					logger.LogWarning("Logstore load is failed.");
+					logger.LogWarning(ex.Message);
 					this.resetTotalTripFuel();
 				}
 
@@ -438,18 +442,22 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FU
 			}
 			catch (FileNotFoundException ex)
 			{
-				Console.WriteLine(ex.Message);
+				logger.LogWarning("Logstore load is failed.");
+				logger.LogWarning(ex.Message);
+				logger.LogWarning("New log file may be created on saving.");
 				this.resetTotalTripFuel ();
 			}
 			catch (DirectoryNotFoundException ex)
 			{
-				Console.WriteLine(ex.Message);
+				logger.LogWarning("Logstore load is failed.");
+				logger.LogWarning(ex.Message);
 				System.IO.Directory.CreateDirectory(folderPath);
 				this.resetSectTripFuel ();
 			}
 			catch (System.Security.SecurityException ex)
 			{
-				Console.WriteLine(ex.Message);
+				logger.LogWarning("Logstore load is failed.");
+				logger.LogError(ex.Message);
 				this.resetTotalTripFuel ();
 			}
 		}
