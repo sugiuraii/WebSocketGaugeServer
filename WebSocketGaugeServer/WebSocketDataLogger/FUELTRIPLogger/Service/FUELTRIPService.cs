@@ -44,7 +44,16 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
         {
             this.logger = logger;
             this.appSettings = JsonConvert.DeserializeObject<FUELTRIPLoggerSettings>(File.ReadAllText("./fueltriplogger_settings.jsonc"));
-            this.fuelTripCalc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod);
+
+            var logStoreFolderPath = configuration.GetSection("ServiceConfig")["FuelTripLogStoreFolderPath"];
+            if(!Directory.Exists(logStoreFolderPath))
+            {
+                logger.LogWarning("Fuel trip log store folder path : "  + logStoreFolderPath + " is not the folder.");
+                logStoreFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+                logger.LogWarning("Default fuel trip log store folder path : " + logStoreFolderPath + " will be used instead.");
+            }
+
+            this.fuelTripCalc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod, logStoreFolderPath);
 
             //Websocket clients setup
             this.wsClients = new WebSocketClients(appSettings, loggerFactory);

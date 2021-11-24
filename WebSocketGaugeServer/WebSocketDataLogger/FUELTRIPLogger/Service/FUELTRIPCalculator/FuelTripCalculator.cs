@@ -262,7 +262,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FU
         /// </summary>
         /// <param name="option">Calculation option.</param>
         /// <param name="calculationMethod">Calclation method</param>
-		public FuelTripCalculator(FuelTripCalculatorOption option, FuelCalculationMethod calculationMethod)
+		public FuelTripCalculator(FuelTripCalculatorOption option, FuelCalculationMethod calculationMethod, string logStoreFolderPath)
 		{
             this.calculatorOption = option;
             this.calculationMethod = calculationMethod;
@@ -279,7 +279,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service.FU
 			saveElapsedTime = 0;
 
 			//Set data folder and file path.
-			folderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			//folderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+			folderPath = logStoreFolderPath;
 			filePath = Path.Combine( folderPath, "." + "FUELTRIP_Logger");
 
 			loadTripFuel();
