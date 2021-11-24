@@ -54,7 +54,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
                 logger.LogWarning("Default fuel trip log store folder path : " + logStoreFolderPath + " will be used instead.");
             }
 
-            this.fuelTripCalc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod, logStoreFolderPath);
+            this.fuelTripCalc = new FuelTripCalculator(appSettings.Calculation.CalculationOption, appSettings.Calculation.FuelCalculationMethod, logStoreFolderPath, logger);
 
             //Websocket clients setup
             this.wsClients = new WebSocketClients(appSettings, loggerFactory);
