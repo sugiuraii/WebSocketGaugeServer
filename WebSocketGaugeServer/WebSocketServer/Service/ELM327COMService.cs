@@ -24,17 +24,17 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
         private readonly AsyncSemaphoreLock WebSocketDictionaryLock = new AsyncSemaphoreLock();
         private readonly ILogger logger;
 
-        public async void AddWebSocketAsync(Guid sessionGuid, WebSocket websocket)
+        public async Task AddWebSocketAsync(Guid sessionGuid, WebSocket websocket)
         {
-            using(await WebSocketDictionaryLock.LockAsync())
+            using (await WebSocketDictionaryLock.LockAsync())
             {
                 this.WebSocketDictionary.Add(sessionGuid, (websocket, new ELM327WebsocketSessionParam()));
             }
         }
 
-        public async void RemoveWebSocketAsync(Guid sessionGuid)
+        public async Task RemoveWebSocketAsync(Guid sessionGuid)
         {
-            using(await WebSocketDictionaryLock.LockAsync())
+            using (await WebSocketDictionaryLock.LockAsync())
             {
                 this.WebSocketDictionary.Remove(sessionGuid);
             }
@@ -42,17 +42,18 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 
         public async Task<ELM327WebsocketSessionParam> GetSessionParamAsync(Guid guid)
         {
-            using(await WebSocketDictionaryLock.LockAsync())
+            using (await WebSocketDictionaryLock.LockAsync())
             {
                 return this.WebSocketDictionary[guid].SessionParam;
             }
         }
 
-        public IELM327COM ELM327COM { get  => elm327COM; }
-        public VirtualELM327COM VirtualELM327COM { 
-            get 
+        public IELM327COM ELM327COM { get => elm327COM; }
+        public VirtualELM327COM VirtualELM327COM
+        {
+            get
             {
-                if(virtualElm327COM != null)
+                if (virtualElm327COM != null)
                     return virtualElm327COM;
                 else
                     throw new InvalidOperationException("Virtual ELM327 COM is null. Virtual com mode is not be enabled.");
@@ -62,18 +63,18 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
         public ELM327COMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<ELM327COMService> logger)
         {
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("ELM327");
-                        
+
             this.logger = logger;
             var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
             logger.LogInformation("ELM327COM service is started.");
-            if(useVirtual)
+            if (useVirtual)
             {
                 logger.LogInformation("ELM327COM is started with virtual mode.");
                 int comWait = 15;
                 logger.LogInformation("VirtualELM327COM wait time is set to " + comWait.ToString() + " ms.");
                 var virtualCOM = new VirtualELM327COM(loggerFactory, comWait);
                 this.elm327COM = virtualCOM;
-                this.virtualElm327COM = virtualCOM;               
+                this.virtualElm327COM = virtualCOM;
             }
             else
             {
@@ -86,11 +87,11 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 logger.LogInformation("ELM327COM COMPort is set to: " + comportName);
 
                 ELM327COM elm327COM;
-                if(elm327ProtocolMode == null || elm327AdaptiveTimingMode == null || elm327Timeout == null)
+                if (elm327ProtocolMode == null || elm327AdaptiveTimingMode == null || elm327Timeout == null)
                     elm327COM = new ELM327COM(loggerFactory, comportName);
                 else
                     elm327COM = new ELM327COM(loggerFactory, comportName, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout));
-                
+
                 elm327COM.overrideDefaultBaudRate(baudRate);
 
                 this.elm327COM = elm327COM;
@@ -102,9 +103,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             // Register websocket broad cast
             this.elm327COM.ELM327DataReceived += async (sender, args) =>
             {
-                using(await WebSocketDictionaryLock.LockAsync())
+                try
                 {
-                    try
+                    using (await WebSocketDictionaryLock.LockAsync())
                     {
                         foreach (var session in WebSocketDictionary)
                         {
@@ -131,15 +132,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                             }
                         }
                     }
-                    catch (WebSocketException ex)
-                    {
-                        logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
-                        logger.LogWarning(ex.StackTrace);
-                    }
-                    catch (OperationCanceledException ex)
-                    {
-                        logger.LogInformation(ex.Message);
-                    }
+                }
+                catch (WebSocketException ex)
+                {
+                    logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                    logger.LogWarning(ex.StackTrace);
+                }
+                catch (OperationCanceledException ex)
+                {
+                    logger.LogInformation(ex.Message);
                 }
             };
 
@@ -158,7 +159,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             //reset all ssmcom flag
             this.ELM327COM.set_all_disable(true);
 
-            using(await WebSocketDictionaryLock.LockAsync())
+            using (await WebSocketDictionaryLock.LockAsync())
             {
                 if (WebSocketDictionary.Count < 1)
                     return;
@@ -189,7 +190,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
         }
 
         public void Dispose()
-        {            
+        {
             var stopTask = Task.Run(() => this.ELM327COM.BackgroundCommunicateStop());
             Task.WhenAny(stopTask, Task.Delay(10000));
         }
