@@ -12,6 +12,7 @@ using System.IO;
 using Newtonsoft.Json;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.Utils;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
 {
@@ -21,21 +22,32 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
         private readonly WebSocketClients wsClients;
         private readonly FuelTripCalculator fuelTripCalc;
         private readonly Dictionary<Guid, (WebSocket WebSocket, FUELTRIPWebSocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, FUELTRIPWebSocketSessionParam SessionParam)>();
+        private readonly AsyncSemaphoreLock WebSocketDictionaryLock = new AsyncSemaphoreLock();
         private readonly FUELTRIPLoggerSettings appSettings;
         public FUELTRIPLoggerSettings AppSettings { get => appSettings; }
-        public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
+
+        public async Task AddWebSocketAsync(Guid sessionGuid, WebSocket websocket)
         {
-            this.WebSocketDictionary.Add(sessionGuid, (websocket, new FUELTRIPWebSocketSessionParam()));
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Add(sessionGuid, (websocket, new FUELTRIPWebSocketSessionParam()));
+            }
         }
 
-        public void RemoveWebSocket(Guid sessionGuid)
+        public async Task RemoveWebSocketAsync(Guid sessionGuid)
         {
-            this.WebSocketDictionary.Remove(sessionGuid);
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Remove(sessionGuid);
+            }
         }
 
-        public FUELTRIPWebSocketSessionParam GetSessionParam(Guid guid)
+        public async Task<FUELTRIPWebSocketSessionParam> GetSessionParamAsync(Guid guid)
         {
-            return this.WebSocketDictionary[guid].SessionParam;
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                return this.WebSocketDictionary[guid].SessionParam;
+            }
         }
 
         public FuelTripCalculator FUELTripCalculator { get { return this.fuelTripCalc; } }
@@ -47,9 +59,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
 
             var logStoreFolderPath = configuration.GetSection("ServiceConfig")["FuelTripLogStoreFolderPath"];
             logger.LogInformation("Fuel trip log store folder path is set to : " + logStoreFolderPath);
-            if(!Directory.Exists(logStoreFolderPath))
+            if (!Directory.Exists(logStoreFolderPath))
             {
-                logger.LogWarning("Fuel trip log store folder path : "  + logStoreFolderPath + " does not exist.");
+                logger.LogWarning("Fuel trip log store folder path : " + logStoreFolderPath + " does not exist.");
                 logStoreFolderPath = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
                 logger.LogWarning("Default fuel trip log store folder path : " + logStoreFolderPath + " will be used instead.");
             }
@@ -66,19 +78,22 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
                 try
                 {
                     fuelTripCalc.update(wsClients.EngineRev, wsClients.VehicleSpeed, wsClients.InjPulseWidth, wsClients.MassAirFlow, wsClients.AFRatio, wsClients.FuelRate);
-                    foreach (var session in this.WebSocketDictionary)
+                    using (await WebSocketDictionaryLock.LockAsync())
                     {
-                        var guid = session.Key;
-                        var websocket = session.Value.WebSocket;
-                        var sessionparam = session.Value.SessionParam;
+                        foreach (var session in this.WebSocketDictionary)
+                        {
+                            var guid = session.Key;
+                            var websocket = session.Value.WebSocket;
+                            var sessionparam = session.Value.SessionParam;
 
-                        // Construct momentun fuel trip data message.
-                        string msg = this.constructMomentumFUELTRIPDataMessage(fuelTripCalc).Serialize();
-                        // Send message,
-                        byte[] buf = Encoding.UTF8.GetBytes(msg);
-                        await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                            // Construct momentun fuel trip data message.
+                            string msg = this.constructMomentumFUELTRIPDataMessage(fuelTripCalc).Serialize();
+                            // Send message,
+                            byte[] buf = Encoding.UTF8.GetBytes(msg);
+                            await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                        }
+
                     }
-
                 }
                 catch (TimeoutException ex)
                 {
@@ -96,17 +111,20 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service
             {
                 try
                 {
-                    foreach (var session in this.WebSocketDictionary)
+                    using (await WebSocketDictionaryLock.LockAsync())
                     {
-                        var guid = session.Key;
-                        var websocket = session.Value.WebSocket;
-                        var sessionparam = session.Value.SessionParam;
+                        foreach (var session in this.WebSocketDictionary)
+                        {
+                            var guid = session.Key;
+                            var websocket = session.Value.WebSocket;
+                            var sessionparam = session.Value.SessionParam;
 
-                        // Construct section fuel trip data message.
-                        string msg = this.constructSectionFUELTRIPDataMessage(fuelTripCalc).Serialize();
-                        // Send message,
-                        byte[] buf = Encoding.UTF8.GetBytes(msg);
-                        await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                            // Construct section fuel trip data message.
+                            string msg = this.constructSectionFUELTRIPDataMessage(fuelTripCalc).Serialize();
+                            // Send message,
+                            byte[] buf = Encoding.UTF8.GetBytes(msg);
+                            await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                        }
                     }
                 }
                 catch (WebSocketException ex)

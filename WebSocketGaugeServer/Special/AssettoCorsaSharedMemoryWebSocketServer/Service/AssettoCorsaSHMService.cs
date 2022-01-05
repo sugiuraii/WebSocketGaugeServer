@@ -9,6 +9,7 @@ using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Service;
 using SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.SessionItems;
 using Newtonsoft.Json;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.Utils;
 
 namespace SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Service
 {
@@ -18,20 +19,30 @@ namespace SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketSer
         private readonly AssetoCorsaSHMBackgroundCommunicator assettoCorsaCOM;
 
         private readonly Dictionary<Guid, (WebSocket WebSocket, AssettoCorsaWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, AssettoCorsaWebsocketSessionParam SessionParam)>();
+        private readonly AsyncSemaphoreLock WebSocketDictionaryLock = new AsyncSemaphoreLock();
 
-        public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
+        public async Task AddWebSocketAsync(Guid sessionGuid, WebSocket websocket)
         {
-            this.WebSocketDictionary.Add(sessionGuid, (websocket, new AssettoCorsaWebsocketSessionParam()));
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Add(sessionGuid, (websocket, new AssettoCorsaWebsocketSessionParam()));
+            }
         }
 
-        public void RemoveWebSocket(Guid sessionGuid)
+        public async Task RemoveWebSocketAsync(Guid sessionGuid)
         {
-            this.WebSocketDictionary.Remove(sessionGuid);
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Remove(sessionGuid);
+            }
         }
 
-        public AssettoCorsaWebsocketSessionParam GetSessionParam(Guid guid)
+        public async Task<AssettoCorsaWebsocketSessionParam> GetSessionParamAsync(Guid guid)
         {
-            return this.WebSocketDictionary[guid].SessionParam;
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                return this.WebSocketDictionary[guid].SessionParam;
+            }
         }
         public AssetoCorsaSHMBackgroundCommunicator AssettoCorsaCOM { get { return this.assettoCorsaCOM; } }
         public AssettoCorsaSHMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILogger<AssettoCorsaSHMService> logger)
@@ -48,28 +59,32 @@ namespace SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketSer
             {
                 try
                 {
-                    foreach (var session in WebSocketDictionary)
+                    using (await WebSocketDictionaryLock.LockAsync())
                     {
-                        var guid = session.Key;
-                        var websocket = session.Value.WebSocket;
-                        var sessionparam = session.Value.SessionParam;
 
-                        if (sessionparam.PhysicsDataSendCount < sessionparam.PhysicsDataSendInterval)
-                            sessionparam.PhysicsDataSendCount++;
-                        else
+                        foreach (var session in WebSocketDictionary)
                         {
-                            var mapper = new AssettoCorsaSHMVALJSONMapper();
-                            var physicsSHM = e.Physics;
-                            var msg_data = mapper.CreatePhysicsParameterValueJSON(sessionparam.PhysicsDataSendList, physicsSHM);
+                            var guid = session.Key;
+                            var websocket = session.Value.WebSocket;
+                            var sessionparam = session.Value.SessionParam;
 
-                            if (msg_data.val.Count > 0)
+                            if (sessionparam.PhysicsDataSendCount < sessionparam.PhysicsDataSendInterval)
+                                sessionparam.PhysicsDataSendCount++;
+                            else
                             {
-                                string msg = JsonConvert.SerializeObject(msg_data);
-                                byte[] buf = Encoding.UTF8.GetBytes(msg);
-                                if (websocket.State == WebSocketState.Open)
-                                    await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                                var mapper = new AssettoCorsaSHMVALJSONMapper();
+                                var physicsSHM = e.Physics;
+                                var msg_data = mapper.CreatePhysicsParameterValueJSON(sessionparam.PhysicsDataSendList, physicsSHM);
+
+                                if (msg_data.val.Count > 0)
+                                {
+                                    string msg = JsonConvert.SerializeObject(msg_data);
+                                    byte[] buf = Encoding.UTF8.GetBytes(msg);
+                                    if (websocket.State == WebSocketState.Open)
+                                        await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                                }
+                                sessionparam.PhysicsDataSendCount = 0;
                             }
-                            sessionparam.PhysicsDataSendCount = 0;
                         }
                     }
                 }
@@ -84,28 +99,31 @@ namespace SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketSer
             {
                 try
                 {
-                    foreach (var session in WebSocketDictionary)
+                    using (await WebSocketDictionaryLock.LockAsync())
                     {
-                        var guid = session.Key;
-                        var websocket = session.Value.WebSocket;
-                        var sessionparam = session.Value.SessionParam;
-
-                        if (sessionparam.GraphicsDataSendCount < sessionparam.GraphicsDataSendInterval)
-                            sessionparam.GraphicsDataSendCount++;
-                        else
+                        foreach (var session in WebSocketDictionary)
                         {
-                            var mapper = new AssettoCorsaSHMVALJSONMapper();
-                            var graphicsSHM = e.Graphics;
-                            var msg_data = mapper.CreateGraphicsParameterValueJSON(sessionparam.GraphicsDataSendList, graphicsSHM);
+                            var guid = session.Key;
+                            var websocket = session.Value.WebSocket;
+                            var sessionparam = session.Value.SessionParam;
 
-                            if (msg_data.val.Count > 0)
+                            if (sessionparam.GraphicsDataSendCount < sessionparam.GraphicsDataSendInterval)
+                                sessionparam.GraphicsDataSendCount++;
+                            else
                             {
-                                string msg = JsonConvert.SerializeObject(msg_data);
-                                byte[] buf = Encoding.UTF8.GetBytes(msg);
-                                if (websocket.State == WebSocketState.Open)
-                                    await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                                var mapper = new AssettoCorsaSHMVALJSONMapper();
+                                var graphicsSHM = e.Graphics;
+                                var msg_data = mapper.CreateGraphicsParameterValueJSON(sessionparam.GraphicsDataSendList, graphicsSHM);
+
+                                if (msg_data.val.Count > 0)
+                                {
+                                    string msg = JsonConvert.SerializeObject(msg_data);
+                                    byte[] buf = Encoding.UTF8.GetBytes(msg);
+                                    if (websocket.State == WebSocketState.Open)
+                                        await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                                }
+                                sessionparam.GraphicsDataSendCount = 0;
                             }
-                            sessionparam.GraphicsDataSendCount = 0;
                         }
                     }
                 }
@@ -120,28 +138,31 @@ namespace SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketSer
             {
                 try
                 {
-                    foreach (var session in WebSocketDictionary)
+                    using (await WebSocketDictionaryLock.LockAsync())
                     {
-                        var guid = session.Key;
-                        var websocket = session.Value.WebSocket;
-                        var sessionparam = session.Value.SessionParam;
-
-                        if (sessionparam.GraphicsDataSendCount < sessionparam.GraphicsDataSendInterval)
-                            sessionparam.GraphicsDataSendCount++;
-                        else
+                        foreach (var session in WebSocketDictionary)
                         {
-                            var mapper = new AssettoCorsaSHMVALJSONMapper();
-                            var staticInfoSHM = e.StaticInfo;
-                            var msg_data = mapper.CreateStaticInfoParameterValueJSON(sessionparam.StaticInfoDataSendList, staticInfoSHM);
+                            var guid = session.Key;
+                            var websocket = session.Value.WebSocket;
+                            var sessionparam = session.Value.SessionParam;
 
-                            if (msg_data.val.Count > 0)
+                            if (sessionparam.GraphicsDataSendCount < sessionparam.GraphicsDataSendInterval)
+                                sessionparam.GraphicsDataSendCount++;
+                            else
                             {
-                                string msg = JsonConvert.SerializeObject(msg_data);
-                                byte[] buf = Encoding.UTF8.GetBytes(msg);
-                                if (websocket.State == WebSocketState.Open)
-                                    await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                                var mapper = new AssettoCorsaSHMVALJSONMapper();
+                                var staticInfoSHM = e.StaticInfo;
+                                var msg_data = mapper.CreateStaticInfoParameterValueJSON(sessionparam.StaticInfoDataSendList, staticInfoSHM);
+
+                                if (msg_data.val.Count > 0)
+                                {
+                                    string msg = JsonConvert.SerializeObject(msg_data);
+                                    byte[] buf = Encoding.UTF8.GetBytes(msg);
+                                    if (websocket.State == WebSocketState.Open)
+                                        await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                                }
+                                sessionparam.GraphicsDataSendCount = 0;
                             }
-                            sessionparam.GraphicsDataSendCount = 0;
                         }
                     }
                 }

@@ -10,6 +10,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.Utils;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
@@ -19,28 +20,39 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
         private readonly IArduinoCOM arduinoCOM;
         private readonly VirtualArduinoCOM virtualArduinoCOM;
         private readonly Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, ArduinoCOMWebsocketSessionParam SessionParam)>();
+        private readonly AsyncSemaphoreLock WebSocketDictionaryLock = new AsyncSemaphoreLock();
 
-        public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
+        public async Task AddWebSocketAsync(Guid sessionGuid, WebSocket websocket)
         {
-            this.WebSocketDictionary.Add(sessionGuid, (websocket, new ArduinoCOMWebsocketSessionParam()));
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Add(sessionGuid, (websocket, new ArduinoCOMWebsocketSessionParam()));
+            }
         }
 
-        public void RemoveWebSocket(Guid sessionGuid)
+        public async Task RemoveWebSocketAsync(Guid sessionGuid)
         {
-            this.WebSocketDictionary.Remove(sessionGuid);
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Remove(sessionGuid);
+            }
         }
 
-        public ArduinoCOMWebsocketSessionParam GetSessionParam(Guid guid)
+        public async Task<ArduinoCOMWebsocketSessionParam> GetSessionParamAsync(Guid guid)
         {
-            return this.WebSocketDictionary[guid].SessionParam;
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                return this.WebSocketDictionary[guid].SessionParam;
+            }
         }
 
         public IArduinoCOM ArduinoCOM { get => arduinoCOM; }
 
-        public VirtualArduinoCOM VirtualArduinoCOM { 
-            get 
+        public VirtualArduinoCOM VirtualArduinoCOM
+        {
+            get
             {
-                if(virtualArduinoCOM != null)
+                if (virtualArduinoCOM != null)
                     return virtualArduinoCOM;
                 else
                     throw new InvalidOperationException("Virtual arduino COM is null. Virtual com mode is not be enabled.");
@@ -54,14 +66,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             this.logger = logger;
             var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
             logger.LogInformation("ArduinoCOM service is started.");
-            if(useVirtual)
+            if (useVirtual)
             {
                 logger.LogInformation("ArduinoCOM is started with virtual mode.");
                 int virtualArduinoCOMWait = 15;
                 logger.LogInformation("VirtualArduinoCOM wait time is set to " + virtualArduinoCOMWait.ToString() + " ms.");
                 var virtualCOM = new VirtualArduinoCOM(loggerFactory, virtualArduinoCOMWait);
                 this.arduinoCOM = virtualCOM;
-                this.virtualArduinoCOM = virtualCOM;               
+                this.virtualArduinoCOM = virtualCOM;
             }
             else
             {
@@ -79,31 +91,34 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             {
                 try
                 {
-                    foreach (var session in WebSocketDictionary)
+                    using (await WebSocketDictionaryLock.LockAsync())
                     {
-                        var guid = session.Key;
-                        var websocket = session.Value.WebSocket;
-                        var sessionparam = session.Value.SessionParam;
-
-                        var msg_data = new ValueJSONFormat();
-                        if (sessionparam.SendCount < sessionparam.SendInterval)
-                            sessionparam.SendCount++;
-                        else
+                        foreach (var session in WebSocketDictionary)
                         {
-                            foreach (ArduinoParameterCode code in Enum.GetValues(typeof(ArduinoParameterCode)))
-                            {
-                                if (sessionparam.Sendlist[code])
-                                    msg_data.val.Add(code.ToString(), arduinoCOM.get_value(code).ToString());
-                            }
+                            var guid = session.Key;
+                            var websocket = session.Value.WebSocket;
+                            var sessionparam = session.Value.SessionParam;
 
-                            if (msg_data.val.Count > 0)
+                            var msg_data = new ValueJSONFormat();
+                            if (sessionparam.SendCount < sessionparam.SendInterval)
+                                sessionparam.SendCount++;
+                            else
                             {
-                                string msg = JsonConvert.SerializeObject(msg_data);
-                                byte[] buf = Encoding.UTF8.GetBytes(msg);
-                                if (websocket.State == WebSocketState.Open)
-                                    await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                                foreach (ArduinoParameterCode code in Enum.GetValues(typeof(ArduinoParameterCode)))
+                                {
+                                    if (sessionparam.Sendlist[code])
+                                        msg_data.val.Add(code.ToString(), arduinoCOM.get_value(code).ToString());
+                                }
+
+                                if (msg_data.val.Count > 0)
+                                {
+                                    string msg = JsonConvert.SerializeObject(msg_data);
+                                    byte[] buf = Encoding.UTF8.GetBytes(msg);
+                                    if (websocket.State == WebSocketState.Open)
+                                        await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                                }
+                                sessionparam.SendCount = 0;
                             }
-                            sessionparam.SendCount = 0;
                         }
                     }
                 }
