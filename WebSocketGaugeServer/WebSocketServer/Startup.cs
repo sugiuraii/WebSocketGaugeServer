@@ -99,7 +99,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                             var middleware = new ELM327WebSocketMiddleware(loggerFactory);
-                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                            await middleware.HandleHttpConnectionAsync(context, webSocket, cancellationToken);
                         }
                         else
                             logger.LogError("ELM327 websocket connection is requested. However, ELM327 service is disabled.");
@@ -111,7 +111,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                             var middleware = new DefiWebSocketMiddleware(loggerFactory);
-                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                            await middleware.HandleHttpConnectionAsync(context, webSocket, cancellationToken);
                         }
                         else
                             logger.LogError("Defi websocket connection is requested. However, Defi service is disabled.");
@@ -123,7 +123,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                             var middleware = new SSMWebSocketMiddleware(loggerFactory);
-                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                            await middleware.HandleHttpConnectionAsync(context, webSocket, cancellationToken);
                         }
                         else
                             logger.LogError("SSM websocket connection is requested. However, SSM service is disabled.");
@@ -135,7 +135,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                             var middleware = new ArduinoWebSocketMiddleware(loggerFactory);
-                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                            await middleware.HandleHttpConnectionAsync(context, webSocket, cancellationToken);
                         }
                         else
                             logger.LogError("Arduino websocket connection is requested. However, Arduino service is disabled.");

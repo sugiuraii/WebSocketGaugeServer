@@ -58,7 +58,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
                             var middleware = new FUELTRIPLoggerWebSocketMiddleware(loggerFactory);
-                            await middleware.HandleHttpConnection(context, webSocket, cancellationToken);
+                            await middleware.HandleHttpConnectionAsync(context, webSocket, cancellationToken);
                             break;
                         default:
                             await next();

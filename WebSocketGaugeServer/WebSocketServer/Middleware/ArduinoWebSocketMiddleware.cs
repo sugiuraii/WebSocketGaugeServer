@@ -29,7 +29,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
             this.logger = loggerFactory.CreateLogger<ArduinoWebSocketMiddleware>();
         }
 
-        public async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
+        public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {
             var service = (ArduinoCOMService)context.RequestServices.GetRequiredService(typeof(ArduinoCOMService));
             var connectionID = Guid.NewGuid();

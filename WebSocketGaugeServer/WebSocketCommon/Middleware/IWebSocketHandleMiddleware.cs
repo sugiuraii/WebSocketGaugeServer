@@ -7,6 +7,6 @@ namespace SZ2.WebSocketGaugeServer.WebSocketCommon.Middleware
 {
     public interface IWebSocketHandleMiddleware
     {
-        Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct);
+        Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct);
     }
 }

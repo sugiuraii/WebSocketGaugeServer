@@ -29,7 +29,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
             this.logger = loggerFactory.CreateLogger<DefiWebSocketMiddleware>();
         }
 
-        public async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
+        public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {
             var service = (DefiCOMService)context.RequestServices.GetRequiredService(typeof(DefiCOMService));
             var connectionID = Guid.NewGuid();

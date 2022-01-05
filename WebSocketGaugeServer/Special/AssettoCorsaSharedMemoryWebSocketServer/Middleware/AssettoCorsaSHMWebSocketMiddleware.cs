@@ -28,7 +28,7 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
         {
             this.logger = loggerFactory.CreateLogger<AssettoCorsaSHMWebSocketMiddleware>();
         }
-        public async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
+        public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {
             var service = (AssettoCorsaSHMService)context.RequestServices.GetRequiredService(typeof(AssettoCorsaSHMService));
             var connectionID = Guid.NewGuid();

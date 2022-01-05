@@ -27,7 +27,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware
         {
             this.logger = loggerFactory.CreateLogger<FUELTRIPLoggerWebSocketMiddleware>();
         }
-        public async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
+        public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {
             var service = (FUELTRIPService)context.RequestServices.GetRequiredService(typeof(FUELTRIPService));
             var connectionID = Guid.NewGuid();

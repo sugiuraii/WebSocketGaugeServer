@@ -29,7 +29,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
             this.logger = loggerFactory.CreateLogger<ELM327WebSocketMiddleware>();
         }
 
-        public async Task HandleHttpConnection(HttpContext context, WebSocket webSocket, CancellationToken ct)
+        public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {
             var service = (ELM327COMService)context.RequestServices.GetRequiredService(typeof(ELM327COMService));
             var connectionID = Guid.NewGuid();
