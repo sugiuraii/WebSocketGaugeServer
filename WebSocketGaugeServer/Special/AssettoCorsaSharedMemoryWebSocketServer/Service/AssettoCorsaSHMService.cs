@@ -93,6 +93,10 @@ namespace SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketSer
                     logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
                     logger.LogWarning(ex.StackTrace);
                 }
+                catch (OperationCanceledException ex)
+                {
+                    logger.LogInformation(ex.Message);
+                }
             };
 
             this.assettoCorsaCOM.AssettoCorsaSharedMemory.GraphicsUpdated += async (sender, e) =>
@@ -132,6 +136,10 @@ namespace SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketSer
                     logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
                     logger.LogWarning(ex.StackTrace);
                 }
+                catch (OperationCanceledException ex)
+                {
+                    logger.LogInformation(ex.Message);
+                }                
             };
 
             this.assettoCorsaCOM.AssettoCorsaSharedMemory.StaticInfoUpdated += async (sender, e) =>
@@ -170,6 +178,10 @@ namespace SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketSer
                 {
                     logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
                     logger.LogWarning(ex.StackTrace);
+                }
+                catch (OperationCanceledException ex)
+                {
+                    logger.LogInformation(ex.Message);
                 }
             };
             this.assettoCorsaCOM.BackgroundCommunicateStart();
