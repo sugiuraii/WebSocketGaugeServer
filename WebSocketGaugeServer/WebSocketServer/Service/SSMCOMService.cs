@@ -11,42 +11,54 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.Utils;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
     public class SSMCOMService : IDisposable
-    {        
+    {
         private readonly ISSMCOM ssmCOM;
         private readonly VirtualSSMCOM virtualSSMCOM;
         private readonly Timer update_ssmflag_timer;
         private readonly Dictionary<Guid, (WebSocket WebSocket, SSMCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, SSMCOMWebsocketSessionParam SessionParam)>();
+        private readonly AsyncSemaphoreLock WebSocketDictionaryLock = new AsyncSemaphoreLock();
         private readonly ILogger logger;
 
-        public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
+        public async Task AddWebSocketAsync(Guid sessionGuid, WebSocket websocket)
         {
-            this.WebSocketDictionary.Add(sessionGuid, (websocket, new SSMCOMWebsocketSessionParam()));
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Add(sessionGuid, (websocket, new SSMCOMWebsocketSessionParam()));
+            }
         }
 
-        public void RemoveWebSocket(Guid sessionGuid)
+        public async Task RemoveWebSocketAsync(Guid sessionGuid)
         {
-            this.WebSocketDictionary.Remove(sessionGuid);
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Remove(sessionGuid);
+            }
         }
 
-        public SSMCOMWebsocketSessionParam GetSessionParam(Guid guid)
+        public async Task<SSMCOMWebsocketSessionParam> GetSessionParamAsync(Guid guid)
         {
-            return this.WebSocketDictionary[guid].SessionParam;
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                return this.WebSocketDictionary[guid].SessionParam;
+            }
         }
         public ISSMCOM SSMCOM { get => ssmCOM; }
-        public VirtualSSMCOM VirtualSSMCOM { 
-            get 
+        public VirtualSSMCOM VirtualSSMCOM
+        {
+            get
             {
-                if(virtualSSMCOM != null)
+                if (virtualSSMCOM != null)
                     return virtualSSMCOM;
                 else
                     throw new InvalidOperationException("VirtualSSMCOM is null. Virtual com mode is not be enabled.");
             }
         }
-        
+
         public SSMCOMService(IConfiguration configuration, IHostApplicationLifetime lifetime, ILoggerFactory loggerFactory, ILogger<SSMCOMService> logger)
         {
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("SSM");
@@ -55,14 +67,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 
             var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
             logger.LogInformation("SSMCOM service is started.");
-            if(useVirtual)
+            if (useVirtual)
             {
                 logger.LogInformation("SSMCOM is started with virtual mode.");
                 int comWait = 15;
                 logger.LogInformation("VirtualSSMCOM wait time is set to " + comWait.ToString() + " ms.");
                 var virtualCOM = new VirtualSSMCOM(loggerFactory, comWait);
                 this.ssmCOM = virtualCOM;
-                this.virtualSSMCOM = virtualCOM;               
+                this.virtualSSMCOM = virtualCOM;
             }
             else
             {
@@ -80,40 +92,43 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             {
                 try
                 {
-                    foreach (var session in WebSocketDictionary)
+                    using (await WebSocketDictionaryLock.LockAsync())
                     {
-                        var guid = session.Key;
-                        var websocket = session.Value.WebSocket;
-                        var sessionparam = session.Value.SessionParam;
+                        foreach (var session in WebSocketDictionary)
+                        {
+                            var guid = session.Key;
+                            var websocket = session.Value.WebSocket;
+                            var sessionparam = session.Value.SessionParam;
 
-                        var msg_data = new ValueJSONFormat();
-                        foreach (SSMParameterCode ssmcode in args.Received_Parameter_Code)
-                        {
-                            if (sessionparam.FastSendlist[ssmcode] || sessionparam.SlowSendlist[ssmcode])
+                            var msg_data = new ValueJSONFormat();
+                            foreach (SSMParameterCode ssmcode in args.Received_Parameter_Code)
                             {
-                                // Return Switch content
-                                if (ssmcode >= SSMParameterCode.Switch_P0x061 && ssmcode <= SSMParameterCode.Switch_P0x121)
+                                if (sessionparam.FastSendlist[ssmcode] || sessionparam.SlowSendlist[ssmcode])
                                 {
-                                    List<SSMSwitchCode> switch_code_list = SSMContentTable.getSwitchcodesFromParametercode(ssmcode);
-                                    foreach (SSMSwitchCode switch_code in switch_code_list)
+                                    // Return Switch content
+                                    if (ssmcode >= SSMParameterCode.Switch_P0x061 && ssmcode <= SSMParameterCode.Switch_P0x121)
                                     {
-                                        msg_data.val.Add(switch_code.ToString(), ssmCOM.get_switch(switch_code).ToString());
+                                        List<SSMSwitchCode> switch_code_list = SSMContentTable.getSwitchcodesFromParametercode(ssmcode);
+                                        foreach (SSMSwitchCode switch_code in switch_code_list)
+                                        {
+                                            msg_data.val.Add(switch_code.ToString(), ssmCOM.get_switch(switch_code).ToString());
+                                        }
                                     }
+                                    // Return Numeric content
+                                    else
+                                    {
+                                        msg_data.val.Add(ssmcode.ToString(), ssmCOM.get_value(ssmcode).ToString());
+                                    }
+                                    msg_data.Validate();
                                 }
-                                // Return Numeric content
-                                else
-                                {
-                                    msg_data.val.Add(ssmcode.ToString(), ssmCOM.get_value(ssmcode).ToString());
-                                }
-                                msg_data.Validate();
                             }
-                        }
-                        if (msg_data.val.Count > 0)
-                        {
-                            string msg = JsonConvert.SerializeObject(msg_data);
-                            byte[] buf = Encoding.UTF8.GetBytes(msg);
-                            if (websocket.State == WebSocketState.Open)
-                                await session.Value.WebSocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                            if (msg_data.val.Count > 0)
+                            {
+                                string msg = JsonConvert.SerializeObject(msg_data);
+                                byte[] buf = Encoding.UTF8.GetBytes(msg);
+                                if (websocket.State == WebSocketState.Open)
+                                    await session.Value.WebSocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                            }
                         }
                     }
                 }
@@ -134,7 +149,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             this.update_ssmflag_timer = new Timer(new TimerCallback(updateSSMCOMReadflag), null, 0, Timeout.Infinite);
             update_ssmflag_timer.Change(0, 2000);
         }
-        private void updateSSMCOMReadflag(object stateobj)
+        private async void updateSSMCOMReadflag(object stateobj)
         {
             // Do nothing if the running state is false.
             if (!this.SSMCOM.IsCommunitateThreadAlive)
@@ -142,29 +157,31 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 
             //reset all ssmcom flag
             this.SSMCOM.set_all_disable(true);
-
-            if (WebSocketDictionary.Count < 1)
-                return;
-
-            foreach (var session in WebSocketDictionary)
+            using (await WebSocketDictionaryLock.LockAsync())
             {
-                var websocket = session.Value.WebSocket;
-                var sessionparam = session.Value.SessionParam;
+                if (WebSocketDictionary.Count < 1)
+                    return;
 
-                if (websocket.State != WebSocketState.Open) // Avoid null session bug
-                    continue;
-
-                foreach (SSMParameterCode code in Enum.GetValues(typeof(SSMParameterCode)))
+                foreach (var session in WebSocketDictionary)
                 {
-                    if (sessionparam.FastSendlist[code])
+                    var websocket = session.Value.WebSocket;
+                    var sessionparam = session.Value.SessionParam;
+
+                    if (websocket.State != WebSocketState.Open) // Avoid null session bug
+                        continue;
+
+                    foreach (SSMParameterCode code in Enum.GetValues(typeof(SSMParameterCode)))
                     {
-                        if (!SSMCOM.get_fastread_flag(code))
-                            SSMCOM.set_fastread_flag(code, true, true);
-                    }
-                    if (sessionparam.SlowSendlist[code])
-                    {
-                        if (!SSMCOM.get_slowread_flag(code))
-                            SSMCOM.set_slowread_flag(code, true, true);
+                        if (sessionparam.FastSendlist[code])
+                        {
+                            if (!SSMCOM.get_fastread_flag(code))
+                                SSMCOM.set_fastread_flag(code, true, true);
+                        }
+                        if (sessionparam.SlowSendlist[code])
+                        {
+                            if (!SSMCOM.get_slowread_flag(code))
+                                SSMCOM.set_slowread_flag(code, true, true);
+                        }
                     }
                 }
             }

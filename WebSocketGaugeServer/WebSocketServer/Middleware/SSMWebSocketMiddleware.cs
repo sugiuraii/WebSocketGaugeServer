@@ -35,15 +35,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
             var connectionID = Guid.NewGuid();
             var destAddress = context.Connection.RemoteIpAddress;
 
-            service.AddWebSocket(connectionID, webSocket);
-            var sessionParam = service.GetSessionParam(connectionID);
+            await service.AddWebSocketAsync(connectionID, webSocket);
+            var sessionParam = await service.GetSessionParamAsync(connectionID);
             logger.LogInformation("Session is connected from : " + destAddress.ToString());
 
             while (webSocket.State == WebSocketState.Open)
             {
                 await processReceivedMessage(webSocket, service, sessionParam, destAddress, ct);
             }
-            service.RemoveWebSocket(connectionID);
+            await service.RemoveWebSocketAsync(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
             {
                 await webSocket.CloseAsync(WebSocketCloseStatus.NormalClosure, "Closed normally", ct);
