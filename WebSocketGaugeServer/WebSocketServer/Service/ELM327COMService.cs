@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.Utils;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
@@ -20,21 +21,31 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
         private readonly VirtualELM327COM virtualElm327COM;
         private readonly Timer update_obdflag_timer;
         private readonly Dictionary<Guid, (WebSocket WebSocket, ELM327WebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, ELM327WebsocketSessionParam SessionParam)>();
+        private readonly AsyncSemaphoreLock WebSocketDictionaryLock = new AsyncSemaphoreLock();
         private readonly ILogger logger;
 
-        public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
+        public async void AddWebSocketAsync(Guid sessionGuid, WebSocket websocket)
         {
-            this.WebSocketDictionary.Add(sessionGuid, (websocket, new ELM327WebsocketSessionParam()));
+            using(await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Add(sessionGuid, (websocket, new ELM327WebsocketSessionParam()));
+            }
         }
 
-        public void RemoveWebSocket(Guid sessionGuid)
+        public async void RemoveWebSocketAsync(Guid sessionGuid)
         {
-            this.WebSocketDictionary.Remove(sessionGuid);
+            using(await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Remove(sessionGuid);
+            }
         }
 
-        public ELM327WebsocketSessionParam GetSessionParam(Guid guid)
+        public async Task<ELM327WebsocketSessionParam> GetSessionParamAsync(Guid guid)
         {
-            return this.WebSocketDictionary[guid].SessionParam;
+            using(await WebSocketDictionaryLock.LockAsync())
+            {
+                return this.WebSocketDictionary[guid].SessionParam;
+            }
         }
 
         public IELM327COM ELM327COM { get  => elm327COM; }
@@ -91,51 +102,54 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             // Register websocket broad cast
             this.elm327COM.ELM327DataReceived += async (sender, args) =>
             {
-                try
+                using(await WebSocketDictionaryLock.LockAsync())
                 {
-                    foreach (var session in WebSocketDictionary)
+                    try
                     {
-                        var guid = session.Key;
-                        var websocket = session.Value.WebSocket;
-                        var sessionparam = session.Value.SessionParam;
-
-                        var msg_data = new ValueJSONFormat();
-                        foreach (var code in args.Received_Parameter_Code)
+                        foreach (var session in WebSocketDictionary)
                         {
-                            if (sessionparam.FastSendlist[code] || sessionparam.SlowSendlist[code])
+                            var guid = session.Key;
+                            var websocket = session.Value.WebSocket;
+                            var sessionparam = session.Value.SessionParam;
+
+                            var msg_data = new ValueJSONFormat();
+                            foreach (var code in args.Received_Parameter_Code)
                             {
-                                msg_data.val.Add(code.ToString(), elm327COM.get_value(code).ToString());
-                                msg_data.Validate();
+                                if (sessionparam.FastSendlist[code] || sessionparam.SlowSendlist[code])
+                                {
+                                    msg_data.val.Add(code.ToString(), elm327COM.get_value(code).ToString());
+                                    msg_data.Validate();
+                                }
+                            }
+
+                            if (msg_data.val.Count > 0)
+                            {
+                                string msg = JsonConvert.SerializeObject(msg_data);
+                                byte[] buf = Encoding.UTF8.GetBytes(msg);
+                                if (websocket.State == WebSocketState.Open)
+                                    await session.Value.WebSocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
                             }
                         }
-
-                        if (msg_data.val.Count > 0)
-                        {
-                            string msg = JsonConvert.SerializeObject(msg_data);
-                            byte[] buf = Encoding.UTF8.GetBytes(msg);
-                            if (websocket.State == WebSocketState.Open)
-                                await session.Value.WebSocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
-                        }
                     }
-                }
-                catch (WebSocketException ex)
-                {
-                    logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
-                    logger.LogWarning(ex.StackTrace);
-                }
-                catch (OperationCanceledException ex)
-                {
-                    logger.LogInformation(ex.Message);
+                    catch (WebSocketException ex)
+                    {
+                        logger.LogWarning(ex.GetType().FullName + " : " + ex.Message + " : Error code : " + ex.ErrorCode.ToString());
+                        logger.LogWarning(ex.StackTrace);
+                    }
+                    catch (OperationCanceledException ex)
+                    {
+                        logger.LogInformation(ex.Message);
+                    }
                 }
             };
 
             // Start ELM327COM communitcation thread.
             this.ELM327COM.BackgroundCommunicateStart();
             // Start perioddical OBDFlag update.
-            this.update_obdflag_timer = new Timer(new TimerCallback(updateOBDReadflag), null, 0, Timeout.Infinite);
+            this.update_obdflag_timer = new Timer(new TimerCallback(UpdateOBDReadflagAsync), null, 0, Timeout.Infinite);
             update_obdflag_timer.Change(0, 2000);
         }
-        private void updateOBDReadflag(object stateobj)
+        private async void UpdateOBDReadflagAsync(object stateobj)
         {
             // Do nothing if the running state is false.
             if (!this.ELM327COM.IsCommunitateThreadAlive)
@@ -144,34 +158,38 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             //reset all ssmcom flag
             this.ELM327COM.set_all_disable(true);
 
-            if (WebSocketDictionary.Count < 1)
-                return;
-
-            foreach (var session in WebSocketDictionary)
+            using(await WebSocketDictionaryLock.LockAsync())
             {
-                var websocket = session.Value.WebSocket;
-                var sessionparam = session.Value.SessionParam;
+                if (WebSocketDictionary.Count < 1)
+                    return;
 
-                if (websocket.State != WebSocketState.Open) // Avoid null session bug
-                    continue;
-
-                foreach (OBDIIParameterCode code in Enum.GetValues(typeof(OBDIIParameterCode)))
+                foreach (var session in WebSocketDictionary)
                 {
-                    if (sessionparam.FastSendlist[code])
+                    var websocket = session.Value.WebSocket;
+                    var sessionparam = session.Value.SessionParam;
+
+                    if (websocket.State != WebSocketState.Open) // Avoid null session bug
+                        continue;
+
+                    foreach (OBDIIParameterCode code in Enum.GetValues(typeof(OBDIIParameterCode)))
                     {
-                        if (!ELM327COM.get_fastread_flag(code))
-                            ELM327COM.set_fastread_flag(code, true, true);
-                    }
-                    if (sessionparam.SlowSendlist[code])
-                    {
-                        if (!ELM327COM.get_slowread_flag(code))
-                            ELM327COM.set_slowread_flag(code, true, true);
+                        if (sessionparam.FastSendlist[code])
+                        {
+                            if (!ELM327COM.get_fastread_flag(code))
+                                ELM327COM.set_fastread_flag(code, true, true);
+                        }
+                        if (sessionparam.SlowSendlist[code])
+                        {
+                            if (!ELM327COM.get_slowread_flag(code))
+                                ELM327COM.set_slowread_flag(code, true, true);
+                        }
                     }
                 }
             }
         }
+
         public void Dispose()
-        {
+        {            
             var stopTask = Task.Run(() => this.ELM327COM.BackgroundCommunicateStop());
             Task.WhenAny(stopTask, Task.Delay(10000));
         }
