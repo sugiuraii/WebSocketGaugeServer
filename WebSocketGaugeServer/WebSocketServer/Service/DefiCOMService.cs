@@ -11,6 +11,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
+using SZ2.WebSocketGaugeServer.WebSocketCommon.Utils;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
@@ -20,27 +21,38 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
         private readonly IDefiCOM defiCOM;
         private readonly VirtualDefiCOM virtualDefiCOM;
         private readonly Dictionary<Guid, (WebSocket WebSocket, DefiCOMWebsocketSessionParam SessionParam)> WebSocketDictionary = new Dictionary<Guid, (WebSocket WebSocket, DefiCOMWebsocketSessionParam SessionParam)>();
+        private readonly AsyncSemaphoreLock WebSocketDictionaryLock = new AsyncSemaphoreLock();
 
-        public void AddWebSocket(Guid sessionGuid, WebSocket websocket)
+        public async Task AddWebSocketAsync(Guid sessionGuid, WebSocket websocket)
         {
-            this.WebSocketDictionary.Add(sessionGuid, (websocket, new DefiCOMWebsocketSessionParam()));
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Add(sessionGuid, (websocket, new DefiCOMWebsocketSessionParam()));
+            }
         }
 
-        public void RemoveWebSocket(Guid sessionGuid)
+        public async Task RemoveWebSocketAsync(Guid sessionGuid)
         {
-            this.WebSocketDictionary.Remove(sessionGuid);
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                this.WebSocketDictionary.Remove(sessionGuid);
+            }
         }
 
-        public DefiCOMWebsocketSessionParam GetSessionParam(Guid guid)
+        public async Task<DefiCOMWebsocketSessionParam> GetSessionParamAsync(Guid guid)
         {
-            return this.WebSocketDictionary[guid].SessionParam;
+            using (await WebSocketDictionaryLock.LockAsync())
+            {
+                return this.WebSocketDictionary[guid].SessionParam;
+            }
         }
 
         public IDefiCOM DefiCOM { get => defiCOM; }
-        public VirtualDefiCOM VirtualDefiCOM { 
-            get 
+        public VirtualDefiCOM VirtualDefiCOM
+        {
+            get
             {
-                if(virtualDefiCOM != null)
+                if (virtualDefiCOM != null)
                     return virtualDefiCOM;
                 else
                     throw new InvalidOperationException("Virtual Defi COM is null. Virtual com mode is not be enabled.");
@@ -53,14 +65,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             this.logger = logger;
             var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
             logger.LogInformation("DefiCOM service is started.");
-            if(useVirtual)
+            if (useVirtual)
             {
                 logger.LogInformation("DefiCOM is started with virtual mode.");
                 int virtualDefiCOMWait = 15;
                 logger.LogInformation("VirtualDefiCOM wait time is set to " + virtualDefiCOMWait.ToString() + " ms.");
                 var virtualCOM = new VirtualDefiCOM(loggerFactory, virtualDefiCOMWait);
                 this.defiCOM = virtualCOM;
-                this.virtualDefiCOM = virtualCOM;     
+                this.virtualDefiCOM = virtualCOM;
             }
             else
             {
@@ -70,38 +82,41 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 this.defiCOM = new DefiCOM(loggerFactory, comportName);
                 this.virtualDefiCOM = null;
             }
-            
+
             var cancellationToken = lifetime.ApplicationStopping;
             // Register websocket broad cast
             this.defiCOM.DefiPacketReceived += async (sender, args) =>
             {
                 try
                 {
-                    foreach (var session in WebSocketDictionary)
+                    using (await WebSocketDictionaryLock.LockAsync())
                     {
-                        var guid = session.Key;
-                        var websocket = session.Value.WebSocket;
-                        var sessionparam = session.Value.SessionParam;
-
-                        var msg_data = new ValueJSONFormat();
-                        if (sessionparam.SendCount < sessionparam.SendInterval)
-                            sessionparam.SendCount++;
-                        else
+                        foreach (var session in WebSocketDictionary)
                         {
-                            foreach (DefiParameterCode deficode in Enum.GetValues(typeof(DefiParameterCode)))
-                            {
-                                if (sessionparam.Sendlist[deficode])
-                                    msg_data.val.Add(deficode.ToString(), defiCOM.get_value(deficode).ToString());
-                            }
+                            var guid = session.Key;
+                            var websocket = session.Value.WebSocket;
+                            var sessionparam = session.Value.SessionParam;
 
-                            if (msg_data.val.Count > 0)
+                            var msg_data = new ValueJSONFormat();
+                            if (sessionparam.SendCount < sessionparam.SendInterval)
+                                sessionparam.SendCount++;
+                            else
                             {
-                                string msg = JsonConvert.SerializeObject(msg_data);
-                                byte[] buf = Encoding.UTF8.GetBytes(msg);
-                                if (websocket.State == WebSocketState.Open)
-                                    await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                                foreach (DefiParameterCode deficode in Enum.GetValues(typeof(DefiParameterCode)))
+                                {
+                                    if (sessionparam.Sendlist[deficode])
+                                        msg_data.val.Add(deficode.ToString(), defiCOM.get_value(deficode).ToString());
+                                }
+
+                                if (msg_data.val.Count > 0)
+                                {
+                                    string msg = JsonConvert.SerializeObject(msg_data);
+                                    byte[] buf = Encoding.UTF8.GetBytes(msg);
+                                    if (websocket.State == WebSocketState.Open)
+                                        await websocket.SendAsync(new ArraySegment<byte>(buf), WebSocketMessageType.Text, true, cancellationToken);
+                                }
+                                sessionparam.SendCount = 0;
                             }
-                            sessionparam.SendCount = 0;
                         }
                     }
                 }
