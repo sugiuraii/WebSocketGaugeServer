@@ -149,10 +149,11 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                 }
             });
 
+            app.UseDefaultFiles();
+
             if(bool.Parse(Configuration.GetSection("clientFiles")["enabled"]))
             {
                 // Settings for export gauge client files.
-                app.UseDefaultFiles();
                 var provider = new FileExtensionContentTypeProvider();
                 provider.Mappings[".fnt"] = "text/xml";
                 provider.Mappings[".jsonc"] = "text/xml";
@@ -166,9 +167,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                     FileProvider = new PhysicalFileProvider(exportPath),
                     RequestPath = "/clientfiles"
                 });
-                app.UseStaticFiles();
             }
 
+            app.UseStaticFiles();
             //app.UseHttpsRedirection();
             app.UseEndpoints(endpoints =>
             {
