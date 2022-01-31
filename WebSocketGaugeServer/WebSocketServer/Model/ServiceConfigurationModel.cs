@@ -29,5 +29,6 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Model
             ConfigurationRoot = configuration;
             ServiceConfiguration = configuration.GetSection("ServiceConfig");
         }
+        public bool ClientFilesEnabled  { get => bool.Parse(ConfigurationRoot.GetSection("clientFiles")["enabled"]);}
     }
 }

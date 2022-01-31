@@ -53,11 +53,14 @@
                 </NavLink>
             </li>
         }
-        <li class="nav-item px-3">
-            <NavLink class="nav-link" target="_blank" rel=”noopener” href="clientfiles/index.html">
-                <span class="oi oi-media-play" aria-hidden="true"></span> Gauge clients
-            </NavLink>
-        </li>
+        @if(ConfigModel.ClientFilesEnabled)
+        {
+            <li class="nav-item px-3">
+                <NavLink class="nav-link" target="_blank" rel=”noopener” href="clientfiles/index.html">
+                    <span class="oi oi-media-play" aria-hidden="true"></span> Gauge clients
+                </NavLink>
+            </li>
+        }
     </ul>
 </div>
 
