@@ -5,18 +5,18 @@ using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 {
-    public class DefiCOM : COMCommon, IDefiCOM
+    public class DefiAdvanceCOM : COMCommon, IDefiCOM
     {
-        //DefiLink packet byte size
-        const int DEFI_PACKET_SIZE = 35;
+        //DefiAdvance packet byte size
+        const int DEFI_PACKET_SIZE = 35; // Header 1 + content 4 bytes 
         private readonly ILogger logger;
         private readonly DefiContentTable content_table;
 
 		// Defilink received Event
 		public event EventHandler DefiPacketReceived;
-        public DefiCOM(ILoggerFactory logger, string comPortName) : base(logger)
+        public DefiAdvanceCOM(ILoggerFactory logger, string comPortName) : base(logger)
         {
-            this.logger = logger.CreateLogger<DefiCOM>();
+            this.logger = logger.CreateLogger<DefiAdvanceCOM>();
             this.content_table = new DefiContentTable();
 
             PortName = comPortName;
@@ -54,7 +54,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
                 {
                     firstInbuf[0] = (byte)ReadByte();
                 }
-                while (firstInbuf[0] < 0x01 || firstInbuf[0] > 0x0f);
+                while (firstInbuf[0] < 'A' || firstInbuf[0] > 'G');
 
                 remainingInbuf = ReadMultiBytes(DEFI_PACKET_SIZE - 1);
             }
