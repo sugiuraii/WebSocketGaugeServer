@@ -10,14 +10,14 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
         //DefiAdvance packet byte size
         const int DEFI_PACKET_SIZE = 35; // Header 1 + content 4 bytes 
         private readonly ILogger logger;
-        private readonly DefiContentTable content_table;
+        private readonly DefiAdvanceContentTable content_table;
 
 		// Defilink received Event
 		public event EventHandler DefiPacketReceived;
         public DefiAdvanceCOM(ILoggerFactory logger, string comPortName) : base(logger)
         {
             this.logger = logger.CreateLogger<DefiAdvanceCOM>();
-            this.content_table = new DefiContentTable();
+            this.content_table = new DefiAdvanceContentTable();
 
             PortName = comPortName;
             DefaultBaudRate = 19200;
