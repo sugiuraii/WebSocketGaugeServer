@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Linq;
 using System.IO.Ports;
 using Microsoft.Extensions.Logging;
@@ -25,7 +25,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
             //On using FT232RL baurate is allowed only the case of 3000000/n (n is integer or integer + 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)
             ResetBaudRate = 9600;
 
-            Parity = Parity.Even;
+            Parity = Parity.None;
             ReadTimeout = 500;
         }
         public double get_value(DefiParameterCode code)
