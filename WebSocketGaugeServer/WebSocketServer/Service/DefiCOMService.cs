@@ -64,6 +64,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 
             this.logger = logger;
             var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            bool useAdvance;
+            if(serviceSetting["useadvance"] == null)
+                useAdvance = false;
+            else
+                useAdvance = Boolean.Parse(serviceSetting["useadvance"]);
+                
             logger.LogInformation("DefiCOM service is started.");
             if (useVirtual)
             {
@@ -79,7 +85,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 logger.LogInformation("DefiCOM is started with physical mode.");
                 var comportName = serviceSetting["comport"];
                 logger.LogInformation("DefiCOM COMPort is set to: " + comportName);
-                this.defiCOM = new DefiCOM(loggerFactory, comportName);
+                this.defiCOM = useAdvance? new DefiAdvanceCOM(loggerFactory, comportName) : new DefiCOM(loggerFactory, comportName);
                 this.virtualDefiCOM = null;
             }
 

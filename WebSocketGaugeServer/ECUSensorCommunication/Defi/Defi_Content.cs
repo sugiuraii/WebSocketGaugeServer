@@ -23,6 +23,26 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
         }
     }
 
+    // For Defi advance (with arduino gate)
+    public class DefiAdvanceContentTable : ContentTableCommon<DefiParameterCode, DefiNumericContent>
+    {
+        //Constructor
+        public DefiAdvanceContentTable()
+        {
+        }
+
+        protected override void setNumericContentTable()
+        {
+            _numeric_content_table.Add(DefiParameterCode.Manifold_Absolute_Pressure, new DefiNumericContent(0x42, x => (double)x/1000.0 * 98.0665, "kPa")); // 1000 = 0.0kgf/cm2, 2000 = 1.0kgf/cm2
+            _numeric_content_table.Add(DefiParameterCode.Engine_Speed, new DefiNumericContent(0x41, x=>(double)x, "rpm"));  // Error may be large below 500rpm (around +/-120rpm)
+            _numeric_content_table.Add(DefiParameterCode.Oil_Pressure, new DefiNumericContent(0x43, x=>(double)x/1000.0, "kgf/cm2")); //Not calibrated with actual sensor
+            _numeric_content_table.Add(DefiParameterCode.Fuel_Rail_Pressure, new DefiNumericContent(0x44, x=>(double)(x - 32768)/1000.0, "kgf/cm2"));
+            _numeric_content_table.Add(DefiParameterCode.Exhaust_Gas_Temperature, new DefiNumericContent(0x47, x=>(double)x / 5.0, "C"));
+            _numeric_content_table.Add(DefiParameterCode.Oil_Temperature, new DefiNumericContent(0x45, x=>(double)x/20.0, "C"));
+            _numeric_content_table.Add(DefiParameterCode.Coolant_Temperature, new DefiNumericContent(0x46, x=>(double)x/20.0, "C"));
+        }
+    }
+
     public class DefiNumericContent : NumericContent
     {
         private byte _reciever_id;

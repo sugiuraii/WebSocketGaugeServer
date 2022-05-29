@@ -84,6 +84,8 @@
             {<li class="list-group-item text-light bg-dark">VirtualCOM mode</li>}
         else
             {<li class="list-group-item">COMPort name : @ConfigModel.DefiServiceConfig["comport"]</li>}
+        @if(ConfigModel.DefiServiceConfig["useadvance"] != null)
+            {<li class="list-group-item">Use advance : @ConfigModel.DefiServiceConfig["useadvance"]</li>}
 
     </div>
 </div>
