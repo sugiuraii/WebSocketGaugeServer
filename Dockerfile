@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk AS build
+FROM mcr.microsoft.com/dotnet/sdk:6.0 AS build
 RUN apt-get update
 RUN apt-get install -y curl
 RUN apt-get install -y libpng-dev libjpeg-dev curl libxi6 build-essential libgl1-mesa-glx
