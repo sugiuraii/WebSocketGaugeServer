@@ -1,0 +1,2 @@
+FROM sugiuraii/websocketgaugeserver
+COPY appsettings.json /app
