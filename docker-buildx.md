@@ -1,3 +1,4 @@
+Build image from source and push to hub.
 ```
 docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
 docker buildx rm builder
@@ -9,3 +10,16 @@ docker buildx build --tag sugiuraii/websocketgaugeserver --platform linux/amd64,
 ```
 ref)
 * https://stackoverflow.com/questions/60080264/docker-cannot-build-multi-platform-images-with-docker-buildx
+
+---
+Build configured image
+```
+cd Dockerfile.sub/ConfigImage
+(Edit appsettings.json)
+docker build -f Dockerfile.configcopy --tag local/wsserver .
+```
+
+Run container
+```
+docker run --rm -p 2016:2016 local/wsserver
+```
