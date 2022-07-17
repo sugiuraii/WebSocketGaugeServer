@@ -149,24 +149,27 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                 }
             });
 
-            // Settings for export gauge client files.
             app.UseDefaultFiles();
-            var provider = new FileExtensionContentTypeProvider();
-            provider.Mappings[".fnt"] = "text/xml";
-            provider.Mappings[".jsonc"] = "text/xml";
-            var contentPathSetting = Configuration.GetSection("clientFiles")["contentPath"];
-            logger.LogDebug("Gauge client content path setting is " + contentPathSetting);
-            var exportPath = Path.IsPathRooted(contentPathSetting)?contentPathSetting:Path.Combine(env.ContentRootPath, contentPathSetting);
-            logger.LogInformation("Gauge client content path is set to " + exportPath);            
-            app.UseStaticFiles(new StaticFileOptions
+
+            if(bool.Parse(Configuration.GetSection("clientFiles")["enabled"]))
             {
-                ContentTypeProvider = provider,
-                FileProvider = new PhysicalFileProvider(exportPath),
-                RequestPath = "/clientfiles"
-            });
+                // Settings for export gauge client files.
+                var provider = new FileExtensionContentTypeProvider();
+                provider.Mappings[".fnt"] = "text/xml";
+                provider.Mappings[".jsonc"] = "text/xml";
+                var contentPathSetting = Configuration.GetSection("clientFiles")["contentPath"];
+                logger.LogDebug("Gauge client content path setting is " + contentPathSetting);
+                var exportPath = Path.IsPathRooted(contentPathSetting)?contentPathSetting:Path.Combine(env.ContentRootPath, contentPathSetting);
+                logger.LogInformation("Gauge client content path is set to " + exportPath);            
+                app.UseStaticFiles(new StaticFileOptions
+                {
+                    ContentTypeProvider = provider,
+                    FileProvider = new PhysicalFileProvider(exportPath),
+                    RequestPath = "/clientfiles"
+                });
+            }
 
             app.UseStaticFiles();
-
             //app.UseHttpsRedirection();
             app.UseEndpoints(endpoints =>
             {

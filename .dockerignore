@@ -1,0 +1,5 @@
+WebsocketGaugeServer/Debug_Distribution
+WebsocketGaugeServer/packages
+**/obj
+**/bin
+WebsocketGaugeServer/Release_Distribution
