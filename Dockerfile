@@ -1,3 +1,4 @@
+# Select architecture of build machine
 FROM mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim-amd64 AS build
 RUN apt-get update
 RUN apt-get install -y curl
