@@ -14,9 +14,9 @@ ref)
 ---
 Build configured image
 ```
-cd Dockerfile.sub/ConfigImage
+cd image.install.dockerhub
 (Edit appsettings.json)
-docker build -f Dockerfile.configcopy --tag local/wsserver .
+docker build --tag local/wsserver .
 ```
 
 Run container
