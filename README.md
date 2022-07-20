@@ -1,17 +1,7 @@
 WebSocketGaugeServer
 ---
 
-## Table of contents
-* [Description](#description)
-* [Requirement](#requirement)
-* [Dependency](#dependency)
-* [Try pre-installed image with raspberry pi](#raspi_trial)
-* [How to build](#howToBuild)
-* [Install and setup](#installAndSetup)
-* [Run](#run)
-* [License](#license)
-
-## <a name="description">Description</a>
+## Description
 This program reads the car sensor data (such as vehicle speed, engine rpm, water temp, boost pressure, etc..) and broadcast the data on websocket.
 
 The data are brocasted on json format and can be viewed by dashboard webapp.
@@ -27,30 +17,22 @@ Currently, four types of sensors are implemented.
 ---
 ![WebsocketDiagram](README.img/WebsocketServerDiagram.png)
 
-## <a name="requirement">Requirement</a>
-### Software
-Windows with .net Framework 4.5 or linux with mono.
-### Hardware
-Operation are checked on following hardware...
+## Requirement
+### Software (tested OS)
+* Windows(x64) or linux(x64 or arm).
+### Hardwares
 
-| Server name | Compatible controller | Developed and tested controller | Remarks |
+| Server name (ECU/sensor communication type) | Compatible controller | Developed and tested controller | Remarks |
 |--------|--------|--------|--------|
-| DefiCOM_WebSocket_Server | Defi-Link Control Unit-I/II  | STi Genome sport single meter (boost) | Only "Engine_Speed (rpm)" and "Manifold_Absolute_Pressure(boost)" are checked. Other sensors are not checked .<br> Not compatible with Defi-Link ADVANCE Control Unit.<br> Comport simulator software is available [here](https://github.com/sugiuraii/DefiCOM_SSMCOM_Emulator)|
-| SSMCOM_WebSocket_Server | Subaru SSM capable ECU and OpenPort 1.2 compatible cable | monamona-cable and JDM Subaru Impreza WRX STI (GDBA, 2000 model) | Schematics seems to be open on [this OSDN site](https://ja.osdn.net/projects/ecuexplorer/docman/)<br> Comport simulator software is available [here](https://github.com/sugiuraii/DefiCOM_SSMCOM_Emulator) |
-| ArduinoCOM_WebSocket_Server | ArduinoUNO compatible board | Nobrand ArduinoUNO compatible board | Sketch is available on [this site](https://github.com/sugiuraii/ArduinoPulseSensorGeneratorReader).<br> This sketch is tuned for Autogauge boost sensor and temperature sensor. |
+| DefiCOM_WebSocket_Server | Defi-Link Control Unit-I/II  | STi Genome sport single meter (boost) | Only "Engine_Speed (rpm)" and "Manifold_Absolute_Pressure(boost)" are checked. Other sensors are not checked .<br> Not compatible with Defi ADVANCE Control Unit.|
+| SSMCOM_WebSocket_Server | Subaru SSM capable ECU and OpenPort 1.2 compatible cable | monamona-cable and JDM Subaru Impreza WRX STI (GDBA, 2000 model) | Schematics seems to be open on [this OSDN site](https://ja.osdn.net/projects/ecuexplorer/docman/)<br> |
+| ArduinoCOM_WebSocket_Server | Arduino UNO compatible board + AutoGauge boost sensor, temperature sensor| Nobrand ArduinoUNO compatible board | Arduino sketch is available on [this site](https://github.com/sugiuraii/ArduinoPulseSensorGeneratorReader).|
 | ELM327COM_WebSocket_Server | ELM327 compatible OBD-II cable | [ScanTool.net OBDLink SX USB cable](https://www.scantool.net/obdlink-sx/) and JDM Toyota Prius (ZVW30, 2009 model) | Default baud rate is set to 115200bps |
 | ELM327COM_WebSocket_Server | ELM327 compatible OBD-II cable | [Nobrand ELM327 bluetooth adaptor](https://www.amazon.co.jp/gp/product/B00IY4RKVG/) and JDM Toyota Prius (ZVW30, 2009 model) | Default baud rate is set to 115200bps. Tested on linux. Virtual COM port is creaetd by rfcomm. [(see here)](https://en.opensuse.org/SDB:ELM327_based_ODB2_scan_tool)  |
 
 ELM327COM_WebSocket_Server is also tested on [com0com](https://sourceforge.net/projects/com0com/) and [OBDSim](https://icculus.org/obdgpslogger/obdsim.html) (baudrate is set to 9600bps).
 
-## <a name="dependency">Dependency</a>
-* [WebSocket4Net](https://github.com/kerryjiang/WebSocket4Net)
-* [Json.NET](http://www.newtonsoft.com/json)
-
-## <a name="raspi_trial">Try pre-installed image with raspberry pi</a>
-**Pre-installed raspbian image is available. Please refer [RasobianImageSetup.md](./RasobianImageSetup.md).**
-
-## <a name="howToBuild">How to build</a>
+## How to build</a>
 ### Build on Windows + VisualStudio 2013
 The source code is written on Visual Studio 2013 Community. Open the DefiSSMCOM_Websocket.sln and select build on menu. Required libraries shold be downloaded automatically by NuGet.
 Please note that one of the dependent package (log4net) needs nuget newer than 2.12.
