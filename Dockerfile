@@ -1,6 +1,6 @@
 # Select architecture of build machine
 # Change platform option for your build architecture
-FROM --platform=linux/amd64 cr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS build
+FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS build
 RUN apt-get update
 RUN apt-get install -y curl
 RUN apt-get install -y libpng-dev libjpeg-dev curl libxi6 build-essential libgl1-mesa-glx
