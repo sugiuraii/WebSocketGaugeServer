@@ -1,5 +1,5 @@
 # Select architecture of build machine
-# Change platform option for your build architecture
+# Change platform option for your build platform
 FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS build
 RUN apt-get update
 RUN apt-get install -y curl
@@ -14,6 +14,7 @@ WORKDIR /source/WebSocketGaugeServer/WebSocketServer
 RUN dotnet publish -o /app --no-restore
 
 # Copy build files to aspnet docker image
+# Add --platform option to specify target platform
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-bullseye-slim
 WORKDIR /app
 COPY --from=build /app ./
