@@ -6,7 +6,7 @@ Install Docker and simply build by `Dockerfile`
 docker build --tag (your tag name) .
 ```
 If you want to build on non-x64 enviromnent, you may have to change `---platform` option of the `Dockerfile`.
-```
+```Docker
 # Select architecture of build platform
 # Change platform option for your build platform
 FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS build
@@ -16,14 +16,14 @@ FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS bu
 `Dockerfile` of this source repository can be used to build multi-platform image with `buildx`.
 
 1.  Install qemu Docker image and setup builder
-    ```
+    ```Docker
     docker run --rm --privileged multiarch/qemu-user-static --reset -p yes
     docker buildx rm builder
     docker buildx create --name builder --driver docker-container --use
     docker buildx inspect --bootstrap
     ```
 2.  Change `--platform` option of `Dockerfile` (This step is not needed if you build the image on linux-x64)
-    ```
+    ```Docker
     # Select architecture of build platform
     # Change platform option for your build platform
     FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:6.0-bullseye-slim AS build
