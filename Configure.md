@@ -1,5 +1,8 @@
 # WebSocketGaugeServer - Configure
 
+## Configuration file
+Edit `appsettings.json`.
+
 ## `"ServiceConfig"` Section
 ### Basic (common) configuration of ECU/Sensor communication service
 Here is an example of ELM327 (OBDII) ECU communication service.

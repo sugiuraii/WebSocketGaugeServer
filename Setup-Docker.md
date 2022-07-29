@@ -1,6 +1,6 @@
 # WebSocketGaugeServer - Install and setup Docker container
 
-# Download Docker image, and create your original image with overwriting configuration. 
+## Download Docker image, and create your original image with overwriting configuration. 
 Recent Docker image is uploaded on Docker Hub.
 And you can create new Docker image by overwriting configuration file.
 
