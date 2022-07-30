@@ -6,7 +6,7 @@ Edit `appsettings.json`.
 ## `"ServiceConfig"` Section
 ### Basic (common) configuration of ECU/Sensor communication service
 Here is an example of ELM327 (OBDII) ECU communication service.
-```json
+```js
 "ELM327": {
       /* ---- Common setting ---- */
       "enabled": false,
@@ -49,7 +49,7 @@ In addition to basic configuration,　ELM327 service has some specific configura
       * Typical USB/Bluetooth ELM327 adapters uses 115200bps.
 * `"elm327ProtocolMode"`
   * Set the OBDII protocol of ELM327
-    ```json
+    ```js
     /*
         ELM327 protocol setting.
         (See the section of "AT SP" commandd in ELM327 data sheet (p.24-25))
@@ -71,7 +71,7 @@ In addition to basic configuration,　ELM327 service has some specific configura
         */
     ```
 * `"elm327AdaptiveTimingControl"`
-  * ```json
+  * ```js
     /*
         ELM327 adaptive timeing control ("elm327AdaptiveTimingControl") (AT AT command), 
         and ELM327 timeout (AT ST command).
@@ -92,7 +92,7 @@ In addition to basic configuration,　ELM327 service has some specific configura
   * Default :2016
 ---
 ## `"clientFiles"` section
-```json
+```js
   "clientFiles":
   {
     // Set true to host client program files (html,js) by using asp.net Kestrel web server
