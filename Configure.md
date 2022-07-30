@@ -2,6 +2,9 @@
 
 ## Configuration file
 Edit `appsettings.json`.
+* `appsettings.Development.json` will be loaded to overwrite the setting, if you run the program in Development environment (for example, launch the program by `dotnet run`).
+  * See https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-6.0
+* To build custom Docker image by writing setting, refer [Setup-Docker.md](Setup-Docker.md)
 
 ## `"ServiceConfig"` Section
 ### Basic (common) configuration of ECU/Sensor communication service
