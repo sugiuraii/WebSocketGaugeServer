@@ -1,7 +1,5 @@
 # WebSocketGaugeServer
 
-
-
 ## Description
 ### This is a server side program for WebSocketGauge project.
 
@@ -9,6 +7,12 @@ This program reads the car sensor data (such as vehicle speed, engine rpm, water
 
 The data are brocasted on json format and can be viewed by dashboard webapp.
 The source code of dashboard webapp is available on [sugiuraii/WebSocketGaugeClientNeo](https://github.com/sugiuraii/WebSocketGaugeClientNeo)
+
+![WebsocketDiagram](README.img/WebsocketServerDiagram.png)
+
+## Software requirement (tested OS)
+* Windows(x64) or linux(x64 or arm)
+	* Run on dotnet 6.0
 
 ## Supported ECU or sensor protocol
 * OBD-II with ELM327 (or compatible) adaptor
@@ -22,14 +26,7 @@ The source code of dashboard webapp is available on [sugiuraii/WebSocketGaugeCli
 	* Only support old type of Defi control unit. Defi-advance is not supported.
 * SSM(Subaru select monitor)
 
----
-![WebsocketDiagram](README.img/WebsocketServerDiagram.png)
-
-## Requirement
-### Software (tested OS)
-* Windows(x64) or linux(x64 or arm).
-### Hardwares
-
+## Tested ECU/sensor
 | Server name (ECU/sensor communication type) | Compatible controller | Developed and tested controller | Remarks |
 |--------|--------|--------|--------|
 | OBDII with ELM327 | ELM327 compatible OBD-II cable | [ScanTool.net OBDLink SX USB cable](https://www.scantool.net/obdlink-sx/) and JDM Toyota Prius (ZVW30, 2009 model) | Default baud rate is set to 115200bps |
