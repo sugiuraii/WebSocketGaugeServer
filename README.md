@@ -32,18 +32,18 @@ The source code of dashboard webapp is available on [sugiuraii/WebSocketGaugeCli
 
 | Server name (ECU/sensor communication type) | Compatible controller | Developed and tested controller | Remarks |
 |--------|--------|--------|--------|
-| DefiCOM_WebSocket_Server | Defi-Link Control Unit-I/II  | STi Genome sport single meter (boost) | Only "Engine_Speed (rpm)" and "Manifold_Absolute_Pressure(boost)" are checked. Other sensors are not checked .<br> Not compatible with Defi ADVANCE Control Unit.|
-| SSMCOM_WebSocket_Server | Subaru SSM capable ECU and OpenPort 1.2 compatible cable | monamona-cable and JDM Subaru Impreza WRX STI (GDBA, 2000 model) | Schematics seems to be open on [this OSDN site](https://ja.osdn.net/projects/ecuexplorer/docman/)<br> |
-| ArduinoCOM_WebSocket_Server | Arduino UNO compatible board + AutoGauge boost sensor, temperature sensor| Nobrand ArduinoUNO compatible board | Arduino sketch is available on [this site](https://github.com/sugiuraii/ArduinoPulseSensorGeneratorReader).|
-| ELM327COM_WebSocket_Server | ELM327 compatible OBD-II cable | [ScanTool.net OBDLink SX USB cable](https://www.scantool.net/obdlink-sx/) and JDM Toyota Prius (ZVW30, 2009 model) | Default baud rate is set to 115200bps |
-| ELM327COM_WebSocket_Server | ELM327 compatible OBD-II cable | [Nobrand ELM327 bluetooth adaptor](https://www.amazon.co.jp/gp/product/B00IY4RKVG/) and JDM Toyota Prius (ZVW30, 2009 model) | Default baud rate is set to 115200bps. Tested on linux. Virtual COM port is creaetd by rfcomm. [(see here)](https://en.opensuse.org/SDB:ELM327_based_ODB2_scan_tool)  |
+| OBDII with ELM327 | ELM327 compatible OBD-II cable | [ScanTool.net OBDLink SX USB cable](https://www.scantool.net/obdlink-sx/) and JDM Toyota Prius (ZVW30, 2009 model) | Default baud rate is set to 115200bps |
+| OBDII with ELM327 | ELM327 compatible OBD-II cable | [Nobrand ELM327 bluetooth adaptor](https://www.amazon.co.jp/gp/product/B00IY4RKVG/) and JDM Toyota Prius (ZVW30, 2009 model) | Default baud rate is set to 115200bps. Tested on linux. Virtual COM port is creaetd by rfcomm. [(see here)](https://en.opensuse.org/SDB:ELM327_based_ODB2_scan_tool)  |
+| Arduino (https://github.com/sugiuraii/Arduino-CarSignalSensorBox) | Arduino UNO compatible board + AutoGauge boost sensor, temperature sensor| Nobrand ArduinoUNO compatible board | Arduino sketch is available on [this site](https://github.com/sugiuraii/Arduino-CarSignalSensorBox).|
+| Defi-link | Defi-Link Control Unit-I/II  | STi Genome sport single meter (boost) | Only "Engine_Speed (rpm)" and "Manifold_Absolute_Pressure(boost)" are checked. Other sensors are not checked .<br> Not compatible with Defi ADVANCE Control Unit.|
+| SSM (Subaru Select Monitor) | Subaru SSM capable ECU and OpenPort 1.2 compatible cable | monamona-cable and JDM Subaru Impreza WRX STI (GDBA, 2000 model) | Schematics seems to be open on [this OSDN site](https://ja.osdn.net/projects/ecuexplorer/docman/)<br> |
 
 ELM327COM_WebSocket_Server is also tested on [com0com](https://sourceforge.net/projects/com0com/) and [OBDSim](https://icculus.org/obdgpslogger/obdsim.html) (baudrate is set to 9600bps).
 
 ## Install from binary
 See [Startup.md](Startup.md).
 
-## How to build
+## Build from source
 See [Build.md](Build.md).
 
 ## Client
