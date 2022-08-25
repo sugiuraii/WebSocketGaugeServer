@@ -25,9 +25,9 @@
         ```
         docker run -p 2016:2016 --name wsgaugeserver --device=/dev/ttyUSB0 local/wsgaugeserver
         ```
-        * See https://docs.docker.com/engine/reference/commandline/run/#add-host-device-to-container---device
+        * See [this document](https://docs.docker.com/engine/reference/commandline/run/#add-host-device-to-container---device)
     * To run the container automatically on system bootup, set  restart policy by `--restart` option
         ```
         docker run -p 2016:2016 --name wsgaugeserver --device=/dev/ttyUSB0 --restart always local/wsgaugeserver
         ```
-        * See https://docs.docker.com/config/containers/start-containers-automatically/
+        * See [this document](https://docs.docker.com/config/containers/start-containers-automatically/)

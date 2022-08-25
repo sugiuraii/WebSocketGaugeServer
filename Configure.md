@@ -3,7 +3,7 @@
 ## Configuration file
 Edit `appsettings.json`.
 * `appsettings.Development.json` will be loaded to overwrite the setting, if you run the program in Development environment (for example, launch the program by `dotnet run`).
-  * See https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-6.0
+  * See [https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-6.0](https://docs.microsoft.com/en-us/aspnet/core/fundamentals/configuration/?view=aspnetcore-6.0)
 * To build custom Docker image by writing setting, refer [Setup-Docker.md](Setup-Docker.md)
 
 ## `"ServiceConfig"` Section
@@ -48,7 +48,7 @@ In addition to basic configuration,　ELM327 service has some specific configura
 * `"baudrate"`
   * Baudrate to communicate ELM327.
     * Check the spec of ELM327 adaptor.
-      *  Software OBDII simulator OBDSim (https://icculus.org/obdgpslogger/obdsim.html) uses 9600bps.
+      *  Software OBDII simulator [OBDSim](https://icculus.org/obdgpslogger/obdsim.html) uses 9600bps.
       * Typical USB/Bluetooth ELM327 adapters uses 115200bps.
 * `"elm327ProtocolMode"`
   * Set the OBDII protocol of ELM327
