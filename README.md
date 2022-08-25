@@ -21,7 +21,7 @@ The source code of dashboard webapp is available on [sugiuraii/WebSocketGaugeCli
 	* Read boost pressure (intake manifold pressure) using pressure sensor + Arduino interal ADC.
 	* Read water temperature and oil temperature using temperature sensor and Arduino internal ADC.
 		* Now, Autogauge boost and (water/oil) temperature sensors are supported.
-	* See https://github.com/sugiuraii/Arduino-CarSignalSensorBox for the detail
+	* See [Arduino-CarSignalSensorBox](https://github.com/sugiuraii/Arduino-CarSignalSensorBox) for the detail
 * Defi-Link
 	* Only support old type of Defi control unit. Defi-advance is not supported.
 * SSM(Subaru select monitor)
