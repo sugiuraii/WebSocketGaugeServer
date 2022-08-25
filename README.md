@@ -27,6 +27,7 @@ The source code of dashboard webapp is available on [sugiuraii/WebSocketGaugeCli
 * SSM(Subaru select monitor)
 
 ## Tested ECU/sensor
+
 | Server name (ECU/sensor communication type) | Compatible controller | Developed and tested controller | Remarks |
 |--------|--------|--------|--------|
 | OBDII with ELM327 | ELM327 compatible OBD-II cable | [ScanTool.net OBDLink SX USB cable](https://www.scantool.net/obdlink-sx/) and JDM Toyota Prius (ZVW30, 2009 model) | Default baud rate is set to 115200bps |
