@@ -4,7 +4,7 @@
 1. Download binary archive and extract it.
 2. Edits setting file of `appsettings.json`.
     * See [Configure.md](Configure.md).
-3. Run executalbe of `WebSocketServer` (or `WebSocketServer.exe` in Windows).
+3. Run executable file of `WebSocketServer` (or `WebSocketServer.exe` in Windows).
 4. To stop the server, type Ctrl+C.
 
 ## Run by making Docker container
