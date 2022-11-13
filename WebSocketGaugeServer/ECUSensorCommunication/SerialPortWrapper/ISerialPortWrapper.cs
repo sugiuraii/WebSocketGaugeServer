@@ -10,13 +10,13 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
         bool IsOpen {get;}
         void DiscardInBuffer();
         int BytesToRead{get;}
-        void Read(byte[] buffer, int offset, int count);
+        int Read(byte[] buffer, int offset, int count);
         int ReadByte();
         string ReadTo(string str);
         string ReadLine();
         string ReadExisting();
         void Write(byte[] buffer, int offset, int count);
         void Write(string buffer);
-        int ReadTimeOut {get; set;}
+        int ReadTimeout {get; set;}
     }
 }

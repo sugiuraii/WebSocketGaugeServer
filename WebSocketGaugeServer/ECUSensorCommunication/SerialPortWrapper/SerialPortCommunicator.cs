@@ -17,7 +17,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 
         public int BytesToRead => serialPort.BytesToRead;
 
-        public int ReadTimeOut { get => serialPort.ReadTimeout; set => serialPort.ReadTimeout = value; }
+        public int ReadTimeout { get => serialPort.ReadTimeout; set => serialPort.ReadTimeout = value; }
 
         public void Close()
         {
@@ -39,9 +39,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
             serialPort.Open();
         }
 
-        public void Read(byte[] buffer, int offset, int count)
+        public int Read(byte[] buffer, int offset, int count)
         {
-            serialPort.Read(buffer, offset, count);
+            return serialPort.Read(buffer, offset, count);
         }
 
         public int ReadByte()

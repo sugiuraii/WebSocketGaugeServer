@@ -32,7 +32,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 
         public int BytesToRead => tcpClient.Available;
 
-        public int ReadTimeOut { get => this.readTimeOut; set => this.readTimeOut = value; }
+        public int ReadTimeout { get => this.readTimeOut; set => this.readTimeOut = value; }
         public int BaudRate { get => 0; set {} }
 
         public void Close()
@@ -58,9 +58,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
             tcpClient.Connect(remoteEP);
         }
 
-        public void Read(byte[] buffer, int offset, int count)
+        public int Read(byte[] buffer, int offset, int count)
         {
-            stream.Read(buffer, offset, count);
+            return stream.Read(buffer, offset, count);
         }
 
         public int ReadByte()
