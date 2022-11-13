@@ -20,11 +20,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
         private readonly ILogger logger;
 
-        public COMCommon(ILoggerFactory logger)
+        public COMCommon(SerialPort serialPort, ILoggerFactory logger)
         {
             this.logger = logger.CreateLogger<COMCommon>();
 
-            serialPort = new SerialPort();
+            this.serialPort = serialPort;
             DefaultBaudRate = 19200;
             ResetBaudRate = 9600;
             SlowReadInterval = 10;
@@ -289,37 +289,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         protected int DefaultBaudRate {get; set; }
         protected int ResetBaudRate { get; set; }
 
-        public string PortName
-        {
-            get
-            {
-                return serialPort.PortName;
-            }
-            set
-            {
-                try
-                {
-                    serialPort.PortName = value;
-                }
-                catch (System.InvalidOperationException ex1)
-                {
-                    logger.LogError("Port name set error : " + ex1.GetType().ToString() + " " + ex1.Message);
-                }
-            }
-        }
-
-        public Parity Parity
-        {
-            get
-            {
-                return serialPort.Parity;
-            }
-            set
-            {
-                serialPort.Parity = value;
-            }
-        }
-
         public int ReadTimeout
         {
             get
@@ -331,29 +300,5 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                 serialPort.ReadTimeout = value;
             }
         }
-        public int DataBits
-        {
-            get
-            {
-                return serialPort.DataBits;
-            }
-            set
-            {
-                serialPort.DataBits = value;
-            }
-        }
-
-        public StopBits StopBits
-        {
-            get
-            {
-                return serialPort.StopBits;
-            }
-            set
-            {
-                serialPort.StopBits = value;
-            }
-        }
-
     }
 }

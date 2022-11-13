@@ -14,18 +14,16 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 
 		// Defilink received Event
 		public event EventHandler DefiPacketReceived;
-        public DefiCOM(ILoggerFactory logger, string comPortName) : base(logger)
+        public DefiCOM(ILoggerFactory logger, string comPortName) : base(new SerialPort(comPortName, 19200, Parity.Even), logger)
         {
             this.logger = logger.CreateLogger<DefiCOM>();
             this.content_table = new DefiContentTable();
 
-            PortName = comPortName;
             DefaultBaudRate = 19200;
             //Baudrate on resetting serialport(ref: communticate_reset())
             //On using FT232RL baurate is allowed only the case of 3000000/n (n is integer or integer + 0.125, 0.25, 0.375, 0.5, 0.625, 0.75, 0.875)
             ResetBaudRate = 9600;
 
-            Parity = Parity.Even;
             ReadTimeout = 500;
         }
         public double get_value(DefiParameterCode code)

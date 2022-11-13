@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using System.IO.Ports;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
@@ -27,13 +28,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly ILogger logger;
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout) : base(logger)
+        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout) : base(new SerialPort(comPortName, 115200), logger)
         {
             this.logger = logger.CreateLogger<ELM327COM>();
             this.content_table = new OBDIIContentTable();
 
             //Setup serial port
-            PortName = comPortName;
             DefaultBaudRate = 115200;
 
             ResetBaudRate = 4800;
