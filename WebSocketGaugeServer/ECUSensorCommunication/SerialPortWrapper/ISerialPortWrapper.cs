@@ -17,5 +17,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
         string ReadExisting();
         void Write(byte[] buffer, int offset, int count);
         void Write(string buffer);
+        int ReadTimeOut {get; set;}
     }
 }
