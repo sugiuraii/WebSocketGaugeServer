@@ -1,6 +1,8 @@
-namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
+using System;
+
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 {
-    public interface ISerialPortWrapper
+    public interface ISerialPortWrapper : IDisposable
     {
         int BaudRate {get; set;}
         void Open();
