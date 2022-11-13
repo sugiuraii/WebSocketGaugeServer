@@ -3,12 +3,13 @@ using System.IO.Ports;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 {
     public abstract class COMCommon : IBackgroundCommunicate
     {
-        private SerialPort serialPort;
+        private ISerialPortWrapper serialPort;
 
         private int slowReadInterval;
         private Thread communicate_realtime_thread1;
@@ -24,7 +25,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         {
             this.logger = logger.CreateLogger<COMCommon>();
 
-            this.serialPort = serialPort;
+            this.serialPort = new SerialPortCommunicator(serialPort);
             DefaultBaudRate = 19200;
             ResetBaudRate = 9600;
             SlowReadInterval = 10;
@@ -207,11 +208,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         public int ReadByte()
         {
             return serialPort.ReadByte();
-        }
-
-        public int ReadChar()
-        {
-            return serialPort.ReadChar();
         }
 
         public string ReadTo(string str)
