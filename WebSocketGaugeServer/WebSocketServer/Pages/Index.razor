@@ -1,0 +1,113 @@
+@page "/"
+@namespace SZ2.WebSocketGaugeServer.WebSocketServer.Pages
+@using Microsoft.Extensions.Configuration
+@using SZ2.WebSocketGaugeServer.WebSocketServer.Model
+@inject ServiceConfigurationModel ConfigModel
+
+<h1>WebSocketGaugeServer</h1>
+
+<h2>Service setting</h2>
+<div class="card">
+    <div class="@GetServiceEnabledStyle(ConfigModel.ELM327ServiceConfig)">
+        ELM327
+    </div>
+    <div class="card-body">
+        <li class="list-group-item">Enabled: @ConfigModel.ELM327ServiceConfig["enabled"]</li>
+        <li class="list-group-item">Listen URL: @((ConfigModel.ConfigRoot["urls"]).Replace("http", "ws") + @ConfigModel.ELM327ServiceConfig["urlpath"])</li>
+        @if(ConfigModel.ELM327VirtualCOMEnabled)
+            {<li class="list-group-item text-light bg-dark">VirtualCOM mode</li>}           
+        else
+            {<li class="list-group-item">COMPort name : @ConfigModel.ELM327ServiceConfig["comport"]</li>}
+        <li class="list-group-item">Baudrate : @ConfigModel.ELM327ServiceConfig["baudrate"]</li>
+        <li class="list-group-item">
+            ELM327 protocol mode : @ConfigModel.ELM327ServiceConfig["elm327ProtocolMode"]<br>
+            <div class="card card-body">
+                ELM327 protocol setting.<br>
+                (See the section of "AT SP" commandd in ELM327 data sheet)<br>
+                (Use single character string to set this field.)<br>
+                <br>
+                "0" - Automatic<br>
+                "1" - SAE J1850 PWM (41.6 kbaud)<br>
+                "2" - SAE J1850 VPW (10.4 kbaud)<br>
+                "3" - ISO 9141-2  (5 baud init, 10.4 kbaud)<br>
+                "4" - ISO 14230-4 KWP (5 baud init, 10.4 kbaud)<br>
+                "5" - ISO 14230-4 KWP (fast init, 10.4 kbaud)<br>
+                "6" - ISO 15765-4 CAN (11 bit ID, 500 kbaud)<br>
+                "7" - ISO 15765-4 CAN (29 bit ID, 500 kbaud)<br>
+                "8" - ISO 15765-4 CAN (11 bit ID, 250 kbaud)<br>
+                "9" - ISO 15765-4 CAN (29 bit ID, 250 kbaud)<br>
+                "A" - SAE J1939 CAN (29 bit ID, 250* kbaud)<br>
+                "B" - USER1 CAN (11* bit ID, 125* kbaud)<br>
+                "C" - USER2 CAN (11* bit ID, 50* kbaud)<br>
+            </div>
+        </li>
+        <li class="list-group-item">
+            ELM327 adaptive timing mode : @ConfigModel.ELM327ServiceConfig["elm327AdaptiveTimingControl"]<br>
+            ELM327 timeout (in increments of 4 msec (50 => 50*4 = 200ms) : @ConfigModel.ELM327ServiceConfig["elm327Timeout"]<br>
+            <div class="card card-body">
+                ELM327 adaptive timeing control ("elm327AdaptiveTimingControl") (AT AT command),<br>
+                and ELM327 timeout (AT ST command).<br>
+                <hr>
+                "elm327AdaptiveTimingControl" : Set adaptive timing control mode for ELM327 (see AT0,1,2 command section of ELM327 data sheet (p.12)).<br>
+                0 : Disable adaptive timing control.<br>
+                1 : Enable adaptive timing control (default).<br>
+                2 : Enable aggressive adaptime timing control.<br>
+                <hr>
+                "elm327Timeout" : Set ELM327 timeout (max 255, in increments of 4 msec (or 20 msec if in the J1939 protocol, with JTM5 selected)).<br>
+                (Default = 50 (50*4 = 200ms))<br>
+                (See AT ST commandd of ELM327 data sheet (p.26)).<br>
+            </div>
+        </li>
+    </div>
+</div>
+<div class="card">
+    <div class="@GetServiceEnabledStyle(ConfigModel.ArduinoServiceConfig)">
+        Arduino
+    </div>
+    <div class="card-body">
+        <li class="list-group-item">Enabled: @ConfigModel.ArduinoServiceConfig["enabled"]</li>
+        <li class="list-group-item">Listen URL: @((ConfigModel.ConfigRoot["urls"]).Replace("http", "ws") + @ConfigModel.ArduinoServiceConfig["urlpath"])</li>
+        @if(ConfigModel.ArduinoVirtualCOMEnabled)
+            {<li class="list-group-item text-light bg-dark">VirtualCOM mode</li>}            
+        else
+            {<li class="list-group-item">COMPort name : @ConfigModel.ArduinoServiceConfig["comport"]</li>}
+    </div>
+</div>
+<div class="card">
+    <div class="@GetServiceEnabledStyle(ConfigModel.DefiServiceConfig)">
+        Defi
+    </div>
+    <div class="card-body">
+        <li class="list-group-item">Enabled: @ConfigModel.DefiServiceConfig["enabled"]</li>
+        <li class="list-group-item">Listen URL: @((ConfigModel.ConfigRoot["urls"]).Replace("http", "ws") + @ConfigModel.DefiServiceConfig["urlpath"])</li>
+        @if(ConfigModel.DefiVirtualCOMEnabled)
+            {<li class="list-group-item text-light bg-dark">VirtualCOM mode</li>}
+        else
+            {<li class="list-group-item">COMPort name : @ConfigModel.DefiServiceConfig["comport"]</li>}
+        @if(ConfigModel.DefiServiceConfig["useadvance"] != null)
+            {<li class="list-group-item">Use advance : @ConfigModel.DefiServiceConfig["useadvance"]</li>}
+
+    </div>
+</div>
+<div class="card">
+    <div class="@GetServiceEnabledStyle(ConfigModel.SSMServiceConfig)">
+        SSM
+    </div>
+    <div class="card-body">
+        <li class="list-group-item">Enabled: @ConfigModel.SSMServiceConfig["enabled"]</li>
+        <li class="list-group-item">Listen URL: @((ConfigModel.ConfigRoot["urls"]).Replace("http", "ws") + @ConfigModel.SSMServiceConfig["urlpath"])</li>
+        @if(ConfigModel.SSMVirtualCOMEnabled)
+            {<li class="list-group-item text-light bg-dark">VirtualCOM mode</li>}
+        else
+            {<li class="list-group-item">COMPort name : @ConfigModel.SSMServiceConfig["comport"]</li>}
+    </div>
+</div>
+
+@code
+{
+    private string GetServiceEnabledStyle(IConfiguration config)
+    {
+        bool isEnabled = bool.Parse(config["enabled"]);
+        return isEnabled ? "card-header bg-primary" : "card-header bg-secondary";
+    }
+}

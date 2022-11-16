@@ -1,0 +1,104 @@
+@page "/virtualdefi"
+@using System.ComponentModel
+@using SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl
+@inject VirtualDefiCOMControlModel Model
+@inject IJSRuntime JsRuntime
+@implements IDisposable
+
+<h1>VirtualDefiCOM control</h1>
+
+<div>
+    <h2>Set value</h2>
+
+    <div class="card border-primary mb-2">
+        <div class="card-header">Manufold absolute pressure</div>
+        <div class="card-body">
+            <input type="range" min="@Model.ValueRange.Min" max="@Model.ValueRange.Max" style="width:100%" @bind="Model.ManifoldAbsolutePressure.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.ManifoldAbsolutePressurePhysicalValue.Value</label>
+            <label>@Model.ManifoldAbsolutePressureUnit</label>
+        </div>
+    </div>
+
+    <div class="card border-primary mb-2">
+        <div class="card-header">Engine speed</div>
+        <div class="card-body">
+            <input type="range" min="@Model.ValueRange.Min" max="@Model.ValueRange.Max" style="width:100%" @bind="Model.EngineSpeed.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.EngineSpeedPhysicalValue.Value</label>
+            <label>@Model.EngineSpeedUnit</label>
+        </div>
+    </div>
+
+    <div class="card border-primary mb-2">
+        <div class="card-header">Oil pressure</div>
+        <div class="card-body">
+            <input type="range" min="@Model.ValueRange.Min" max="@Model.ValueRange.Max" style="width:100%" @bind="Model.OilPressure.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.OilPressurePhysicalValue.Value</label>
+            <label>@Model.OilPressureUnit</label>
+        </div>
+    </div>
+
+    <div class="card border-primary mb-2">
+        <div class="card-header">Fuel rail pressure</div>
+        <div class="card-body">
+            <input type="range" min="@Model.ValueRange.Min" max="@Model.ValueRange.Max" style="width:100%" @bind="Model.FuelRailPressure.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.FuelRailPressurePhysicalValue.Value</label>
+            <label>@Model.FuelRailPressureUnit</label>
+        </div>
+    </div>
+
+    <div class="card border-primary mb-2">
+        <div class="card-header">Exhaust gas temperature</div>
+        <div class="card-body">
+            <input type="range" min="@Model.ValueRange.Min" max="@Model.ValueRange.Max" style="width:100%" @bind="Model.ExhaustGasTemperature.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.ExhaustGasTemperaturePhysicalValue.Value</label>
+            <label>@Model.ExhaustGasTemperatureUnit</label>
+        </div>
+    </div>    
+    
+    <div class="card border-primary mb-2">
+        <div class="card-header">Oil temperature</div>
+        <div class="card-body">
+            <input type="range" min="@Model.ValueRange.Min" max="@Model.ValueRange.Max"  style="width:100%" @bind="Model.OilTemperature.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.OilTemperaturePhysicalValue.Value</label>
+            <label>@Model.OilTemperatureUnit</label>
+        </div>
+    </div>
+
+    <div class="card border-primary mb-2">
+        <div class="card-header">Coolant temperature</div>
+        <div class="card-body">
+            <input type="range" min="@Model.ValueRange.Min" max="@Model.ValueRange.Max"  style="width:100%" @bind="Model.CoolantTemperature.Value" @bind:event="oninput" />
+        </div>
+        <div class="card-footer">
+            <label>@Model.CoolantTemperaturePhysicalValue.Value</label>
+            <label>@Model.CoolantTemperatureUnit</label>
+        </div>
+    </div>
+</div>
+@code {
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+        Model.PropertyChanged += StateChanged;
+    }
+    private void StateChanged(object s, PropertyChangedEventArgs e)
+    {
+        InvokeAsync(() => StateHasChanged());
+    }
+    public void Dispose()
+    {
+        Model.PropertyChanged -= StateChanged;
+    }
+}
