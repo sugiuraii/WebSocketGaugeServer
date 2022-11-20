@@ -39,10 +39,17 @@ The source code of dashboard webapp is available on [sugiuraii/WebSocketGaugeCli
 ELM327COM_WebSocket_Server is also tested on [com0com](https://sourceforge.net/projects/com0com/) and [OBDSim](https://icculus.org/obdgpslogger/obdsim.html) (baudrate is set to 9600bps).
 
 ## Install from binary
-See [Startup.md](Startup.md).
+See [QuickStart.md](QuickStart.md). For Japanese, see [QuickStart_jpn.md](QuickStart_jpn.md)
+
+## Install by Docker container
+See [Startup.md](Startup.md) and [Setup-Docker.md](Setup-Docker.md).
+
+## Detailed configuration
+See [Configure.md](Configure.md)
 
 ## Build from source
 See [Build.md](Build.md).
+To build Docker image, see [Build-Docker.md](Build-Docker.md).
 
 ## Client
 To get the graphical gauge client, please refer separated project of [sugiuraii/WebSocketGaugeClientNeo](https://github.com/sugiuraii/WebSocketGaugeClientNeo).
