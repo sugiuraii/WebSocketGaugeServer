@@ -16,6 +16,9 @@
       "usevirtual" : false,
       "comport": "/dev/ttyUSB0",
       "baudrate": 115200,
+　    "elm327ProtocolMode": "0",
+      "elm327AdaptiveTimingControl": 1,
+      "elm327Timeout" : 50
 ```
 In the above part.
 * `"enabled"`:Enable ELM327+OBDII communication mode.
@@ -24,8 +27,10 @@ In the above part.
     * By setting this to `true`, you can test the operaion by using "virtual" ECU in the program without connecting to ELM327. You can test and debug the gauge without connecting ELM327 by using this feature.
 * `"comport"`: Set the name of the serial port to connect the ELM327. For linux, set like `/dev/tty*`. For windows set like `COM*`.
 * `"baudrate"`: Set the serial port speed (baud rate) to communicate with the ELM327.
-* The rest of the fields are detailed options for setting ELM327. Change it as necessary.
+* `"elm327ProtocolMode"` : Set the ELM327-ECU communication protocol. The default is automatic (0). If the communication not works well, set it manually.
+* `"elm327AdaptiveTimingControl"`: Sets the wait timing for the ELM327-ECU communication. This can configure the waiting time of ECU->ELM327 data transfer. The standard setting is "adaptive timing control" (1), If there is a large delay, "aggressive adaptime timing control" (2) can be used, or adaptive timing control can be disabled by setting it to 0, and the wait time can be set manually with `"elm327Timeout"`.
 
+Translated with www.DeepL.com/Translator (free version)
 ## Start the program
 * Run the `WebSocketServer.exe`(Windows) or `WebSocketServer`(Linux) executable file in the extracted directory from Explorer or Terminal.
 

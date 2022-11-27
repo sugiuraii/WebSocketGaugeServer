@@ -16,6 +16,9 @@
       "usevirtual" : false,
       "comport": "/dev/ttyUSB0",
       "baudrate": 115200,
+      "elm327ProtocolMode": "0",
+      "elm327AdaptiveTimingControl": 1,
+      "elm327Timeout" : 50
 ```
 上記部分のうち
 * `"enabled"`:ELM327+OBDII通信機能を有効化します。
@@ -24,7 +27,8 @@
     * `true`にした場合、ELM327への接続はせずに、代わりにプログラム内部で仮想ECUを作成します。実車がない場合でテストをするときやメーターGUI（メーターパネル）のデザイン、デバッグ時に使用してください。
 * `"comport"`: ELM327を接続するシリアルポート名を設定します。Linuxなら`/dev/tty*`形式になります。Windowsの場合は`COM*`形式になります。
 * `"baudrate"`:ELM327と通信する際のシリアル速度（ボーレート）を設定します。
-* 以降の部分はELM327のECU検知設定等になります。必要に応じて変更ください。
+* `"elm327ProtocolMode"` : ELM327-ECU通信プロトコルを設定します。デフォルトは自動(0)ですが、通信できない場合は手動で設定してください。
+* `"elm327AdaptiveTimingControl"`: ELM327-ECU通信時のタイミング設定です。ECUからELM327へデータが転送される際の待ち時間を設定します。標準は1の”adaptive timing control”有効ですが、遅延が大きい場合は2の"aggressive adaptime timing control"を使用したり、0に設定してadaptive timing controlを無効にし、`"elm327Timeout"`で待ち時間を手動設定することが可能です。
 
 ## プログラムの起動
 * 展開したディレクトリ内にある`WebSocketServer.exe`(Windows)または`WebSocketServer`(Linux)実行ファイルをエクスプローラまたはターミナル等から起動してください。
