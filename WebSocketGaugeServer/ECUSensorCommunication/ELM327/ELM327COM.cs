@@ -23,12 +23,13 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly string ELM327SetProtocolMode;
         private readonly int ELM327AdaptiveTimingMode;
         private readonly int ELM327Timeout;
+        private readonly string ELM327HeaderBytes;
         private readonly OBDIIContentTable content_table;
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
         private readonly ILogger logger;
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout) : base(new SerialPort(comPortName, 115200), logger)
+        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes) : base(new SerialPort(comPortName, 115200), logger)
         {
             this.logger = logger.CreateLogger<ELM327COM>();
             this.content_table = new OBDIIContentTable();
@@ -42,9 +43,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             ELM327SetProtocolMode = elm327ProtocolStr;
             ELM327AdaptiveTimingMode = elm327AdaptiveTimingMode;
             ELM327Timeout = elm327Timeout;
+            ELM327HeaderBytes = elm327HeaderBytes;
         }
 
-        public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, String.Empty, 1, 32)
+        public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, String.Empty, 1, 32, "")
         {
         }
 
@@ -99,6 +101,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
                     ELM327SetProtocol();
                     ELM327TimingControlSet();
+                    ELM327SetHeader();
 
                     initializeFinished = true;
                 }
@@ -161,6 +164,19 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
             Write("ATST" + timeoutToSet.ToString("X2") + "\r");
             logger.LogDebug("Call AT ST" + timeoutToSet.ToString("X2") + " to set timeout. Return Msg is " + ReadTo(">"));
+        }
+
+        private void ELM327SetHeader()
+        {
+            // Header byte set.
+            if (this.ELM327HeaderBytes.Length <= 0)
+            {
+                logger.LogInformation("ELM327 header byte is not set (or blank). AT SH command will be skipped.");
+                return;
+            }
+
+            Write("ATSH" + this.ELM327HeaderBytes + "\r");
+            logger.LogDebug("Call AT SH" + this.ELM327HeaderBytes + " to set adaptive timing control mode. Return Msg is " + ReadTo(">"));
         }
 
         protected override void communicate_main(bool slow_read_flag)
