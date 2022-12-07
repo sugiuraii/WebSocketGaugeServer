@@ -38,7 +38,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             DefaultBaudRate = 115200;
 
             ResetBaudRate = 4800;
-            ReadTimeout = 500;
+            ReadTimeout = 10000;
 
             ELM327SetProtocolMode = elm327ProtocolStr;
             ELM327AdaptiveTimingMode = elm327AdaptiveTimingMode;
