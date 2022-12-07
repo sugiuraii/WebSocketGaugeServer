@@ -89,6 +89,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     Thread.Sleep(WAIT_AFTER_ATZ);
                     logger.LogDebug("Call ATZ to initialize. Return Msg is " + ReadTo(">"));
 
+                    // Set protocol
+                    ELM327SetProtocol();
+                    // Test communication
+                    ELM327TestCommunicationToSearchProtocol();
+
                     // Disable space.
                     Write("ATS0\r");
                     logger.LogDebug("Call ATS0 to disable space. Return Msg is " + ReadTo(">"));
@@ -99,7 +104,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     Write("ATL0\r");
                     logger.LogDebug("Call ATL0 to disable linefeed. Return Msg is " + ReadTo(">"));
 
-                    ELM327SetProtocol();
                     ELM327TimingControlSet();
                     ELM327SetHeader();
 
@@ -139,6 +143,20 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             Write(setprotocolStr + "\r");
             logger.LogDebug("Call " + setprotocolStr + " to set ELM327 protocol. Return Msg is " + ReadTo(">"));
         }
+
+        private void ELM327TestCommunicationToSearchProtocol() 
+        {
+            // Enable header ouut
+            Write("ATH1\r");
+            logger.LogDebug("Call ATH1 to enable header out. Return Msg is " + ReadTo(">"));
+
+            Write("0100\r");
+            logger.LogDebug("Call 0100 to test communication. Return Msg is " + ReadTo(">"));
+
+            // Disable header ouut
+            Write("ATH0\r");
+            logger.LogDebug("Call ATH0 to disable header out. Return Msg is " + ReadTo(">"));
+        } 
 
         private void ELM327TimingControlSet()
         {
