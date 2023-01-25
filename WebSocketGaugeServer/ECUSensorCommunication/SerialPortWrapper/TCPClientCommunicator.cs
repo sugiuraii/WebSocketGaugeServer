@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 {
@@ -17,9 +18,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
         private readonly string NewLine = "\n";
 
         private int readTimeOut = 500;
-
-        public TCPClientCommunicator(IPEndPoint remoteEP)
+        private readonly ILogger logger;
+        public TCPClientCommunicator(IPEndPoint remoteEP, ILoggerFactory logger)
         {
+            this.logger = logger.CreateLogger<TCPClientCommunicator>();
             this.tcpClient = new TcpClient();
             this.remoteEP = remoteEP;
             this.stream = this.tcpClient.GetStream();
