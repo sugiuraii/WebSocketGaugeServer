@@ -1,14 +1,22 @@
 using System.IO.Ports;
+using Microsoft.Extensions.Logging;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 {
     public class SerialPortCommunicator : ISerialPortWrapper
     {
         private readonly SerialPort serialPort;
-
-        public SerialPortCommunicator(SerialPort serialPort)
+        private readonly ILogger logger;
+        public SerialPortCommunicator(SerialPort serialPort, ILoggerFactory logger)
         {
+            this.logger = logger.CreateLogger<SerialPortCommunicator>();
             this.serialPort = serialPort;
+            // Register event of SerialPort error.
+            serialPort.ErrorReceived += (sender, e) => 
+            {
+                this.logger.LogError("SerialPortError Event is invoked.");
+                this.logger.LogError("Error type is  :" + e.EventType.ToString());
+            };
         }
 
         public int BaudRate { get => serialPort.BaudRate; set => serialPort.BaudRate = value; }

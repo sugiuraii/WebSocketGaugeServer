@@ -25,7 +25,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         {
             this.logger = logger.CreateLogger<COMCommon>();
 
-            this.serialPort = new SerialPortCommunicator(serialPort);
+            this.serialPort = new SerialPortCommunicator(serialPort, logger);
             DefaultBaudRate = 19200;
             ResetBaudRate = 9600;
             SlowReadInterval = 10;
@@ -33,15 +33,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             communicateRealtimeIsRunning = false;
             communicateRealtimeIsError = false;
             communicateResetCount = 0;
-
-            //通信エラー発生時のイベント処理登録
-            serialPort.ErrorReceived += (sender, e) => 
-            {
-                communicateRealtimeIsError = true;
-                this.logger.LogError("SerialPortError Event is invoked.");
-                this.logger.LogError("Error type is  :" + e.EventType.ToString());
-            };
-
         }
 
         public void BackgroundCommunicateStart()
