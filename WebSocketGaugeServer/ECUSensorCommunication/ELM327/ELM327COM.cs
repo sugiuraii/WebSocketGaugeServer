@@ -38,7 +38,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             DefaultBaudRate = 115200;
 
             ResetBaudRate = 4800;
-            ReadTimeout = 500;
+            ReadTimeout = 10000;
 
             ELM327SetProtocolMode = elm327ProtocolStr;
             ELM327AdaptiveTimingMode = elm327AdaptiveTimingMode;
@@ -87,20 +87,25 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     // Input initial AT commands
                     Write("ATZ\r");
                     Thread.Sleep(WAIT_AFTER_ATZ);
-                    logger.LogDebug("Call ATZ to initialize. Return Msg is " + ReadTo(">"));
+                    logger.LogDebug("Call ATZ to initialize. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+                    // Disable echoback.
+                    Write("ATE0\r");
+                    logger.LogDebug("Call ATE0 to disable echoback. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+                    // Disable Linefeed on delimiter
+                    Write("ATL0\r");
+                    logger.LogDebug("Call ATL0 to disable linefeed. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+
+                    // Set protocol
+                    ELM327SetProtocol();
+                    // Test communication
+                    ELM327TestCommunicationToSearchProtocol();
 
                     // Disable space.
                     Write("ATS0\r");
-                    logger.LogDebug("Call ATS0 to disable space. Return Msg is " + ReadTo(">"));
-                    // Disable echoback.
-                    Write("ATE0\r");
-                    logger.LogDebug("Call ATE0 to disable echoback. Return Msg is " + ReadTo(">"));
-                    // Disable Linefeed on delimiter
-                    Write("ATL0\r");
-                    logger.LogDebug("Call ATL0 to disable linefeed. Return Msg is " + ReadTo(">"));
-
-                    ELM327SetProtocol();
+                    logger.LogDebug("Call ATS0 to disable space. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+                    // Setup ELM327 timing and timeout
                     ELM327TimingControlSet();
+                    // Setup ELM327 header setting
                     ELM327SetHeader();
 
                     initializeFinished = true;
@@ -137,8 +142,22 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
             string setprotocolStr = "AT SP " + ELM327SetProtocolMode;
             Write(setprotocolStr + "\r");
-            logger.LogDebug("Call " + setprotocolStr + " to set ELM327 protocol. Return Msg is " + ReadTo(">"));
+            logger.LogDebug("Call " + setprotocolStr + " to set ELM327 protocol. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
         }
+
+        private void ELM327TestCommunicationToSearchProtocol() 
+        {
+            // Enable header ouut
+            Write("ATH1\r");
+            logger.LogDebug("Call ATH1 to enable header out. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+
+            Write("0100\r");
+            logger.LogDebug("Call 0100 to test communication. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+
+            // Disable header ouut
+            Write("ATH0\r");
+            logger.LogDebug("Call ATH0 to disable header out. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+        } 
 
         private void ELM327TimingControlSet()
         {
@@ -147,7 +166,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 logger.LogWarning("ELM327 Adaptive timing mode is not 0-2. AT AT command may fail.");
 
             Write("ATAT" + ELM327AdaptiveTimingMode.ToString() + "\r");
-            logger.LogDebug("Call AT AT" + ELM327AdaptiveTimingMode.ToString() + " to set adaptive timing control mode. Return Msg is " + ReadTo(">"));
+            logger.LogDebug("Call AT AT" + ELM327AdaptiveTimingMode.ToString() + " to set adaptive timing control mode. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
 
             // Timeout set
             int timeoutToSet = this.ELM327Timeout;
@@ -163,7 +182,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             }
 
             Write("ATST" + timeoutToSet.ToString("X2") + "\r");
-            logger.LogDebug("Call AT ST" + timeoutToSet.ToString("X2") + " to set timeout. Return Msg is " + ReadTo(">"));
+            logger.LogDebug("Call AT ST" + timeoutToSet.ToString("X2") + " to set timeout. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
         }
 
         private void ELM327SetHeader()
@@ -176,7 +195,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             }
 
             Write("ATSH" + this.ELM327HeaderBytes + "\r");
-            logger.LogDebug("Call AT SH" + this.ELM327HeaderBytes + " to set adaptive timing control mode. Return Msg is " + ReadTo(">"));
+            logger.LogDebug("Call AT SH" + this.ELM327HeaderBytes + " to set header ID. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
         }
 
         protected override void communicate_main(bool slow_read_flag)
@@ -320,6 +339,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     communicateRealtimeIsError = true;
                 }
             }
+        }
+
+        private string replaceCRLFWithSpace(string instr)
+        {
+            return instr.Replace("\r", " ").Replace("\n", " ");
         }
 
         private string discardStringAfterChar(string instr, char delimiter)
