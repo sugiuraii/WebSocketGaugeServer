@@ -1,5 +1,6 @@
 ﻿using System;
 using System.IO.Ports;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
@@ -21,11 +22,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
         private readonly ILogger logger;
 
-        public COMCommon(SerialPort serialPort, ILoggerFactory logger)
+        public COMCommon(ISerialPortWrapper serialPort, ILoggerFactory logger)
         {
             this.logger = logger.CreateLogger<COMCommon>();
-
-            this.serialPort = new SerialPortCommunicator(serialPort, logger);
+            this.serialPort = serialPort;
             DefaultBaudRate = 19200;
             ResetBaudRate = 9600;
             SlowReadInterval = 10;
@@ -34,6 +34,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             communicateRealtimeIsError = false;
             communicateResetCount = 0;
         }
+
+        public COMCommon(SerialPort port, ILoggerFactory logger) : this(new SerialPortCommunicator(port, logger), logger){}
+
+        public COMCommon(IPEndPoint remoteEP, ILoggerFactory logger) : this(new TCPClientCommunicator(remoteEP, logger), logger){}
 
         public void BackgroundCommunicateStart()
         {
