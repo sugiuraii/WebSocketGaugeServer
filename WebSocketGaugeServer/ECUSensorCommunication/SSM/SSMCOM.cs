@@ -14,7 +14,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 
         //SSMCOM data received event
         public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
-        public SSMCOM(ILoggerFactory logger, string comPortName) : base(new SerialPort(comPortName, 4800), logger)
+        public SSMCOM(ILoggerFactory logger, string comPortName) : base(comPortName, Parity.None, logger)
         {
             this.logger = logger.CreateLogger<SSMCOM>();
             this.content_table = new SSMContentTable();

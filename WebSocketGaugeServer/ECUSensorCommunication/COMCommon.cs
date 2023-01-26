@@ -22,22 +22,31 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
         private readonly ILogger logger;
 
-        public COMCommon(ISerialPortWrapper serialPort, ILoggerFactory logger)
+        public COMCommon(string portname, Parity parity, ILoggerFactory logger)
         {
             this.logger = logger.CreateLogger<COMCommon>();
-            this.serialPort = serialPort;
             DefaultBaudRate = 19200;
             ResetBaudRate = 9600;
             SlowReadInterval = 10;
+
+            if(portname.StartsWith("tcp://"))
+            {
+                this.logger.LogInformation("TCPWrapper is called. Baudrate and parity setting are ignnored. Please set these settings in remote serial gateway.");
+                string ipStr = portname.Replace("tcp://","");
+                string hostIP = ipStr.Split(":")[0];
+                int portNo = int.Parse(ipStr.Split(":")[1]);
+                var ipEp = new IPEndPoint(IPAddress.Parse(hostIP), portNo);
+                this.serialPort = new TCPClientCommunicator(ipEp, logger);
+            }
+            else 
+            {
+                this.serialPort = new SerialPortCommunicator(new SerialPort(portname, DefaultBaudRate, parity), logger);
+            }
 
             communicateRealtimeIsRunning = false;
             communicateRealtimeIsError = false;
             communicateResetCount = 0;
         }
-
-        public COMCommon(SerialPort port, ILoggerFactory logger) : this(new SerialPortCommunicator(port, logger), logger){}
-
-        public COMCommon(IPEndPoint remoteEP, ILoggerFactory logger) : this(new TCPClientCommunicator(remoteEP, logger), logger){}
 
         public void BackgroundCommunicateStart()
         {

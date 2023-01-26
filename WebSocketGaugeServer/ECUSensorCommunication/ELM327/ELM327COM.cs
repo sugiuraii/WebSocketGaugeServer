@@ -29,7 +29,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly ILogger logger;
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes) : base(new SerialPort(comPortName, 115200), logger)
+        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes) : base(comPortName, Parity.None, logger)
         {
             this.logger = logger.CreateLogger<ELM327COM>();
             this.content_table = new OBDIIContentTable();

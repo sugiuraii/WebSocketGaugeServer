@@ -14,7 +14,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
         // Arduino received Event
         private readonly ILogger logger;
         //Constructor
-        public ArduinoCOM(ILoggerFactory logger, string comPortName) : base(new SerialPort(comPortName, 38400, Parity.None), logger)
+        public ArduinoCOM(ILoggerFactory logger, string comPortName) : base(comPortName, Parity.None, logger)
         {
             this.logger = logger.CreateLogger<ArduinoCOM>();
             this.content_table = new ArduinoContentTable();

@@ -14,7 +14,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 
 		// Defilink received Event
 		public event EventHandler DefiPacketReceived;
-        public DefiCOM(ILoggerFactory logger, string comPortName) : base(new SerialPort(comPortName, 19200, Parity.Even), logger)
+        public DefiCOM(ILoggerFactory logger, string comPortName) : base(comPortName, Parity.Even, logger)
         {
             this.logger = logger.CreateLogger<DefiCOM>();
             this.content_table = new DefiContentTable();
