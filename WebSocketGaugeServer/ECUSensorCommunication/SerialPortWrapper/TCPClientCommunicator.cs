@@ -11,9 +11,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
     {
         private readonly TcpClient tcpClient;
         private readonly IPEndPoint remoteEP;
-        private readonly NetworkStream stream;
-        private readonly StreamWriter writer;
-        private readonly StreamReader reader;
+        private NetworkStream stream = null;
+        private StreamWriter writer = null;
+        private StreamReader reader = null;
 
         private readonly string NewLine = "\n";
 
@@ -24,10 +24,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
             this.logger = logger.CreateLogger<TCPClientCommunicator>();
             this.tcpClient = new TcpClient();
             this.remoteEP = remoteEP;
-            this.stream = this.tcpClient.GetStream();
-
-            this.writer = new StreamWriter(this.stream);
-            this.reader = new StreamReader(this.stream);
         }
 
         public bool IsOpen => tcpClient.Connected;
@@ -39,7 +35,13 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 
         public void Close()
         {
+            this.writer.Dispose();
+            this.reader.Dispose();
+            this.stream.Dispose();
             tcpClient.Close();
+            this.writer = null;
+            this.reader = null;
+            this.stream = null;
         }
 
         public void DiscardInBuffer()
@@ -58,6 +60,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
         public void Open()
         {
             tcpClient.Connect(remoteEP);
+            this.stream = this.tcpClient.GetStream();
+
+            this.writer = new StreamWriter(this.stream);
+            this.reader = new StreamReader(this.stream);
         }
 
         public int Read(byte[] buffer, int offset, int count)
