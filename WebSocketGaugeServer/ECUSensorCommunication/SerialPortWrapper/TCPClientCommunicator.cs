@@ -103,12 +103,16 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 
         public void Write(byte[] buffer, int offset, int count)
         {
-            tcpClient.GetStream().Write(buffer, offset, count);
+            stream.Write(buffer, offset, count);
+            // No need to use stream.Flush(), since buffer is not implemented in NetworkStream.
+            // Actually, NetworkStream.Flush() do nothing.
+            // stream.Flush(); 
         }
 
         public void Write(string buffer)
         {
             writer.Write(buffer);
+            writer.Flush(); // Fource flush write buffer of StreamWriter
         }
     }
 }
