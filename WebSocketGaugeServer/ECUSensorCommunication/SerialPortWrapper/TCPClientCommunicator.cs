@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -78,8 +79,18 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 
         public string ReadExisting()
         {
-            stream.Flush();
-            return "";
+            var inCharList = new List<char>(BytesToRead);
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            while(true){
+                int indat = reader.Read();
+                if(indat != -1)
+                    inCharList.Add((char)indat);
+                else
+                    return new String(inCharList.ToArray());
+                if(stopwatch.ElapsedMilliseconds > readTimeOut)
+                    throw new TimeoutException();
+            }
         }
 
         public string ReadLine()
