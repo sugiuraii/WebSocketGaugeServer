@@ -85,6 +85,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
                 int indat = reader.Read();
                 if(indat != -1)
                     inCharList.Add((char)indat);
+                else
+                {
+                    logger.LogWarning("End of stream is detected in network stream.");
+                    break;
+                }
             }
             return new String(inCharList.ToArray());
         }
@@ -109,6 +114,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
                     if(str.Equals(lineStr.Substring(lineStr.Length - str.Length)))
                         return lineStr;
                 }
+                else
+                {
+                    logger.LogWarning("End of stream is detected in network stream.");
+                    return new string(inCharList.ToArray());
+                }
+
                 if(stopwatch.ElapsedMilliseconds > readTimeOut)
                     throw new TimeoutException();
             }
