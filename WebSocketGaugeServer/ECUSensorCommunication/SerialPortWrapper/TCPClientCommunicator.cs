@@ -32,7 +32,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
         public int BytesToRead => tcpClient.Available;
 
         public int ReadTimeout { get => this.readTimeOut; set => this.readTimeOut = value; }
-        public int BaudRate { get => 0; set {} }
+        public int BaudRate { get => 0; set { } }
 
         public void Close()
         {
@@ -81,9 +81,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
         public string ReadExisting()
         {
             var inCharList = new List<char>(BytesToRead);
-            while(stream.DataAvailable){
+            while (stream.DataAvailable)
+            {
                 int indat = reader.Read();
-                if(indat != -1)
+                if (indat != -1)
                     inCharList.Add((char)indat);
                 else
                 {
@@ -104,14 +105,14 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
             var inCharList = new List<char>(BytesToRead);
             var stopwatch = new Stopwatch();
             stopwatch.Start();
-            while(true)
+            while (true)
             {
                 int indat = reader.Read();
-                if(indat != -1)
+                if (indat != -1)
                 {
-                    inCharList.Add((char)indat);                    
+                    inCharList.Add((char)indat);
                     string lineStr = new string(inCharList.ToArray());
-                    if(str.Equals(lineStr.Substring(lineStr.Length - str.Length)))
+                    if (str.Equals(lineStr.Substring(lineStr.Length - str.Length)))
                         return lineStr;
                 }
                 else
@@ -120,7 +121,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
                     return new string(inCharList.ToArray());
                 }
 
-                if(stopwatch.ElapsedMilliseconds > readTimeOut)
+                if (stopwatch.ElapsedMilliseconds > readTimeOut)
                     throw new TimeoutException();
             }
         }
