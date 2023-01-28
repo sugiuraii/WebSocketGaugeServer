@@ -101,10 +101,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
         public string ReadTo(string str)
         {
             var inCharList = new List<char>(BytesToRead);
-            int timeUsed = 0;
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             while(true)
             {
-                int currTime = Environment.TickCount;
                 int indat = reader.Read();
                 if(indat != -1)
                 {
@@ -113,8 +113,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
                     if(str.Equals(lineStr.Substring(lineStr.Length - str.Length)))
                         return lineStr;
                 }
-                timeUsed += Environment.TickCount - currTime;
-                if(timeUsed > readTimeOut)
+                if(stopwatch.ElapsedMilliseconds > readTimeOut)
                     throw new TimeoutException();
             }
         }
