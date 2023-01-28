@@ -78,7 +78,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 
         public string ReadExisting()
         {
-            return reader.ReadToEnd();
+            stream.Flush();
+            return "";
         }
 
         public string ReadLine()
