@@ -29,14 +29,13 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             ResetBaudRate = 9600;
             SlowReadInterval = 10;
 
-            if(portname.StartsWith("tcp://"))
+            if(portname.StartsWith("tcp:"))
             {
                 this.logger.LogInformation("TCPWrapper is called. Baudrate and parity setting are ignnored. Please set these settings in remote serial gateway.");
-                string ipStr = portname.Replace("tcp://","");
-                string hostIP = ipStr.Split(":")[0];
+                string ipStr = portname.Replace("tcp:","");
+                string hostName = ipStr.Split(":")[0];
                 int portNo = int.Parse(ipStr.Split(":")[1]);
-                var ipEp = new IPEndPoint(IPAddress.Parse(hostIP), portNo);
-                this.serialPort = new TCPClientCommunicator(ipEp, logger);
+                this.serialPort = new TCPClientCommunicator(hostName, port, logger);
             }
             else 
             {

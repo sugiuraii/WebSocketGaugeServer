@@ -20,11 +20,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 
         private int readTimeOut = 500;
         private readonly ILogger logger;
-        public TCPClientCommunicator(IPEndPoint remoteEP, ILoggerFactory logger)
+        public TCPClientCommunicator(string hostname, int port, ILoggerFactory logger)
         {
             this.logger = logger.CreateLogger<TCPClientCommunicator>();
-            this.tcpClient = new TcpClient();
-            this.remoteEP = remoteEP;
+            this.tcpClient = new TcpClient(hostname, port);
         }
 
         public bool IsOpen => tcpClient.Connected;
