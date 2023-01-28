@@ -62,6 +62,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
         {
             tcpClient.Connect(remoteEP);
             this.stream = this.tcpClient.GetStream();
+            this.stream.ReadTimeout = readTimeOut;
 
             this.writer = new StreamWriter(this.stream);
             this.reader = new StreamReader(this.stream);
@@ -80,17 +81,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
         public string ReadExisting()
         {
             var inCharList = new List<char>(BytesToRead);
-            var stopwatch = new Stopwatch();
-            stopwatch.Start();
-            while(true){
+            while(stream.DataAvailable){
                 int indat = reader.Read();
                 if(indat != -1)
                     inCharList.Add((char)indat);
-                else
-                    return new String(inCharList.ToArray());
-                if(stopwatch.ElapsedMilliseconds > readTimeOut)
-                    throw new TimeoutException();
             }
+            return new String(inCharList.ToArray());
         }
 
         public string ReadLine()
