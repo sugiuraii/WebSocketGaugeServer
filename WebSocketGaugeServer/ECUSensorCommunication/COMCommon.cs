@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.IO.Ports;
 using System.Net;
 using System.Threading;
@@ -95,7 +96,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
                         if (communicateResetCount > COMMUNICATE_RESET_MAX)
                         {
-                            throw new System.InvalidOperationException("Number of communicate_reset() call exceeds COMMUNICATE_RESET_MAX : " + COMMUNICATE_RESET_MAX.ToString() + ". Terminate communicate_realtime().");
+                            throw new InvalidOperationException("Number of communicate_reset() call exceeds COMMUNICATE_RESET_MAX : " + COMMUNICATE_RESET_MAX.ToString() + ". Terminate communicate_realtime().");
                         }
 
                         communicateRealtimeIsError = false;
@@ -105,18 +106,17 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                         //communicate_mainでエラーなければエラーカウンタリセット。
                         communicateResetCount = 0;
                     }
-
                 }
             }
-            catch (System.IO.IOException ex)
+            catch (IOException ex)
             {
                 logger.LogError(ex.GetType().ToString() + " " + ex.Message);
             }
-            catch (System.InvalidOperationException ex)
+            catch (InvalidOperationException ex)
             {
                 logger.LogError(ex.GetType().ToString() + " " + ex.Message);
             }
-            catch (System.UnauthorizedAccessException ex)
+            catch (UnauthorizedAccessException ex)
             {
                 logger.LogError(ex.GetType().ToString() + " " + ex.Message);
             }
