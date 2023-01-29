@@ -63,6 +63,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 logger.LogWarning("Baurdate is different from recommended ELM327-USB bardrate of " + RECOMMENDED_BAUD_RATE.ToString() + "bps");
 
             initializeELM327ATCommand();
+            logger.LogInformation("ELM327 initialization is finished.");
         }
 
         private void initializeELM327ATCommand()
