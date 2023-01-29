@@ -32,10 +32,17 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             if(portname.StartsWith("tcp:"))
             {
                 this.logger.LogInformation("TCPWrapper is called. Baudrate and parity setting are ignnored. Please set these settings in remote serial gateway.");
-                string ipStr = portname.Replace("tcp:","");
-                string hostName = ipStr.Split(":")[0];
-                int portNo = int.Parse(ipStr.Split(":")[1]);
-                this.serialPort = new TCPClientCommunicator(hostName, port, logger);
+                var addressStr = portname.Replace("tcp:","").Split(":");
+                if(addressStr.Length != 2)
+                    throw new ArgumentException("TCP address string does not conatins address and port.");
+                
+                string hostName = addressStr[0];
+                int portNo;
+                if(!int.TryParse(addressStr[1], out portNo))
+                    throw new ArgumentException("TCP port number is not the number");
+                
+                IPAddress[] ipAddresses = Dns.GetHostAddresses(hostName);
+                this.serialPort = new TCPClientCommunicator(new IPEndPoint(ipAddresses[0], portNo), logger);
             }
             else 
             {
