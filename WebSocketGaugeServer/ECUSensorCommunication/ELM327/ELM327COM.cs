@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
+using System.IO.Ports;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
@@ -28,13 +29,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly ILogger logger;
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes) : base(logger)
+        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes) : base(comPortName, Parity.None, logger)
         {
             this.logger = logger.CreateLogger<ELM327COM>();
             this.content_table = new OBDIIContentTable();
 
             //Setup serial port
-            PortName = comPortName;
             DefaultBaudRate = 115200;
 
             ResetBaudRate = 4800;
@@ -87,13 +87,16 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     // Input initial AT commands
                     Write("ATZ\r");
                     Thread.Sleep(WAIT_AFTER_ATZ);
-                    logger.LogDebug("Call ATZ to initialize. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+                    logger.LogDebug("Call ATZ to initialize.");
+                    logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
                     // Disable echoback.
                     Write("ATE0\r");
-                    logger.LogDebug("Call ATE0 to disable echoback. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+                    logger.LogDebug("Call ATE0 to disable echoback.");
+                    logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
                     // Disable Linefeed on delimiter
                     Write("ATL0\r");
-                    logger.LogDebug("Call ATL0 to disable linefeed. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+                    logger.LogDebug("Call ATL0 to disable linefeed.");
+                    logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
 
                     // Set protocol
                     ELM327SetProtocol();
@@ -102,7 +105,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
                     // Disable space.
                     Write("ATS0\r");
-                    logger.LogDebug("Call ATS0 to disable space. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+                    logger.LogDebug("Call ATS0 to disable space.");
+                    logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
                     // Setup ELM327 timing and timeout
                     ELM327TimingControlSet();
                     // Setup ELM327 header setting
@@ -142,21 +146,25 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
             string setprotocolStr = "AT SP " + ELM327SetProtocolMode;
             Write(setprotocolStr + "\r");
-            logger.LogDebug("Call " + setprotocolStr + " to set ELM327 protocol. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Call " + setprotocolStr + " to set ELM327 protocol.");
+            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
         }
 
         private void ELM327TestCommunicationToSearchProtocol() 
         {
             // Enable header ouut
             Write("ATH1\r");
-            logger.LogDebug("Call ATH1 to enable header out. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Call ATH1 to enable header out.");
+            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
 
             Write("0100\r");
-            logger.LogDebug("Call 0100 to test communication. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Call 0100 to test communication.");
+            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
 
             // Disable header ouut
             Write("ATH0\r");
-            logger.LogDebug("Call ATH0 to disable header out. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Call ATH0 to disable header out.");
+            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
         } 
 
         private void ELM327TimingControlSet()
@@ -166,7 +174,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 logger.LogWarning("ELM327 Adaptive timing mode is not 0-2. AT AT command may fail.");
 
             Write("ATAT" + ELM327AdaptiveTimingMode.ToString() + "\r");
-            logger.LogDebug("Call AT AT" + ELM327AdaptiveTimingMode.ToString() + " to set adaptive timing control mode. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Call AT AT" + ELM327AdaptiveTimingMode.ToString() + " to set adaptive timing control mode.");
+            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
 
             // Timeout set
             int timeoutToSet = this.ELM327Timeout;
@@ -182,7 +191,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             }
 
             Write("ATST" + timeoutToSet.ToString("X2") + "\r");
-            logger.LogDebug("Call AT ST" + timeoutToSet.ToString("X2") + " to set timeout. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Call AT ST" + timeoutToSet.ToString("X2") + " to set timeout.");
+            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
         }
 
         private void ELM327SetHeader()
@@ -195,7 +205,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             }
 
             Write("ATSH" + this.ELM327HeaderBytes + "\r");
-            logger.LogDebug("Call AT SH" + this.ELM327HeaderBytes + " to set header ID. Return Msg : " + replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Call AT SH" + this.ELM327HeaderBytes + " to set header ID.");
+            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
         }
 
         protected override void communicate_main(bool slow_read_flag)

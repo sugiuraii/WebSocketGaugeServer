@@ -1,14 +1,16 @@
 ﻿using System;
 using System.IO.Ports;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 {
     public abstract class COMCommon : IBackgroundCommunicate
     {
-        private SerialPort serialPort;
+        private ISerialPortWrapper serialPort;
 
         private int slowReadInterval;
         private Thread communicate_realtime_thread1;
@@ -20,27 +22,19 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
         private readonly ILogger logger;
 
-        public COMCommon(ILoggerFactory logger)
+        public COMCommon(string portname, Parity parity, ILoggerFactory logger)
         {
             this.logger = logger.CreateLogger<COMCommon>();
-
-            serialPort = new SerialPort();
             DefaultBaudRate = 19200;
             ResetBaudRate = 9600;
             SlowReadInterval = 10;
 
+            var serialWrapperFactory = new SerialPortWrapperFactory(logger);
+            this.serialPort = serialWrapperFactory.Create(portname, DefaultBaudRate, parity);
+
             communicateRealtimeIsRunning = false;
             communicateRealtimeIsError = false;
             communicateResetCount = 0;
-
-            //通信エラー発生時のイベント処理登録
-            serialPort.ErrorReceived += (sender, e) => 
-            {
-                communicateRealtimeIsError = true;
-                this.logger.LogError("SerialPortError Event is invoked.");
-                this.logger.LogError("Error type is  :" + e.EventType.ToString());
-            };
-
         }
 
         public void BackgroundCommunicateStart()
@@ -209,11 +203,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             return serialPort.ReadByte();
         }
 
-        public int ReadChar()
-        {
-            return serialPort.ReadChar();
-        }
-
         public string ReadTo(string str)
         {
             return serialPort.ReadTo(str);
@@ -289,37 +278,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         protected int DefaultBaudRate {get; set; }
         protected int ResetBaudRate { get; set; }
 
-        public string PortName
-        {
-            get
-            {
-                return serialPort.PortName;
-            }
-            set
-            {
-                try
-                {
-                    serialPort.PortName = value;
-                }
-                catch (System.InvalidOperationException ex1)
-                {
-                    logger.LogError("Port name set error : " + ex1.GetType().ToString() + " " + ex1.Message);
-                }
-            }
-        }
-
-        public Parity Parity
-        {
-            get
-            {
-                return serialPort.Parity;
-            }
-            set
-            {
-                serialPort.Parity = value;
-            }
-        }
-
         public int ReadTimeout
         {
             get
@@ -331,29 +289,5 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                 serialPort.ReadTimeout = value;
             }
         }
-        public int DataBits
-        {
-            get
-            {
-                return serialPort.DataBits;
-            }
-            set
-            {
-                serialPort.DataBits = value;
-            }
-        }
-
-        public StopBits StopBits
-        {
-            get
-            {
-                return serialPort.StopBits;
-            }
-            set
-            {
-                serialPort.StopBits = value;
-            }
-        }
-
     }
 }
