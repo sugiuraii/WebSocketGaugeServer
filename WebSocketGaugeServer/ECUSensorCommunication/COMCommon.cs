@@ -62,7 +62,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         }
 
         //読み込みスレッド実装（communicate_realtime_start()からスレッドを作って呼び出すこと）
-        private void communicate_realtime()
+        private async Task communicate_realtime(CancellationToken ct)
         {
             try
             {
@@ -73,19 +73,19 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                 communicate_initialize();
 
                 int i = 0;
-                while (communicateRealtimeIsRunning)
+                while (!ct.IsCancellationRequested)
                 {
                     if (i > SlowReadInterval)
                     {
                         //slowread_intervalごとにSlowreadモードで通信。
                         //slowreadモードを実装しないケースもあり(引数によらず同じ処理をする実装もあり)
 
-                        communicate_main(true);
+                        await Task.Run(() => communicate_main(true));
                         i = 0;
                     }
                     else
                     {
-                        communicate_main(false);
+                        await Task.Run(() => communicate_main(false));
                         i++;
                     }
 
