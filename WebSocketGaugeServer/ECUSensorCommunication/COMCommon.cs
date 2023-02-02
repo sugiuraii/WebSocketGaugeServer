@@ -14,8 +14,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         private ISerialPortWrapper serialPort;
 
         private int slowReadInterval;
-        private Thread communicate_realtime_thread1;
-        private bool communicateRealtimeIsRunning; // 読み込みスレッド継続フラグ(communicate_realtime_stop()でfalseになり、読み込みスレッドは終了)
+        private Task communicateRealtimeTask;
+        private CancellationTokenSource ctokenSource = new CancellationTokenSource();
         protected bool communicateRealtimeIsError; // エラー発生時にtrue trueになったらcommunicate_reset()を呼び出して初期化を試みる。
 
         private int communicateResetCount; //何回communicate_reset()が連続でコールされたか？ (COMMUNICATE_RESET_MAXを超えたらプログラムを落とす)
@@ -33,7 +33,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             var serialWrapperFactory = new SerialPortWrapperFactory(logger);
             this.serialPort = serialWrapperFactory.Create(portname, DefaultBaudRate, parity);
 
-            communicateRealtimeIsRunning = false;
             communicateRealtimeIsError = false;
             communicateResetCount = 0;
         }
@@ -43,21 +42,17 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             // Set serialport1.BaudRate to default baud rate
             serialPort.BaudRate = DefaultBaudRate;
             logger.LogInformation("Set baudrate to " + serialPort.BaudRate.ToString() + " bps.");
-
-            communicate_realtime_thread1 = new Thread(new ThreadStart(communicate_realtime));
-            communicateRealtimeIsRunning = true;
             communicateRealtimeIsError = false;
-            communicate_realtime_thread1.Start();
+            communicateRealtimeTask = Task.Run(async() => await communicate_realtime(ctokenSource.Token));
             logger.LogInformation("Communication Started.");
         }
 
         public void BackgroundCommunicateStop()
         {
             //通信スレッドを終了させる(フラグをfalseに)
-            communicateRealtimeIsRunning = false;
-
+            ctokenSource.Cancel();
+            communicateRealtimeTask.Wait();
             //通信スレッド終了まで待つ
-            communicate_realtime_thread1.Join();
             logger.LogInformation("Communication Stopped.");
         }
 
@@ -91,7 +86,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
                     if (communicateRealtimeIsError) // シリアルポートエラー（タイムアウト、パリティ、フレーミング)を受信したら、初期化を試みる。
                     {
-                        communticate_reset();
+                        await Task.Run(() => communticate_reset());
                         communicateResetCount++;
 
                         if (communicateResetCount > COMMUNICATE_RESET_MAX)
@@ -122,8 +117,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             }
             finally
             {
-                communicateRealtimeIsRunning = false;
-
                 //ポートクローズ
                 if (serialPort.IsOpen)
                 {
@@ -255,10 +248,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         {
             get
             {
-                if(communicate_realtime_thread1 == null)
+                if(communicateRealtimeTask == null)
                     throw new InvalidOperationException("Communication thread is null. Maybe not created. Run BackgroundCommunicateStart() before query IsCommunicationThradAlive.");
                 else
-                    return communicate_realtime_thread1.IsAlive;
+                    return communicateRealtimeTask.Status == TaskStatus.Running;
             }
         }
 
