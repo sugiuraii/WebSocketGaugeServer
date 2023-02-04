@@ -43,7 +43,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             serialPort.BaudRate = DefaultBaudRate;
             logger.LogInformation("Set baudrate to " + serialPort.BaudRate.ToString() + " bps.");
             communicateRealtimeIsError = false;
-            communicateRealtimeTask = Task.Run(async() => await communicate_realtime(ctokenSource.Token));
+            communicateRealtimeTask = Task.Run(() => communicate_realtime(ctokenSource.Token));
             logger.LogInformation("Communication Started.");
         }
 
@@ -57,7 +57,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         }
 
         //読み込みスレッド実装（communicate_realtime_start()からスレッドを作って呼び出すこと）
-        private async Task communicate_realtime(CancellationToken ct)
+        private void communicate_realtime(CancellationToken ct)
         {
             try
             {
@@ -75,18 +75,18 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                         //slowread_intervalごとにSlowreadモードで通信。
                         //slowreadモードを実装しないケースもあり(引数によらず同じ処理をする実装もあり)
 
-                        await Task.Run(() => communicate_main(true));
+                        communicate_main(true);
                         i = 0;
                     }
                     else
                     {
-                        await Task.Run(() => communicate_main(false));
+                        communicate_main(false);
                         i++;
                     }
 
                     if (communicateRealtimeIsError) // シリアルポートエラー（タイムアウト、パリティ、フレーミング)を受信したら、初期化を試みる。
                     {
-                        await Task.Run(() => communticate_reset());
+                        communticate_reset();
                         communicateResetCount++;
 
                         if (communicateResetCount > COMMUNICATE_RESET_MAX)
