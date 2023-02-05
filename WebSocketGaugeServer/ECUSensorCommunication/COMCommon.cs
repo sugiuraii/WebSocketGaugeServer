@@ -115,6 +115,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             {
                 logger.LogError(ex.GetType().ToString() + " " + ex.Message);
             }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.GetType().ToString() + " " + ex.Message);
+                logger.LogError(ex.StackTrace);
+            }
             finally
             {
                 //ポートクローズ
