@@ -59,74 +59,77 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         //読み込みスレッド実装（communicate_realtime_start()からスレッドを作って呼び出すこと）
         private void communicate_realtime(CancellationToken ct)
         {
-            try
+            while(!ct.IsCancellationRequested)
             {
-                //ポートオープン
-                logger.LogInformation("COMport open.");
-                logger.LogInformation("Call initialization routine");
-                serialPort.Open();
-                communicate_initialize();
-
-                int i = 0;
-                while (!ct.IsCancellationRequested)
+                try
                 {
-                    if (i > SlowReadInterval)
-                    {
-                        //slowread_intervalごとにSlowreadモードで通信。
-                        //slowreadモードを実装しないケースもあり(引数によらず同じ処理をする実装もあり)
+                    //ポートオープン
+                    logger.LogInformation("COMport open.");
+                    logger.LogInformation("Call initialization routine");
+                    serialPort.Open();
+                    communicate_initialize();
 
-                        communicate_main(true);
-                        i = 0;
-                    }
-                    else
+                    int i = 0;
+                    while (!ct.IsCancellationRequested)
                     {
-                        communicate_main(false);
-                        i++;
-                    }
-
-                    if (communicateRealtimeIsError) // シリアルポートエラー（タイムアウト、パリティ、フレーミング)を受信したら、初期化を試みる。
-                    {
-                        communticate_reset();
-                        communicateResetCount++;
-
-                        if (communicateResetCount > COMMUNICATE_RESET_MAX)
+                        if (i > SlowReadInterval)
                         {
-                            throw new InvalidOperationException("Number of communicate_reset() call exceeds COMMUNICATE_RESET_MAX : " + COMMUNICATE_RESET_MAX.ToString() + ". Terminate communicate_realtime().");
+                            //slowread_intervalごとにSlowreadモードで通信。
+                            //slowreadモードを実装しないケースもあり(引数によらず同じ処理をする実装もあり)
+
+                            communicate_main(true);
+                            i = 0;
+                        }
+                        else
+                        {
+                            communicate_main(false);
+                            i++;
                         }
 
-                        communicateRealtimeIsError = false;
-                    }
-                    else
-                    {
-                        //communicate_mainでエラーなければエラーカウンタリセット。
-                        communicateResetCount = 0;
+                        if (communicateRealtimeIsError) // シリアルポートエラー（タイムアウト、パリティ、フレーミング)を受信したら、初期化を試みる。
+                        {
+                            communticate_reset();
+                            communicateResetCount++;
+
+                            if (communicateResetCount > COMMUNICATE_RESET_MAX)
+                            {
+                                throw new InvalidOperationException("Number of communicate_reset() call exceeds COMMUNICATE_RESET_MAX : " + COMMUNICATE_RESET_MAX.ToString() + ". Terminate communicate_realtime().");
+                            }
+
+                            communicateRealtimeIsError = false;
+                        }
+                        else
+                        {
+                            //communicate_mainでエラーなければエラーカウンタリセット。
+                            communicateResetCount = 0;
+                        }
                     }
                 }
-            }
-            catch (IOException ex)
-            {
-                logger.LogError(ex.GetType().ToString() + " " + ex.Message);
-            }
-            catch (InvalidOperationException ex)
-            {
-                logger.LogError(ex.GetType().ToString() + " " + ex.Message);
-            }
-            catch (UnauthorizedAccessException ex)
-            {
-                logger.LogError(ex.GetType().ToString() + " " + ex.Message);
-            }
-            catch (Exception ex)
-            {
-                logger.LogError(ex.GetType().ToString() + " " + ex.Message);
-                logger.LogError(ex.StackTrace);
-            }
-            finally
-            {
-                //ポートクローズ
-                if (serialPort.IsOpen)
+                catch (IOException ex)
                 {
-                    serialPort.Close();
-                    logger.LogInformation("COMPort is closed.");
+                    logger.LogError(ex.GetType().ToString() + " " + ex.Message);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    logger.LogError(ex.GetType().ToString() + " " + ex.Message);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    logger.LogError(ex.GetType().ToString() + " " + ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex.GetType().ToString() + " " + ex.Message);
+                    logger.LogError(ex.StackTrace);
+                }
+                finally
+                {
+                    //ポートクローズ
+                    if (serialPort.IsOpen)
+                    {
+                        serialPort.Close();
+                        logger.LogInformation("COMPort is closed.");
+                    }
                 }
             }
         }
