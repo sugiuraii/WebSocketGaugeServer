@@ -6,6 +6,8 @@ using Microsoft.Extensions.Logging;
 using System.Text.RegularExpressions;
 using System.IO.Ports;
 
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Utils;
+
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
     public class ELM327COM : COMCommon, IELM327COM
@@ -25,6 +27,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly int ELM327Timeout;
         private readonly string ELM327HeaderBytes;
         private readonly OBDIIContentTable content_table;
+
+        private readonly ELM327OutMessageParser elm327MsgParser;
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
         private readonly ILogger logger;
 
@@ -44,6 +48,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             ELM327AdaptiveTimingMode = elm327AdaptiveTimingMode;
             ELM327Timeout = elm327Timeout;
             ELM327HeaderBytes = elm327HeaderBytes;
+
+            this.elm327MsgParser = new ELM327OutMessageParser(this.content_table);
         }
 
         public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, String.Empty, 1, 32, "")
@@ -243,10 +249,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     return;
                 }
                 communicateMultiPID(query_OBDII_code_list, 0);
+                /*
                 foreach (OBDIIParameterCode code in query_OBDII_code_list)
                 {
                     communicateOnePID(code, 0);
                 }
+                */
 
                 //Invoke SSMDatareceived event
                 ELM327DataReceivedEventArgs elm327_received_eventargs = new ELM327DataReceivedEventArgs();
@@ -285,49 +293,34 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             Write(outMsg + "\r");
             logger.LogDebug("ELM327OUT:" + outMsg);
 
+            // Read to next prompt char of '>'
+            String inMsg = ReadTo(">");
+            logger.LogDebug("ELM327IN:" + inMsg);
             try
             {
-                // Read to next prompt char of '>'
-                String inMsg = ReadTo(">");
-                logger.LogDebug("ELM327IN:" + inMsg);
-                /*
-                // Get ECU data.
-                inMsg = inMsg.Replace(">", "").Replace("\n", "").Replace("\r", "");
-
-                // Check ECU data format.
                 if (inMsg.Equals(""))
                     throw new FormatException("Return message at communicateOnePID() is empty.");
                 else if (inMsg.Contains("NO DATA"))
-                {
-                    logger.LogWarning("ELM327 returns NO DATA." + " OutPID :" + outPID + " Code : " + code.ToString());
-                    return;
-                }
+                    throw new FormatException("ELM327 returns NO DATA.");
 
-                String inPID = inMsg.Substring(2, 2);
-                if (!inPID.Equals(outPID))
-                {
-                    throw new FormatException("PID return from ELM327 does not match with commanded PID." + "outPID : " + outPID + " inPID :" + inPID);
-                }
-
-                //logger.LogDebug("Filtered ELM327IN:" + inMsg);
-                var returnValue = Convert.ToUInt32(inMsg.Remove(0, 4), 16);
-
-                content_table[code].RawValue = returnValue;
-                */
+                var parseResult = elm327MsgParser.parse(inMsg);
+                var parsedValueList = parseResult.ValueStrMap.Select(kvp => new KeyValuePair<OBDIIParameterCode, uint>(kvp.Key, Convert.ToUInt32(kvp.Value, 16)))
+                                                       .ToList();
+                parsedValueList.ForEach(kvp => content_table[kvp.Key].RawValue = kvp.Value);
             }
             catch (TimeoutException ex)
             {
                 logger.LogError("ELM327COM timeout. " + ex.GetType().ToString() + " " + ex.Message);
                 communicateRealtimeIsError = true;
             }
-            /*
-            catch (FormatException ex)
+            catch (Exception ex) when (ex is FormatException || ex is ArgumentOutOfRangeException || ex is KeyNotFoundException)
             {
-                logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
+                logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Query string is:" + outMsg +" Received string is : " + inMsg);
+                logger.LogWarning(ex.StackTrace);
                 if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
                 {
-                    logger.LogWarning("Retry communication" + " OutPID :" + outPID + " Code : " + code.ToString());
-                    communicateOnePID(code, errorRetryCount + 1);
+                    logger.LogWarning("Retry communication cycle :" + (errorRetryCount + 1).ToString());
+                    communicateMultiPID(codes, errorRetryCount + 1);
                 }
                 else
                 {
@@ -335,21 +328,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     communicateRealtimeIsError = true;
                 }
             }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
-                if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
-                {
-                    logger.LogWarning("Retry communication" + " OutPID :" + outPID + " Code : " + code.ToString());
-                    communicateOnePID(code, errorRetryCount + 1);
-                }
-                else
-                {
-                    logger.LogError("PID communication retry count exceeds maximum (" + PID_COMMUNICATE_RETRY_MAX.ToString() + ")");
-                    communicateRealtimeIsError = true;
-                }
-            }
-            */
         }
 
         //Communication on 1PID
