@@ -242,7 +242,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                         Thread.Sleep(500);
                     return;
                 }
-
+                communicateMultiPID(query_OBDII_code_list, 0);
                 foreach (OBDIIParameterCode code in query_OBDII_code_list)
                 {
                     communicateOnePID(code, 0);
@@ -261,6 +261,97 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             }
         }
 
+        private void communicateMultiPID(List<OBDIIParameterCode> codes, int errorRetryCount)
+        {
+            if(codes.Count > 6)
+                throw new ArgumentException("Code list size of multiple PID communication must be less than or equal 6.");
+            
+            //Clean up serial port buffer
+            DiscardInBuffer();
+            String outMsg = MODECODE.ToString("X2") + codes.Select(code => content_table[code].PID.ToString("X2")).Aggregate((prev, next) => prev + next);
+            int returnByteLength = 1 + codes.Select(code => content_table[code].ReturnByteLength + 1).Sum(); // Return byte lenght = 1(mode code) + sum (1(=PID byte) + Return byte length)
+            // Calculate number of ISO-TP return frame 
+            int returnMessageBlocks;
+            if(returnByteLength <= 7)
+                returnMessageBlocks = 1;
+            else if (returnByteLength <= 13)
+                returnMessageBlocks = 2;
+            else
+                returnMessageBlocks = 3 + (returnByteLength - 14)/7;
+            logger.LogDebug("Return message blocks: " + returnMessageBlocks.ToString());
+            // Append number of message frames at the end of query string.
+            outMsg = outMsg + returnMessageBlocks.ToString();
+            // Issue query
+            Write(outMsg + "\r");
+            logger.LogDebug("ELM327OUT:" + outMsg);
+
+            try
+            {
+                // Read to next prompt char of '>'
+                String inMsg = ReadTo(">");
+                logger.LogDebug("ELM327IN:" + inMsg);
+                /*
+                // Get ECU data.
+                inMsg = inMsg.Replace(">", "").Replace("\n", "").Replace("\r", "");
+
+                // Check ECU data format.
+                if (inMsg.Equals(""))
+                    throw new FormatException("Return message at communicateOnePID() is empty.");
+                else if (inMsg.Contains("NO DATA"))
+                {
+                    logger.LogWarning("ELM327 returns NO DATA." + " OutPID :" + outPID + " Code : " + code.ToString());
+                    return;
+                }
+
+                String inPID = inMsg.Substring(2, 2);
+                if (!inPID.Equals(outPID))
+                {
+                    throw new FormatException("PID return from ELM327 does not match with commanded PID." + "outPID : " + outPID + " inPID :" + inPID);
+                }
+
+                //logger.LogDebug("Filtered ELM327IN:" + inMsg);
+                var returnValue = Convert.ToUInt32(inMsg.Remove(0, 4), 16);
+
+                content_table[code].RawValue = returnValue;
+                */
+            }
+            catch (TimeoutException ex)
+            {
+                logger.LogError("ELM327COM timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                communicateRealtimeIsError = true;
+            }
+            /*
+            catch (FormatException ex)
+            {
+                logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
+                if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
+                {
+                    logger.LogWarning("Retry communication" + " OutPID :" + outPID + " Code : " + code.ToString());
+                    communicateOnePID(code, errorRetryCount + 1);
+                }
+                else
+                {
+                    logger.LogError("PID communication retry count exceeds maximum (" + PID_COMMUNICATE_RETRY_MAX.ToString() + ")");
+                    communicateRealtimeIsError = true;
+                }
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Received string Is : " + inMsg);
+                if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
+                {
+                    logger.LogWarning("Retry communication" + " OutPID :" + outPID + " Code : " + code.ToString());
+                    communicateOnePID(code, errorRetryCount + 1);
+                }
+                else
+                {
+                    logger.LogError("PID communication retry count exceeds maximum (" + PID_COMMUNICATE_RETRY_MAX.ToString() + ")");
+                    communicateRealtimeIsError = true;
+                }
+            }
+            */
+        }
+
         //Communication on 1PID
         private void communicateOnePID(OBDIIParameterCode code, int errorRetryCount)
         {
@@ -272,7 +363,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             int returnByteLength = content_table[code].ReturnByteLength;
             outMsg = MODECODE.ToString("X2") + outPID;
             // Wait receiving only single message (for speed up)
-            outMsg.Concat("1");
+            outMsg = outMsg + "1";
             Write(outMsg + "\r");
             //logger.LogDebug("ELM327OUT:" + outMsg);
             String inMsg = "";
@@ -431,4 +522,5 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         }
 
     }
+
 }
