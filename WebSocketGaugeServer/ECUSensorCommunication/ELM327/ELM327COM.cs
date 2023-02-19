@@ -245,7 +245,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
                 foreach (OBDIIParameterCode code in query_OBDII_code_list)
                 {
-                    communicateOnePID(code);
+                    communicateOnePID(code, 0);
                 }
 
                 //Invoke SSMDatareceived event
@@ -259,11 +259,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 logger.LogWarning("SSMCOM timeout. " + ex.GetType().ToString() + " " + ex.Message);
                 communicateRealtimeIsError = true;
             }
-        }
-
-        private void communicateOnePID(OBDIIParameterCode code)
-        {
-            this.communicateOnePID(code, 0);
         }
 
         //Communication on 1PID
