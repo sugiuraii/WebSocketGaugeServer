@@ -28,6 +28,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly string ELM327HeaderBytes;
 
         private readonly int ELM327BatchQueryCount;
+        private readonly bool SeparateBatchQueryToAvoidMultiFrameResponse;
         private readonly OBDIIContentTable content_table;
 
         private readonly ELM327OutMessageParser elm327MsgParser;
@@ -35,7 +36,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly ILogger logger;
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes, int elm327BatchQueryCount) : base(comPortName, Parity.None, logger)
+        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes, int elm327BatchQueryCount, bool separateBatchQueryToAvoidMultiFrameResponse) : base(comPortName, Parity.None, logger)
         {
             this.logger = logger.CreateLogger<ELM327COM>();
             this.content_table = new OBDIIContentTable();
@@ -52,11 +53,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             ELM327HeaderBytes = elm327HeaderBytes;
             if(elm327BatchQueryCount > 6 || elm327BatchQueryCount < 1)
                 throw new ArgumentException("ELM327 batch query count needs to be 1 to 6.");
-            ELM327BatchQueryCount = elm327BatchQueryCount;
+            this.ELM327BatchQueryCount = elm327BatchQueryCount;
+            this.SeparateBatchQueryToAvoidMultiFrameResponse = separateBatchQueryToAvoidMultiFrameResponse;
             this.elm327MsgParser = new ELM327OutMessageParser(this.content_table);
         }
 
-        public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, String.Empty, 1, 32, "", 1)
+        public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, String.Empty, 1, 32, "", 1, true)
         {
         }
 
@@ -253,7 +255,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     return;
                 }
 
-                var batchedQueryCodeList = query_OBDII_code_list.Select((code, i) => new {code, i}).GroupBy(x => x.i/ELM327BatchQueryCount).Select(g => g.Select(x => x.code).ToList()).ToList();
+                var batchedQueryCodeList = groupBatchQueryCode(query_OBDII_code_list, this.ELM327BatchQueryCount, this.SeparateBatchQueryToAvoidMultiFrameResponse);
                 batchedQueryCodeList.ForEach(mcode => communicateMultiPID(mcode, 0));
 
                 //Invoke SSMDatareceived event
@@ -269,7 +271,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             }
         }
 
-        private List<List<OBDIIParameterCode>> groupBatchQueryCode(List<OBDIIParameterCode> queryCodeList, int batchPIDCount, bool separateNotForMultiFrameResponse)
+        private List<List<OBDIIParameterCode>> groupBatchQueryCode(List<OBDIIParameterCode> queryCodeList, int batchPIDCount, bool separateBatchQueryToAvoidMultiFrameResponse)
         {
             var groupedCodeList = new List<List<OBDIIParameterCode>>();
             int codeCount = 0;
@@ -283,7 +285,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     groupedCodeList.Add(new List<OBDIIParameterCode>());
                 
                 else if((codeCount + 1 > batchPIDCount) ||
-                    ( separateNotForMultiFrameResponse && (returnByteSum + valueByteLength + 1 >  responseContentByteSize )))
+                    ( separateBatchQueryToAvoidMultiFrameResponse && (returnByteSum + valueByteLength + 1 >  responseContentByteSize )))
                 {
                     groupedCodeList.Add(new List<OBDIIParameterCode>());
                     codeCount = 0;
