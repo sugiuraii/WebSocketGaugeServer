@@ -269,6 +269,35 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             }
         }
 
+        private List<List<OBDIIParameterCode>> groupBatchQueryCode(List<OBDIIParameterCode> queryCodeList, int batchPIDCount, bool separateNotForMultiFrameResponse)
+        {
+            var groupedCodeList = new List<List<OBDIIParameterCode>>();
+            int codeCount = 0;
+            const int responseContentByteSize = 6;
+            int returnByteSum = 0;
+            for(int i = 0; i < queryCodeList.Count; i++)
+            {
+                var code = queryCodeList[i];
+                var valueByteLength = content_table[code].ReturnByteLength;
+                if( i == 0 )
+                    groupedCodeList.Add(new List<OBDIIParameterCode>());
+                
+                else if((codeCount + 1 > batchPIDCount) ||
+                    ( separateNotForMultiFrameResponse && (returnByteSum + valueByteLength + 1 >  responseContentByteSize )))
+                {
+                    groupedCodeList.Add(new List<OBDIIParameterCode>());
+                    codeCount = 0;
+                    returnByteSum = 0;
+                }
+                groupedCodeList.Last().Add(code);
+                codeCount++;
+                returnByteSum += valueByteLength + 1;
+
+            }
+
+            return groupedCodeList;
+        }
+
         private void communicateMultiPID(List<OBDIIParameterCode> codes, int errorRetryCount)
         {
             if(codes.Count > 6)
