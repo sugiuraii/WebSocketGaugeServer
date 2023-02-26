@@ -113,7 +113,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
                     inCharList.Add((char)indat);
                     string lineStr = new string(inCharList.ToArray());
                     if (str.Equals(lineStr.Substring(lineStr.Length - str.Length)))
-                        return lineStr;
+                        return lineStr[..^str.Length]; // Remove 'str' (target string), following the operation of SerialPort.ReadTo()
                 }
                 else
                 {
