@@ -131,6 +131,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                         logger.LogInformation("COMPort is closed.");
                     }
                 }
+                if(!ct.IsCancellationRequested)
+                {   
+                    logger.LogWarning("Communcation has been abnormally stoped due to error. Retry connect after 5sec.");
+                    Thread.Sleep(5000);
+                }
             }
         }
 
