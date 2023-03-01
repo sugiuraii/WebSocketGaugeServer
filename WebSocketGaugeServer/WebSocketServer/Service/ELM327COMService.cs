@@ -65,12 +65,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("ELM327");
 
             this.logger = logger;
-            var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            var virtualECUSetting = serviceSetting.GetSection("virtualecu");
+            var useVirtual = Boolean.Parse(virtualECUSetting["enabled"]);
             logger.LogInformation("ELM327COM service is started.");
             if (useVirtual)
             {
                 logger.LogInformation("ELM327COM is started with virtual mode.");
-                int comWait = 15;
+                int comWait = int.Parse(virtualECUSetting["waitmsec"]);
                 logger.LogInformation("VirtualELM327COM wait time is set to " + comWait.ToString() + " ms.");
                 var virtualCOM = new VirtualELM327COM(loggerFactory, comWait);
                 this.elm327COM = virtualCOM;

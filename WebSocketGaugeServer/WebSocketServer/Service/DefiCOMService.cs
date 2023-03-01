@@ -63,7 +63,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("Defi");
 
             this.logger = logger;
-            var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            var virtualECUSetting = serviceSetting.GetSection("virtualecu");
+            var useVirtual = Boolean.Parse(virtualECUSetting["enabled"]);
             bool useAdvance;
             if(serviceSetting["useadvance"] == null)
                 useAdvance = false;
@@ -74,7 +75,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             if (useVirtual)
             {
                 logger.LogInformation("DefiCOM is started with virtual mode.");
-                int virtualDefiCOMWait = 15;
+                int virtualDefiCOMWait = int.Parse(virtualECUSetting["waitmsec"]);
                 logger.LogInformation("VirtualDefiCOM wait time is set to " + virtualDefiCOMWait.ToString() + " ms.");
                 var virtualCOM = new VirtualDefiCOM(loggerFactory, virtualDefiCOMWait);
                 this.defiCOM = virtualCOM;
