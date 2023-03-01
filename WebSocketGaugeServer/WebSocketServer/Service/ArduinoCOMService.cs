@@ -64,12 +64,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("Arduino");
 
             this.logger = logger;
-            var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            var virtualECUSetting = serviceSetting.GetSection("virtualecu");
+            var useVirtual = Boolean.Parse(virtualECUSetting["enabled"]);
             logger.LogInformation("ArduinoCOM service is started.");
             if (useVirtual)
             {
                 logger.LogInformation("ArduinoCOM is started with virtual mode.");
-                int virtualArduinoCOMWait = 15;
+                int virtualArduinoCOMWait = int.Parse(virtualECUSetting["waitmsec"]);
                 logger.LogInformation("VirtualArduinoCOM wait time is set to " + virtualArduinoCOMWait.ToString() + " ms.");
                 var virtualCOM = new VirtualArduinoCOM(loggerFactory, virtualArduinoCOMWait);
                 this.arduinoCOM = virtualCOM;
