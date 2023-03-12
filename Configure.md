@@ -62,6 +62,8 @@ In addition to basic configuration,　ELM327 service has some specific configura
     * Check the spec of ELM327 adaptor.
       *  Software OBDII simulator [OBDSim](https://icculus.org/obdgpslogger/obdsim.html) uses 9600bps.
       * Typical USB/Bluetooth ELM327 adapters uses 115200bps.
+      * On tcp wrapper mode (set `tcp:` in `"comport"` section, baudrate setting is not cared. The program may cause warning when non-standard bardrate is set, you can ignore the warning.).
+        * In this case, Set bardrate on TCP-UART wrapper side.
 * `"elm327ProtocolMode"`
   * Set the OBDII protocol of ELM327
     ```js
