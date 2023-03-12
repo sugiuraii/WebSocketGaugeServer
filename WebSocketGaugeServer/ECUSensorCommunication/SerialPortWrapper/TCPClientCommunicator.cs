@@ -10,7 +10,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 {
     public class TCPClientCommunicator : ISerialPortWrapper
     {
-        private readonly TcpClient tcpClient;
+        private TcpClient tcpClient = null;
         private readonly IPEndPoint remoteEP;
         private NetworkStream stream = null;
         private StreamWriter writer = null;
@@ -23,7 +23,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
         public TCPClientCommunicator(IPEndPoint remoteEP, ILoggerFactory logger)
         {
             this.logger = logger.CreateLogger<TCPClientCommunicator>();
-            this.tcpClient = new TcpClient();
             this.remoteEP = remoteEP;
         }
 
@@ -60,6 +59,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper
 
         public void Open()
         {
+            tcpClient = new TcpClient();
             tcpClient.Connect(remoteEP);
             this.stream = this.tcpClient.GetStream();
             this.stream.ReadTimeout = readTimeOut;

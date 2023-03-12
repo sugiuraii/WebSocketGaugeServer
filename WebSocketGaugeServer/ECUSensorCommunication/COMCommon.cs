@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.IO.Ports;
 using System.Net;
 using System.Threading;
@@ -13,8 +14,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         private ISerialPortWrapper serialPort;
 
         private int slowReadInterval;
-        private Thread communicate_realtime_thread1;
-        private bool communicateRealtimeIsRunning; // 読み込みスレッド継続フラグ(communicate_realtime_stop()でfalseになり、読み込みスレッドは終了)
+        private Task communicateRealtimeTask;
+        private CancellationTokenSource ctokenSource = new CancellationTokenSource();
         protected bool communicateRealtimeIsError; // エラー発生時にtrue trueになったらcommunicate_reset()を呼び出して初期化を試みる。
 
         private int communicateResetCount; //何回communicate_reset()が連続でコールされたか？ (COMMUNICATE_RESET_MAXを超えたらプログラムを落とす)
@@ -32,7 +33,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             var serialWrapperFactory = new SerialPortWrapperFactory(logger);
             this.serialPort = serialWrapperFactory.Create(portname, DefaultBaudRate, parity);
 
-            communicateRealtimeIsRunning = false;
             communicateRealtimeIsError = false;
             communicateResetCount = 0;
         }
@@ -42,93 +42,99 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             // Set serialport1.BaudRate to default baud rate
             serialPort.BaudRate = DefaultBaudRate;
             logger.LogInformation("Set baudrate to " + serialPort.BaudRate.ToString() + " bps.");
-
-            communicate_realtime_thread1 = new Thread(new ThreadStart(communicate_realtime));
-            communicateRealtimeIsRunning = true;
             communicateRealtimeIsError = false;
-            communicate_realtime_thread1.Start();
+            communicateRealtimeTask = Task.Run(() => communicate_realtime(ctokenSource.Token));
             logger.LogInformation("Communication Started.");
         }
 
         public void BackgroundCommunicateStop()
         {
             //通信スレッドを終了させる(フラグをfalseに)
-            communicateRealtimeIsRunning = false;
-
+            ctokenSource.Cancel();
+            communicateRealtimeTask.Wait();
             //通信スレッド終了まで待つ
-            communicate_realtime_thread1.Join();
             logger.LogInformation("Communication Stopped.");
         }
 
         //読み込みスレッド実装（communicate_realtime_start()からスレッドを作って呼び出すこと）
-        private void communicate_realtime()
+        private void communicate_realtime(CancellationToken ct)
         {
-            try
+            while(!ct.IsCancellationRequested)
             {
-                //ポートオープン
-                logger.LogInformation("COMport open.");
-                logger.LogInformation("Call initialization routine");
-                serialPort.Open();
-                communicate_initialize();
-
-                int i = 0;
-                while (communicateRealtimeIsRunning)
+                try
                 {
-                    if (i > SlowReadInterval)
-                    {
-                        //slowread_intervalごとにSlowreadモードで通信。
-                        //slowreadモードを実装しないケースもあり(引数によらず同じ処理をする実装もあり)
+                    //ポートオープン
+                    logger.LogInformation("COMport open.");
+                    logger.LogInformation("Call initialization routine");
+                    serialPort.Open();
+                    communicate_initialize();
 
-                        communicate_main(true);
-                        i = 0;
-                    }
-                    else
+                    int i = 0;
+                    while (!ct.IsCancellationRequested)
                     {
-                        communicate_main(false);
-                        i++;
-                    }
-
-                    if (communicateRealtimeIsError) // シリアルポートエラー（タイムアウト、パリティ、フレーミング)を受信したら、初期化を試みる。
-                    {
-                        communticate_reset();
-                        communicateResetCount++;
-
-                        if (communicateResetCount > COMMUNICATE_RESET_MAX)
+                        if (i > SlowReadInterval)
                         {
-                            throw new System.InvalidOperationException("Number of communicate_reset() call exceeds COMMUNICATE_RESET_MAX : " + COMMUNICATE_RESET_MAX.ToString() + ". Terminate communicate_realtime().");
+                            //slowread_intervalごとにSlowreadモードで通信。
+                            //slowreadモードを実装しないケースもあり(引数によらず同じ処理をする実装もあり)
+
+                            communicate_main(true);
+                            i = 0;
+                        }
+                        else
+                        {
+                            communicate_main(false);
+                            i++;
                         }
 
-                        communicateRealtimeIsError = false;
-                    }
-                    else
-                    {
-                        //communicate_mainでエラーなければエラーカウンタリセット。
-                        communicateResetCount = 0;
-                    }
+                        if (communicateRealtimeIsError) // シリアルポートエラー（タイムアウト、パリティ、フレーミング)を受信したら、初期化を試みる。
+                        {
+                            communticate_reset();
+                            communicateResetCount++;
 
+                            if (communicateResetCount > COMMUNICATE_RESET_MAX)
+                            {
+                                throw new InvalidOperationException("Number of communicate_reset() call exceeds COMMUNICATE_RESET_MAX : " + COMMUNICATE_RESET_MAX.ToString() + ". Terminate communicate_realtime().");
+                            }
+
+                            communicateRealtimeIsError = false;
+                        }
+                        else
+                        {
+                            //communicate_mainでエラーなければエラーカウンタリセット。
+                            communicateResetCount = 0;
+                        }
+                    }
                 }
-            }
-            catch (System.IO.IOException ex)
-            {
-                logger.LogError(ex.GetType().ToString() + " " + ex.Message);
-            }
-            catch (System.InvalidOperationException ex)
-            {
-                logger.LogError(ex.GetType().ToString() + " " + ex.Message);
-            }
-            catch (System.UnauthorizedAccessException ex)
-            {
-                logger.LogError(ex.GetType().ToString() + " " + ex.Message);
-            }
-            finally
-            {
-                communicateRealtimeIsRunning = false;
-
-                //ポートクローズ
-                if (serialPort.IsOpen)
+                catch (IOException ex)
                 {
-                    serialPort.Close();
-                    logger.LogInformation("COMPort is closed.");
+                    logger.LogError(ex.GetType().ToString() + " " + ex.Message);
+                }
+                catch (InvalidOperationException ex)
+                {
+                    logger.LogError(ex.GetType().ToString() + " " + ex.Message);
+                }
+                catch (UnauthorizedAccessException ex)
+                {
+                    logger.LogError(ex.GetType().ToString() + " " + ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    logger.LogError(ex.GetType().ToString() + " " + ex.Message);
+                    logger.LogError(ex.StackTrace);
+                }
+                finally
+                {
+                    //ポートクローズ
+                    if (serialPort.IsOpen)
+                    {
+                        serialPort.Close();
+                        logger.LogInformation("COMPort is closed.");
+                    }
+                }
+                if(!ct.IsCancellationRequested)
+                {   
+                    logger.LogWarning("Communcation has been abnormally stoped due to error. Retry connect after 5sec.");
+                    Thread.Sleep(5000);
                 }
             }
         }
@@ -255,10 +261,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         {
             get
             {
-                if(communicate_realtime_thread1 == null)
+                if(communicateRealtimeTask == null)
                     throw new InvalidOperationException("Communication thread is null. Maybe not created. Run BackgroundCommunicateStart() before query IsCommunicationThradAlive.");
                 else
-                    return communicate_realtime_thread1.IsAlive;
+                    return communicateRealtimeTask.Status == TaskStatus.Running;
             }
         }
 
