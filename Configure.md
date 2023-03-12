@@ -14,7 +14,7 @@ Here is an example of ELM327 (OBDII) ECU communication service.
       /* ---- Common setting ---- */
       "enabled": false,
       "urlpath" : "/elm327",
-      "usevirtual" : false,
+      "virtualecu" : {"enabled": false, "waitmsec" : 15},
       "comport": "/dev/ttyUSB0",
       /* ---- ELM327 specific setting --- */
       "baudrate": 9600,
