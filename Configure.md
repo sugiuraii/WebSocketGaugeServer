@@ -37,11 +37,23 @@ Here is an example of ELM327 (OBDII) ECU communication service.
     ```json
     "comport": "COM3",
     ```
-* `"usevirtual"`
-  * Set true to use "virtual ECU/Sensor communication mode".
+  * In linux, set like,
+    ```json
+    "comport": "/dev/ttyUSB0",
+    ```
+  * Since version 3.5(beta2), comport communication can be tunneled by TCP (UART over TCP). To use it, set like this. (12345 is port number of TCP-UART tunnel server.)
+    ```json
+        "comport": "tcp:hostname.of.remote.com:12345"
+    ```
+    or, 
+    ```json
+        "comport": "tcp:192.168.12.34:12345",
+    ```
+* `"virtualecu"`
+  * This section is used for virtual ecu mode.
+  * Set `"enabled"` to `true` to use "virtual ECU/Sensor communication mode".
     * In this mode, you can emulate ECU/Sensor reading without connecting ECU/Sensor.
-    * If usevirtual is enabled, ECU/sensor communication is not performed (i.e. comport field will be ignored). ECU/Sensor reading value can be changed from Web UI.
-  * Set both `"enabled"` and `"usevirtual"` true, to use "virtual ECU/Sensor communication mode".
+    * If virtual ecu mode is enabled, ECU/sensor communication is not performed (i.e. comport field will be ignored). ECU/Sensor reading value can be changed from Web UI.
 
 ### ELM327 specific configuration
 In addition to basic configuration,　ELM327 service has some specific configurations.
