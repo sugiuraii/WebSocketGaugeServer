@@ -68,7 +68,7 @@
     ./WebSocketServer
     ```
 * It may be better to get `ACQUIRE LOCK` in termux notification popup, in order to avoid forcebly stop by android system.
-
+* After the boot, you can access to the frontpage by http://localhost:2016
 ## Install serial-TCP wrapper
 * To tunnel serial communication to TCP, serial-TCP wrapper may be needed. 
 * [Bluetooth Bridge (+TCP)](https://play.google.com/store/apps/details?id=masar.bb) is tested for bluetooth elm327 adaptor.

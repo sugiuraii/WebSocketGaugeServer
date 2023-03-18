@@ -68,6 +68,7 @@
     ./WebSocketServer
     ```
 * Androidの通知にて、termuxの`ACQUIRE LOCK`を取得する方がよいかもしれません (Androidが強制的にTermuxを終了させないように)
+* 起動後は http://localhost:2016 にてフロントページにアクセス可能です。
 
 ## serial-TCP ラッパーアプリのインストール
 * シリアル通信をTCPに変換するために、serial-TCP wrapperアプリが必要な場合があります。
