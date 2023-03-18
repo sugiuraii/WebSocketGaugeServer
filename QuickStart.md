@@ -8,29 +8,60 @@
 
 ## Edit configuration file
 * Edit `appsettings.json` in the extracted directory. Edit the following part according to your purpose.
-```js
+```jsonc
 "ServiceConfig": {
     "ELM327": {
       "enabled": true,
       "urlpath" : "/elm327",
-      "usevirtual" : false,
+      "virtualecu" : {"enabled": false, "waitmsec" : 15},
       "comport": "/dev/ttyUSB0",
       "baudrate": 115200,
 　    "elm327ProtocolMode": "0",
       "elm327AdaptiveTimingControl": 1,
-      "elm327Timeout" : 50
+      "elm327Timeout" : 50,
+      "elm327HeaderBytes" : "",
+      "elm327BatchPIDQueryCount" : 1,
+      "elm327PIDBatchQueryAvoidMultiFrameResponse" : false
 ```
 In the above part.
 * `"enabled"`:Enable ELM327+OBDII communication mode.
 * `"urlpath"`:No need to change（Path to start WebSocket communication)
-* `"usevirtual"`: Set the virtual ECU setting. set to `false` when actually connecting the ELM327.
-    * By setting this to `true`, you can test the operaion by using "virtual" ECU in the program without connecting to ELM327. You can test and debug the gauge without connecting ELM327 by using this feature.
+* `"virtualecu"`: Setup virtual ECU mode. 
+    * When `"enabled"` is set to `true`, the server program disables serial port connection (to ELM327, etc) and enable internal "virtual" ECU.
+        * By setting this to `true`, you can test the operaion by using "virtual" ECU in the program without connecting to ELM327. You can test and debug the gauge without connecting ELM327 by using this feature.
+        * Thus, set to `false` to connect physical ELM327 (etc) devices.
+    * `"waitmsec"` set the wait time of virtual ECU (to simulate slow ECU communication).
+    
 * `"comport"`: Set the name of the serial port to connect the ELM327. For linux, set like `/dev/tty*`. For windows set like `COM*`.
+    * From 3.5/Beta2, serial port connection can be tunneled through TCP connection. This may be useful to use UART-Wifi adapter, ELM327-Wifi adaptor, or Serial-TCP tunneling program.
+    * To use TCP wrapper, set this field to,
+        ```jsonc
+        "comport": "tcp:hostname.of.remote.com:xxxxx",
+        ``` 
+        or
+        ```jsonc
+        "comport": "tcp:192.168.xx.xx:xxxxx",
+        ```
 * `"baudrate"`: Set the serial port speed (baud rate) to communicate with the ELM327.
 * `"elm327ProtocolMode"` : Set the ELM327-ECU communication protocol. The default is automatic (0). If the communication not works well, set it manually.
 * `"elm327AdaptiveTimingControl"`: Sets the wait timing for the ELM327-ECU communication. This can configure the waiting time of ECU->ELM327 data transfer. The standard setting is "adaptive timing control" (1), If there is a large delay, "aggressive adaptime timing control" (2) can be used, or adaptive timing control can be disabled by setting it to 0, and the wait time can be set manually with `"elm327Timeout"`.
+* `"elm327HeaderBytes"` : Set header of ELM327.
+    * See the command instruction of "AT SH" in ELM327 data sheet.
+    * This field (and AT SH command) will be ignored when the value is blank string ("").
+    * (For example, you can manually set the CAN ID of ECU. By doing this, you can eliminate unnecessay CAN traffic when multiple ECUs (ECU+TCU, etc..) exists.)
+       * (For the detail, see "Setting the Headers " in ELM327 data sheet.) 
+* `"elm327BatchPIDQueryCount"`
+* `"elm327PIDBatchQueryAvoidMultiFrameResponse"`
+    * Number of PID batch query. (Default is 1 Max is 6.)
+    * The SAE J1979 (ISO 15031-5) standard allows requesting multiple PIDs (max 6) with one message, but only if you connect to the vehicle with CAN (ISO 15765-4).
+    * If this feature is supported by ECU and ELM327 adaptor, this can drastically improve PID rate.
+        * On batched PID request, ECU response message may exceed CAN payload length (of 8bytes include mode and size bytes.)
+        * In this case, ECU makes response message by multiple (splitted) CAN data frames using ISO-TP (ISO 15765-2)
+        *  However, some of OBDII dongle cannot handle ISO TP (my no brand chinese ELM327V2.1 dongle (maybe unofficial clone) cannot handle ISO-TP).
+        * In this case, set `"elm327PIDBatchQueryAvoidMultiFrameResponse"` enable to limit number of batched PID query to avoid multi CAN frame response.
+            * For example, OBDLinx SX can support Max 6 PID request with ISO-TP support (so can speedup by setting `"elm327BatchPIDQueryCount" : 6` and `"elm327PIDBatchQueryAvoidMultiFrameResponse" : false` ) if the ECU supports. 
+            * However, my no brand bluetooth ELM327 adaptor (maybe ELM327 is clone chip) do not fully support this feature, need to set `"elm327BatchPIDQueryCount" : 2` and `"elm327PIDBatchQueryAvoidMultiFrameResponse" : true`.
 
-Translated with www.DeepL.com/Translator (free version)
 ## Start the program
 * Run the `WebSocketServer.exe`(Windows) or `WebSocketServer`(Linux) executable file in the extracted directory from Explorer or Terminal.
 
