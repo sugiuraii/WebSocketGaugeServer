@@ -8,7 +8,7 @@
 * Permission to install termux out of Google play store.
     * Recent version of termux is unavailable in Google play store and have to be installed by apk.
     * Termux at Google play store is currrently abondoned, and cannot be used.
-* UART-LAN(Wifi, etc..) gateway, ELM327 wifi software, or (USB/bluetooth) serial to TCP wrapper android app.
+* UART-LAN(Wifi, etc..) gateway, ELM327 wifi adaptor, or (USB/bluetooth) serial to TCP wrapper android app.
     * Since Termux is not allowed to communicate with bluetooth or USB-serial adaptor, tcp tunnel mode (of this server program) is needed.
         * [This server] <-(TCP connection with tcp tunnel(wrapper) mode) -> [TCP->Serial wrapper android app] <- (BT or USB serial) -> [ELM327 BT/USB adaptor]
         * [This server] <-(TCP connection with tcp tunnel(wrapper) mode) <- (Wifi) -> [ELM327 wifi adaptor]
@@ -48,7 +48,7 @@
     curl -OL https://github.com/sugiuraii/WebSocketGaugeServer/releases/download/4.0%2FRC1/WebsocketGaugeServer-4.0-RC1-linux-arm64.tar.xz
     ```
     * Change URL for version or target architecture.
-* Excract tara archive
+* Excract tar archive
     ```
     xzcat WebsocketGaugeServer-4.0-RC1-linux-arm64.tar.xz | tar xvf -
     ```
@@ -72,4 +72,4 @@
 ## Install serial-TCP wrapper
 * To tunnel serial communication to TCP, serial-TCP wrapper may be needed. 
 * [Bluetooth Bridge (+TCP)](https://play.google.com/store/apps/details?id=masar.bb) is tested for bluetooth elm327 adaptor.
-
+    * Default port number is 35000.
