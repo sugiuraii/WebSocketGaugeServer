@@ -14,19 +14,17 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
         // Arduino received Event
         private readonly ILogger logger;
         //Constructor
-        public ArduinoCOM(ILoggerFactory logger, string comPortName) : base(logger)
+        public ArduinoCOM(ILoggerFactory logger, string comPortName) : base(comPortName, Parity.None, logger)
         {
             this.logger = logger.CreateLogger<ArduinoCOM>();
             this.content_table = new ArduinoContentTable();
 
-            PortName = comPortName;
             //Default baudrate (can be overrided by setting xml file)
             DefaultBaudRate = 38400;
             //Baudrate on emergency reset(refer communticate_reset())
             //On using FT232RL, baudrate should be 3000000/n (n is integer or x.125, x.25, x.375, x.5, x.625, x.75, x.875)
             ResetBaudRate = 9600;
 
-            Parity = Parity.None;
             ReadTimeout = 5000;
         }
 

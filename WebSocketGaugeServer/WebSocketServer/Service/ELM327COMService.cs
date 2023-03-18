@@ -65,12 +65,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("ELM327");
 
             this.logger = logger;
-            var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            var virtualECUSetting = serviceSetting.GetSection("virtualecu");
+            var useVirtual = Boolean.Parse(virtualECUSetting["enabled"]);
             logger.LogInformation("ELM327COM service is started.");
             if (useVirtual)
             {
                 logger.LogInformation("ELM327COM is started with virtual mode.");
-                int comWait = 15;
+                int comWait = int.Parse(virtualECUSetting["waitmsec"]);
                 logger.LogInformation("VirtualELM327COM wait time is set to " + comWait.ToString() + " ms.");
                 var virtualCOM = new VirtualELM327COM(loggerFactory, comWait);
                 this.elm327COM = virtualCOM;
@@ -84,13 +85,16 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 var elm327ProtocolMode = serviceSetting["elm327ProtocolMode"];
                 var elm327AdaptiveTimingMode = serviceSetting["elm327AdaptiveTimingControl"];
                 var elm327Timeout = serviceSetting["elm327Timeout"];
+                var elm327Header = serviceSetting["elm327HeaderBytes"];
+                var elm327PIDBatchQueryCount = int.Parse(serviceSetting["elm327BatchPIDQueryCount"]);
+                var elm327PIDBatchQueryAvoidMultiFrameResponse = bool.Parse(serviceSetting["elm327PIDBatchQueryAvoidMultiFrameResponse"]);
                 logger.LogInformation("ELM327COM COMPort is set to: " + comportName);
 
                 ELM327COM elm327COM;
                 if (elm327ProtocolMode == null || elm327AdaptiveTimingMode == null || elm327Timeout == null)
                     elm327COM = new ELM327COM(loggerFactory, comportName);
                 else
-                    elm327COM = new ELM327COM(loggerFactory, comportName, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout));
+                    elm327COM = new ELM327COM(loggerFactory, comportName, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse);
 
                 elm327COM.overrideDefaultBaudRate(baudRate);
 
