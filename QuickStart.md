@@ -25,15 +25,15 @@
 ```
 In the above part.
 * `"enabled"`:Enable ELM327+OBDII communication mode.
-* `"urlpath"`:No need to change（Path to start WebSocket communication)
+* `"urlpath"`:No need to change (Path to start WebSocket communication. )
 * `"virtualecu"`: Setup virtual ECU mode. 
     * When `"enabled"` is set to `true`, the server program disables serial port connection (to ELM327, etc) and enable internal "virtual" ECU.
         * By setting this to `true`, you can test the operaion by using "virtual" ECU in the program without connecting to ELM327. You can test and debug the gauge without connecting ELM327 by using this feature.
         * Thus, set to `false` to connect physical ELM327 (etc) devices.
-    * `"waitmsec"` set the wait time of virtual ECU (to simulate slow ECU communication).
-    
+    * `"waitmsec"` set the wait time of virtual ECU (to simulate slow ECU communication).    
 * `"comport"`: Set the name of the serial port to connect the ELM327. For linux, set like `/dev/tty*`. For windows set like `COM*`.
     * From 3.5/Beta2, serial port connection can be tunneled through TCP connection. This may be useful to use UART-Wifi adapter, ELM327-Wifi adaptor, or Serial-TCP tunneling program.
+        * On using this server program at Android + Termux, this TCP wrapper is mandatory. You can communicate ECU(ELM327) only through TCP wapper (since Termux prohibits the access of serial port (or bluetooth)).
     * To use TCP wrapper, set this field to,
         ```jsonc
         "comport": "tcp:hostname.of.remote.com:xxxxx",
@@ -42,7 +42,7 @@ In the above part.
         ```jsonc
         "comport": "tcp:192.168.xx.xx:xxxxx",
         ```
-* `"baudrate"`: Set the serial port speed (baud rate) to communicate with the ELM327.
+* `"baudrate"`: Set the serial port speed (baud rate) to communicate with the ELM327. (Ignored on using TCP-Serial wrapper)
 * `"elm327ProtocolMode"` : Set the ELM327-ECU communication protocol. The default is automatic (0). If the communication not works well, set it manually.
 * `"elm327AdaptiveTimingControl"`: Sets the wait timing for the ELM327-ECU communication. This can configure the waiting time of ECU->ELM327 data transfer. The standard setting is "adaptive timing control" (1), If there is a large delay, "aggressive adaptime timing control" (2) can be used, or adaptive timing control can be disabled by setting it to 0, and the wait time can be set manually with `"elm327Timeout"`.
 * `"elm327HeaderBytes"` : Set header of ELM327.
