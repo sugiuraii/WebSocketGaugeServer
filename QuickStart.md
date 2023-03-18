@@ -5,6 +5,7 @@
 
 ## Download the binary file.
 * Download the binary archive file from [Release page on GitHub](https://github.com/sugiuraii/WebSocketGaugeServer/releases/) and extract it to an appropriate directory.
+    * From 3.5/Beta2, WebSocketGaugeServer can run on termux+android, without preparing linux/windows server. See [Install-Termux.md](Install-Termux.md) for detail.
 
 ## Edit configuration file
 * Edit `appsettings.json` in the extracted directory. Edit the following part according to your purpose.

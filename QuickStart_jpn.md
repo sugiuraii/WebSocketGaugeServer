@@ -5,6 +5,7 @@
 
 ## バイナリファイルの取得
 * [GitHubのReleaseページ](https://github.com/sugiuraii/WebSocketGaugeServer/releases/)より対応するOSのバイナリアーカイブファイルをダウンロードの後、適当なディレクトリに展開する。
+    * 3.5/Beta2よりWebSocketGaugeServerはlinux/windowsサーバーを別途用意しなくてもtermux+android上で動作可能になりました. See [Install-Termux_jpn.md](Install-Termux_jpn.md) for detail.
 
 ## 設定ファイルの編集
 * 展開したディレクトリ内にある`appsettings.json`を編集する。下記の部分を目的に応じて編集ください。
