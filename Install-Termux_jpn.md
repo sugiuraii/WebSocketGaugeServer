@@ -63,6 +63,7 @@
     apt install vim
     vi appsettings.json
     ```
+    * 詳細は[QuickStart_jpn.md](QuickStart_jpn.md)または、[Configure.md](Configure.md)を参照。
 * 最後に、`WebSocketServer`を起動します。
     ```
     ./WebSocketServer

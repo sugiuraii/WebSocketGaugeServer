@@ -63,6 +63,7 @@
     apt install vim
     vi appsettings.json
     ```
+    * See [QuickStart.md](QuickStart.md) or,[Configure.md](Configure.md) for detail.
 * Finally, launch `WebSocketServer`
     ```
     ./WebSocketServer
