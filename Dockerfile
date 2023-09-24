@@ -17,5 +17,8 @@ RUN dotnet publish -o /app --no-restore
 # Add --platform option to specify target platform
 FROM mcr.microsoft.com/dotnet/aspnet:6.0-bullseye-slim
 WORKDIR /app
+RUN apt-get update
+RUN apt-get install -y vim
+RUN apt-get install -y nano
 COPY --from=build /app ./
 ENTRYPOINT ["dotnet", "WebSocketServer.dll"]
