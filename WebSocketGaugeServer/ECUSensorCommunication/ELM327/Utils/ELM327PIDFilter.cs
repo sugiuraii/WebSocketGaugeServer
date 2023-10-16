@@ -25,6 +25,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Utils
                     result = false;
             return result;
         }
+
+        public void addToBlackList(byte pid)
+        {
+            if(!PIDBlackList.Contains(pid))
+                PIDBlackList.Add(pid);
+        }
         public List<OBDIIParameterCode> applyToList(List<OBDIIParameterCode> incodes, OBDIIContentTable table) {
             return incodes.Where(code => test(table[code].PID)).ToList();
         }
