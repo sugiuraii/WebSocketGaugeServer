@@ -6,7 +6,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Utils
 {
     public class ELM327OutMessageByteParser
     {
-        public byte[] parseToBytes(string elm327outStr)
+        public byte[] parse(string elm327outStr)
         {
             string filteredElm327outStr = elm327outStr.Replace("\n", "").Replace(" ", "");
             if (filteredElm327outStr.Contains(":")) // Multi frame message
