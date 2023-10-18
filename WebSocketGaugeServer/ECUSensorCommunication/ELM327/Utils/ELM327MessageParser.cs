@@ -49,6 +49,16 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Utils
             return new ELM327OutMessageParseResult(modeCode, valueStrMap);
         }
 
+        private byte[] parseSingleLineToBytes(string lineStr){
+            string lineStrFiltered = lineStr.Replace("\r","");
+            var readBytes = new List<byte>();
+            for(int ofst = 0; ofst < lineStrFiltered.Length; ofst+=2)
+            {
+                readBytes.Add(Convert.ToByte(lineStrFiltered.Substring(ofst, 2), 16));
+            }
+            return readBytes.ToArray();
+        }
+
         private string convertMultiLineMessage(string multiLineMsg)
         {
             var separatedLineMsg = multiLineMsg.Split("\r");
