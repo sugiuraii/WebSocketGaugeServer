@@ -18,35 +18,42 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Utils
 
         public ELM327OutMessageParseResult parse(string elm327outStr) 
         {
+            var parsedReturnBytes = parseToBytes(elm327outStr);
+            return convertBytesToResultSet(parsedReturnBytes);
+        }
+
+        private ELM327OutMessageParseResult convertBytesToResultSet(byte[] readBytes)
+        {
+            if(readBytes.Length < 0)
+                throw new ArgumentException("Length of readBytes is 0. Cannot process to ELM327OutMessageParseResult");
+            string lineStr = BitConverter.ToString(readBytes);
+            byte modeCode = Convert.ToByte(lineStr.Substring(0,2), 16);
+            var valueStrMap = new Dictionary<OBDIIParameterCode, string>();
+
+            int ofst = 2;
+            while(ofst < lineStr.Length)
+            {
+                byte pid = Convert.ToByte(lineStr.Substring(ofst, 2), 16);
+                ofst += 2;
+                var code = pidToParamCodeReverseMap[pid];
+                int byteLength = content_table[code].ReturnByteLength;
+                string valueStr = lineStr.Substring(ofst, byteLength*2);
+                ofst += byteLength*2;
+                valueStrMap.Add(code, valueStr);
+            }
+            return new ELM327OutMessageParseResult(modeCode, valueStrMap);
+        }
+
+        public byte[] parseToBytes(string elm327outStr) 
+        {
             string filteredElm327outStr = elm327outStr.Replace("\n","").Replace(" ","");
             if(filteredElm327outStr.Contains(":")) // Multi frame message
             {
                 string convertedMultilineStr = convertMultiLineMessage(filteredElm327outStr);
-                return parseSingleLine(convertedMultilineStr);
+                return parseSingleLineToBytes(convertedMultilineStr);
             }
             else // Single frame message
-                return parseSingleLine(filteredElm327outStr);
-        }
-
-        private ELM327OutMessageParseResult parseSingleLine(string lineStr)
-        {
-            string lineStrFiltered = lineStr.Replace("\r","");
-            byte modeCode = Convert.ToByte(lineStrFiltered.Substring(0,2), 16);
-            var valueStrMap = new Dictionary<OBDIIParameterCode, string>();
-
-            int ofst = 2;
-            while(ofst < lineStrFiltered.Length)
-            {
-                byte pid = Convert.ToByte(lineStrFiltered.Substring(ofst, 2), 16);
-                ofst += 2;
-                var code = pidToParamCodeReverseMap[pid];
-                int byteLength = content_table[code].ReturnByteLength;
-                string valueStr = lineStrFiltered.Substring(ofst, byteLength*2);
-                ofst += byteLength*2;
-                valueStrMap.Add(code, valueStr);
-            }
-
-            return new ELM327OutMessageParseResult(modeCode, valueStrMap);
+                return parseSingleLineToBytes(filteredElm327outStr);
         }
 
         private byte[] parseSingleLineToBytes(string lineStr){
