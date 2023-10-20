@@ -312,7 +312,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             return inMsg;
         }
 
-        private String queryPIDs(List<byte> pids, int returnByteLength)
+        private String queryPIDs(byte[] pids, int returnByteLength)
         {
             String outMsg = MODECODE.ToString("X2") + pids.Select(pid => pid.ToString("X2")).Aggregate((prev, next) => prev + next);
             // Calculate number of ISO-TP return frame 
@@ -336,29 +336,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             if(codes.Count > 6)
                 throw new ArgumentException("Code list size of multiple PID communication must be less than or equal 6.");
             
-            //Clean up serial port buffer
-            DiscardInBuffer();
-            String outMsg = MODECODE.ToString("X2") + codes.Select(code => content_table[code].PID.ToString("X2")).Aggregate((prev, next) => prev + next);
+            var pids = codes.Select(code => content_table[code].PID).ToArray();
             int returnByteLength = 1 + codes.Select(code => content_table[code].ReturnByteLength + 1).Sum(); // Return byte lenght = 1(mode code) + sum (1(=PID byte) + Return byte length)
-            // Calculate number of ISO-TP return frame 
-            int returnMessageBlocks;
-            if(returnByteLength <= 7)
-                returnMessageBlocks = 1;
-            else if (returnByteLength <= 13)
-                returnMessageBlocks = 2;
-            else
-                returnMessageBlocks = 3 + (returnByteLength - 14)/7;
-            // logger.LogDebug("Return message blocks: " + returnMessageBlocks.ToString());
-            
-            // Append number of message frames at the end of query string.
-            outMsg = outMsg + returnMessageBlocks.ToString();
-            // Issue query
-            Write(outMsg + "\r");
-            // logger.LogDebug("ELM327OUT:" + outMsg);
-
-            // Read to next prompt char of '>'
-            String inMsg = ReadTo(">");
+            String inMsg = queryPIDs(pids, returnByteLength);
             // logger.LogDebug("ELM327IN:" + inMsg);
+
             try
             {
                 if (inMsg.Equals(""))
