@@ -300,6 +300,37 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             return groupedCodeList;
         }
 
+        private String queryMsg(String outMsg)
+        {
+            DiscardInBuffer();
+            // logger.LogDebug("ELM327OUT:" + outMsg);
+
+            // Issue query
+            Write(outMsg + "\r");
+            // Read to next prompt char of '>'
+            String inMsg = ReadTo(">");
+            return inMsg;
+        }
+
+        private String queryPIDs(List<byte> pids, int returnByteLength)
+        {
+            String outMsg = MODECODE.ToString("X2") + pids.Select(pid => pid.ToString("X2")).Aggregate((prev, next) => prev + next);
+            // Calculate number of ISO-TP return frame 
+            int returnMessageBlocks;
+            if(returnByteLength <= 7)
+                returnMessageBlocks = 1;
+            else if (returnByteLength <= 13)
+                returnMessageBlocks = 2;
+            else
+                returnMessageBlocks = 3 + (returnByteLength - 14)/7;
+            // logger.LogDebug("Return message blocks: " + returnMessageBlocks.ToString());
+            
+            // Append number of message frames at the end of query string.
+            outMsg = outMsg + returnMessageBlocks.ToString();
+            String inMsg = queryMsg(outMsg);
+            return inMsg;
+        }
+
         private void communicateMultiPID(List<OBDIIParameterCode> codes, int errorRetryCount)
         {
             if(codes.Count > 6)
@@ -391,6 +422,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             else
                 return instrTemp.Substring(0, index);
         }
+
+        private List<byte> getAvailavlePIDs()
+        {
+
+        }
+
         public double get_value(OBDIIParameterCode code)
         {
             return content_table[code].Value;
