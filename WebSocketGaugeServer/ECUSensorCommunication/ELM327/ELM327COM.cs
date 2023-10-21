@@ -407,7 +407,21 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
         private List<byte> getAvailavlePIDs()
         {
+            var byteParser = new ELM327OutMessageByteParser();
+            var availablePIDDecoder = new AvailablePIDMessageDecoder();
+            var avaiablePIDList = new List<byte>();
+            for(uint pidOffset = 0x00; pidOffset  <= 0xFF; pidOffset+=0x20)
+            {
+                int returnByteLength = 6; // Modecode 1byte + pid 1byte + data 4bytes
+                var inMsg = queryPIDs(new byte[] {(byte)pidOffset}, returnByteLength);
+                var inBytes = byteParser.parse(inMsg);
+                var availablePIDs_temp = availablePIDDecoder.parse((byte)pidOffset, inBytes);
+                avaiablePIDList.Concat(availablePIDs_temp);
+                if(!avaiablePIDList.Contains((byte)(pidOffset + 0x20)))
+                    break;
+            }
 
+            return avaiablePIDList;
         }
 
         public double get_value(OBDIIParameterCode code)
