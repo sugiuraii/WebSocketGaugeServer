@@ -35,6 +35,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         public event EventHandler<ELM327DataReceivedEventArgs> ELM327DataReceived;
         private readonly ILogger logger;
 
+        private ELM327PIDFilter ELM327PIDFilter = null; // Assigned when connected
+
         //Constructor
         public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes, int elm327BatchQueryCount, bool separateBatchQueryToAvoidMultiFrameResponse) : base(comPortName, Parity.None, logger)
         {
@@ -76,6 +78,13 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
             initializeELM327ATCommand();
             logger.LogInformation("ELM327 initialization is finished.");
+
+            // Get available PIDs
+            logger.LogInformation("Query available PIDs.");
+            var availablePIDs = getAvailavlePIDs();
+            logger.LogInformation("Available PID is : ").Concat(BitConverter.ToString(availablePIDs.ToArray()));
+            // Activate ELM327PIDFilter
+            this.ELM327PIDFilter = new ELM327PIDFilter(availablePIDs, true, new List<byte>());
         }
 
         private void initializeELM327ATCommand()
@@ -246,6 +255,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     }
                 }
 
+                // Apply filter to query_OBDII_code_list
+                query_OBDII_code_list = this.ELM327PIDFilter.applyToList(query_OBDII_code_list, content_table);
+
                 //Exit loop if the PIDs to query are not exists.
                 if (query_OBDII_code_list.Count <= 0)
                 {
@@ -346,8 +358,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 if (inMsg.Equals(""))
                     throw new FormatException("Return message at communicateOnePID() is empty.");
                 else if (inMsg.Contains("NO DATA"))
-                    throw new FormatException("ELM327 returns NO DATA.");
-
+                {
+                    var error_code_names = codes.Select(code => code.ToString());
+                    logger.LogWarning("ELM327 returns NO DAT on communicating PID of " + BitConverter.ToString(pids) + ". Corresponding code names are " +  String.Join(",", error_code_names) + "These PIDs are added to blacklist.");
+                    Array.ForEach(pids, pid => this.ELM327PIDFilter.addToBlackList(pid));
+                    //throw new FormatException("ELM327 returns NO DATA.");
+                }
                 var parseResult = elm327MsgParser.parse(inMsg);
                 var parsedValueList = parseResult.ValueStrMap.Select(kvp => new KeyValuePair<OBDIIParameterCode, uint>(kvp.Key, Convert.ToUInt32(kvp.Value, 16)))
                                                        .ToList();
