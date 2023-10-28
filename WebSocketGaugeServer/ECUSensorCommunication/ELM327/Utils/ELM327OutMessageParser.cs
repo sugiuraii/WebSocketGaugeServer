@@ -26,7 +26,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Utils
         {
             if (readBytes.Length < 0)
                 throw new ArgumentException("Length of readBytes is 0. Cannot process to ELM327OutMessageParseResult");
-            string lineStr = BitConverter.ToString(readBytes);
+            string lineStr = BitConverter.ToString(readBytes).Replace("-", "");
             byte modeCode = Convert.ToByte(lineStr.Substring(0, 2), 16);
             var valueStrMap = new Dictionary<OBDIIParameterCode, string>();
 
