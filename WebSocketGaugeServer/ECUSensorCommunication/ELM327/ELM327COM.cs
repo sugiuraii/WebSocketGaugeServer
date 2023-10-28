@@ -431,9 +431,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             {
                 int returnByteLength = 6; // Modecode 1byte + pid 1byte + data 4bytes
                 var inMsg = queryPIDs(new byte[] {(byte)pidOffset}, returnByteLength);
-                var inBytes = byteParser.parse(inMsg);
+                var inBytes = byteParser.parse(inMsg).Skip(2).ToArray();
                 var availablePIDs_temp = availablePIDDecoder.parse((byte)pidOffset, inBytes);
-                avaiablePIDList.Concat(availablePIDs_temp);
+                avaiablePIDList.AddRange(availablePIDs_temp);
                 if(!avaiablePIDList.Contains((byte)(pidOffset + 0x20)))
                     break;
             }
