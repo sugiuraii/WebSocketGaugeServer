@@ -377,7 +377,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             }
             catch (Exception ex) when (ex is FormatException || ex is ArgumentOutOfRangeException || ex is KeyNotFoundException | ex is ArgumentException)
             {
-                logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Query string is:" + outMsg +" Received string is : " + inMsg);
+                logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Received string is : " + inMsg);
+                logger.LogWarning("Requested PID is :"+ BitConverter.ToString(pids));
                 logger.LogWarning(ex.StackTrace);
                 if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
                 {
