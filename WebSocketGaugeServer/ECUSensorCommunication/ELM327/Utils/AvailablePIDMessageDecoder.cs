@@ -9,7 +9,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Utils
         {
             var pidList = new List<byte>();
             if (encoded_message.Length != 4)
-                throw new ArgumentException("Length of encoded_message is not 4.");
+                throw new ArgumentException("Length of encoded_message is not 4. encoded_message = " + BitConverter.ToString(encoded_message));
             for (int byteIndex = 0; byteIndex < 4; byteIndex++)
             {
                 for (int bitIndex = 0; bitIndex < 8; bitIndex++)
