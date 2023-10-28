@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -82,7 +82,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             // Get available PIDs
             logger.LogInformation("Query available PIDs.");
             var availablePIDs = getAvailavlePIDs();
-            logger.LogInformation("Available PID is : ").Concat(BitConverter.ToString(availablePIDs.ToArray()));
+            logger.LogInformation("Available PID count: " + availablePIDs.Count().ToString());
+            logger.LogInformation("Available PID List:" + BitConverter.ToString(availablePIDs.ToArray()));
             // Activate ELM327PIDFilter
             this.ELM327PIDFilter = new ELM327PIDFilter(availablePIDs, true, new List<byte>());
         }
