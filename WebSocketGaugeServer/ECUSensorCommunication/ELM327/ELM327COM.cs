@@ -14,7 +14,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
     {
         Ignore,
         AddPIDToBlackList,
-        Restart
+        ThrowException
     }
 
     public class ELM327COM : COMCommon, IELM327COM
@@ -392,10 +392,18 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     throw new FormatException("Return message at communicateOnePID() is empty.");
                 else if (inMsg.Contains("NO DATA"))
                 {
-                    var error_code_names = codes.Select(code => code.ToString());
-                    logger.LogWarning("ELM327 returns NO DAT on communicating PID of " + BitConverter.ToString(pids) + ". Corresponding code names are " +  String.Join(",", error_code_names) + "These PIDs are added to blacklist.");
-                    Array.ForEach(pids, pid => this.ELM327PIDFilter.addToBlackList(pid));
-                    //throw new FormatException("ELM327 returns NO DATA.");
+                    switch(ActionOnNODATAReceived)
+                    {
+                        case ActionOnNODATAReceived.AddPIDToBlackList:
+                            var error_code_names = codes.Select(code => code.ToString());
+                            logger.LogWarning("ELM327 returns NO DATA on communicating PID of " + BitConverter.ToString(pids) + ". Corresponding code names are " +  String.Join(",", error_code_names) + "These PIDs are added to blacklist.");
+                            Array.ForEach(pids, pid => this.ELM327PIDFilter.addToBlackList(pid));
+                            break;
+                        case ActionOnNODATAReceived.ThrowException:
+                            throw new FormatException("ELM327 returns NO DATA.");
+                        case ActionOnNODATAReceived.Ignore:
+                            break;
+                    }
                 }
                 var parseResult = elm327MsgParser.parse(inMsg);
                 var parsedValueList = parseResult.ValueStrMap.Select(kvp => new KeyValuePair<OBDIIParameterCode, uint>(kvp.Key, Convert.ToUInt32(kvp.Value, 16)))
