@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -10,6 +10,13 @@ using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Utils;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
+    public enum ActionOnNODATAReceived
+    {
+        Ignore,
+        AddPIDToBlackList,
+        Restart
+    }
+
     public class ELM327COM : COMCommon, IELM327COM
     {
         public const byte MODECODE = 0x01;
@@ -26,9 +33,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private readonly int ELM327AdaptiveTimingMode;
         private readonly int ELM327Timeout;
         private readonly string ELM327HeaderBytes;
+        private readonly string ELM327ReceiveAddress;
 
         private readonly int ELM327BatchQueryCount;
         private readonly bool SeparateBatchQueryToAvoidMultiFrameResponse;
+        private readonly bool QueryOnlyAvailablePID;
+        private readonly ActionOnNODATAReceived ActionOnNODATAReceived;
         private readonly OBDIIContentTable content_table;
 
         private readonly ELM327OutMessageParser elm327MsgParser;
@@ -38,7 +48,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private ELM327PIDFilter ELM327PIDFilter = null; // Assigned when connected
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes, int elm327BatchQueryCount, bool separateBatchQueryToAvoidMultiFrameResponse) : base(comPortName, Parity.None, logger)
+        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes, string elm327ReceiveAddress, int elm327BatchQueryCount, bool separateBatchQueryToAvoidMultiFrameResponse, bool queryOnlyAvilablePID, ActionOnNODATAReceived actionOnNODATAReceived) : base(comPortName, Parity.None, logger)
         {
             this.logger = logger.CreateLogger<ELM327COM>();
             this.content_table = new OBDIIContentTable();
@@ -53,6 +63,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             ELM327AdaptiveTimingMode = elm327AdaptiveTimingMode;
             ELM327Timeout = elm327Timeout;
             ELM327HeaderBytes = elm327HeaderBytes;
+            ELM327ReceiveAddress = elm327ReceiveAddress;
+            QueryOnlyAvailablePID = queryOnlyAvilablePID;
+            ActionOnNODATAReceived = actionOnNODATAReceived;
             if(elm327BatchQueryCount > 6 || elm327BatchQueryCount < 1)
                 throw new ArgumentException("ELM327 batch query count needs to be 1 to 6.");
             this.ELM327BatchQueryCount = elm327BatchQueryCount;
@@ -60,7 +73,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             this.elm327MsgParser = new ELM327OutMessageParser(this.content_table);
         }
 
-        public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, String.Empty, 1, 32, "", 1, true)
+        public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, String.Empty, 1, 32, "", "", 1, true, true, ActionOnNODATAReceived.Ignore)
         {
         }
 
@@ -220,6 +233,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
         private void ELM327SetHeader()
         {
+            // Debug : set ATCRA7E8 to limit the address
+            Write("ATCRA7E8"+ "\r");
+            logger.LogDebug("Call ATCRA" + "7E8" + " to set receiver ID.");
+            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
             // Header byte set.
             if (this.ELM327HeaderBytes.Length <= 0)
             {
