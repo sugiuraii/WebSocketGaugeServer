@@ -93,12 +93,22 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             logger.LogInformation("ELM327 initialization is finished.");
 
             // Get available PIDs
-            logger.LogInformation("Query available PIDs.");
-            var availablePIDs = getAvailavlePIDs();
-            logger.LogInformation("Available PID count: " + availablePIDs.Count().ToString());
-            logger.LogInformation("Available PID List:" + BitConverter.ToString(availablePIDs.ToArray()));
-            // Activate ELM327PIDFilter
-            this.ELM327PIDFilter = new ELM327PIDFilter(availablePIDs, true, new List<byte>());
+            if(this.QueryOnlyAvailablePID)
+            {
+                // Query available PID (PID:00, 20, 40, ...)
+                logger.LogInformation("Query available PIDs.");
+                var availablePIDs = getAvailavlePIDs();
+                logger.LogInformation("Available PID count: " + availablePIDs.Count().ToString());
+                logger.LogInformation("Available PID List:" + BitConverter.ToString(availablePIDs.ToArray()));
+                // Activate ELM327PIDFilter
+                this.ELM327PIDFilter = new ELM327PIDFilter(availablePIDs, true, new List<byte>());
+            }
+            else
+            {
+                //Fill all PID available
+                var allAvailablePID = Enumerable.Range(0, 0x100).Select(x => (byte)x).ToList();
+                this.ELM327PIDFilter = new ELM327PIDFilter(allAvailablePID, false, new List<byte>());
+            }
         }
 
         private void initializeELM327ATCommand()
