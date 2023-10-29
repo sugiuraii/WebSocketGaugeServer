@@ -233,20 +233,25 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
         private void ELM327SetHeader()
         {
-            // Debug : set ATCRA7E8 to limit the address
-            Write("ATCRA7E8"+ "\r");
-            logger.LogDebug("Call ATCRA" + "7E8" + " to set receiver ID.");
-            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
-            // Header byte set.
-            if (this.ELM327HeaderBytes.Length <= 0)
+            // Receive address set (ATCRA)
+            if( this.ELM327ReceiveAddress.Length <=0 )
+                logger.LogInformation("ELM327 receive address byte is not set (or blank). AT CRA command will be skipped.");
+            else
             {
-                logger.LogInformation("ELM327 header byte is not set (or blank). AT SH command will be skipped.");
-                return;
+                Write("ATCRA" + this.ELM327ReceiveAddress + "\r");
+                logger.LogDebug("Call AT CRA" + this.ELM327ReceiveAddress + " to set receive address.");
+                logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
             }
 
-            Write("ATSH" + this.ELM327HeaderBytes + "\r");
-            logger.LogDebug("Call AT SH" + this.ELM327HeaderBytes + " to set header ID.");
-            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
+            // Header byte set.
+            if (this.ELM327HeaderBytes.Length <= 0)
+                logger.LogInformation("ELM327 header byte is not set (or blank). AT SH command will be skipped.");
+            else
+            {
+                Write("ATSH" + this.ELM327HeaderBytes + "\r");
+                logger.LogDebug("Call AT SH" + this.ELM327HeaderBytes + " to set header ID.");
+                logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
+            }
         }
 
         protected override void communicate_main(bool slow_read_flag)
