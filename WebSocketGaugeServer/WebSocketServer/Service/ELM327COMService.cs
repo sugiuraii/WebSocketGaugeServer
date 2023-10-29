@@ -86,15 +86,18 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 var elm327AdaptiveTimingMode = serviceSetting["elm327AdaptiveTimingControl"];
                 var elm327Timeout = serviceSetting["elm327Timeout"];
                 var elm327Header = serviceSetting["elm327HeaderBytes"];
+                var elm327ReceiveAddress = serviceSetting["elm327ReceiveAddress"];
                 var elm327PIDBatchQueryCount = int.Parse(serviceSetting["elm327BatchPIDQueryCount"]);
                 var elm327PIDBatchQueryAvoidMultiFrameResponse = bool.Parse(serviceSetting["elm327PIDBatchQueryAvoidMultiFrameResponse"]);
+                var queryOnlyAvilablePID = bool.Parse(serviceSetting["elm327QueryOnlyAvilablePID "]);
+                var actionOnNODATAReceived = (ActionOnNODATAReceived)Enum.Parse(typeof(ActionOnNODATAReceived), serviceSetting["elm327ActionOnNODATAReceived"], true);
                 logger.LogInformation("ELM327COM COMPort is set to: " + comportName);
 
                 ELM327COM elm327COM;
                 if (elm327ProtocolMode == null || elm327AdaptiveTimingMode == null || elm327Timeout == null)
                     elm327COM = new ELM327COM(loggerFactory, comportName);
                 else
-                    elm327COM = new ELM327COM(loggerFactory, comportName, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse);
+                    elm327COM = new ELM327COM(loggerFactory, comportName, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327ReceiveAddress, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse, queryOnlyAvilablePID, actionOnNODATAReceived);
 
                 elm327COM.overrideDefaultBaudRate(baudRate);
 
