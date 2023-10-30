@@ -89,7 +89,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 var elm327ReceiveAddress = serviceSetting["elm327ReceiveAddress"];
                 var elm327PIDBatchQueryCount = int.Parse(serviceSetting["elm327BatchPIDQueryCount"]);
                 var elm327PIDBatchQueryAvoidMultiFrameResponse = bool.Parse(serviceSetting["elm327PIDBatchQueryAvoidMultiFrameResponse"]);
-                var queryOnlyAvilablePID = bool.Parse(serviceSetting["elm327QueryOnlyAvilablePID "]);
+                var queryOnlyAvilablePID = bool.Parse(serviceSetting["elm327QueryOnlyAvilablePID"]);
                 var actionOnNODATAReceived = (ActionOnNODATAReceived)Enum.Parse(typeof(ActionOnNODATAReceived), serviceSetting["elm327ActionOnNODATAReceived"], true);
                 logger.LogInformation("ELM327COM COMPort is set to: " + comportName);
 
