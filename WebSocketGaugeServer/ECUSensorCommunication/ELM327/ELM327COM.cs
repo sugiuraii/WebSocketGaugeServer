@@ -103,7 +103,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 // Show available code name from available PID list
                 var pidToParameterCodeReverseMap = new PIDToOBDIIParameterCodeReverseMapBuilder().create();
                 var availableParameterCodes = availablePIDs.Where(cd => pidToParameterCodeReverseMap.ContainsKey(cd)).Select(cd => pidToParameterCodeReverseMap[cd].ToString());
-                logger.LogInformation("Available code:" + String.Join(",", availableParameterCodes));
+                logger.LogInformation("Available code:" + String.Join(",\n", availableParameterCodes));
                 // Activate ELM327PIDFilter
                 this.ELM327PIDFilter = new ELM327PIDFilter(availablePIDs, true, new List<byte>());
             }
