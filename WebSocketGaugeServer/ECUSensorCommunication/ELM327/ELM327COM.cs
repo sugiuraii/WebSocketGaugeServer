@@ -100,6 +100,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 var availablePIDs = getAvailavlePIDs();
                 logger.LogInformation("Available PID count: " + availablePIDs.Count().ToString());
                 logger.LogInformation("Available PID List:" + BitConverter.ToString(availablePIDs.ToArray()));
+                // Show available code name from available PID list
+                var pidToParameterCodeReverseMap = new PIDToOBDIIParameterCodeReverseMapBuilder().create();
+                var availableParameterCodes = availablePIDs.Where(cd => pidToParameterCodeReverseMap.ContainsKey(cd)).Select(cd => pidToParameterCodeReverseMap[cd].ToString());
+                logger.LogInformation("Available code:" + String.Join(",", availableParameterCodes));
                 // Activate ELM327PIDFilter
                 this.ELM327PIDFilter = new ELM327PIDFilter(availablePIDs, true, new List<byte>());
             }
