@@ -311,7 +311,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             }
             catch (TimeoutException ex)
             {
-                logger.LogWarning("SSMCOM timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                logger.LogWarning("ELM327 timeout. " + ex.GetType().ToString() + " " + ex.Message);
                 communicateRealtimeIsError = true;
             }
         }
