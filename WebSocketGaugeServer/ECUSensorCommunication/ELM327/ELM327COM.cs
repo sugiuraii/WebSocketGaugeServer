@@ -402,11 +402,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                             var error_code_names = codes.Select(code => code.ToString());
                             logger.LogWarning("ELM327 returns NO DATA on communicating PID of " + BitConverter.ToString(pids) + ". Corresponding code names are " +  String.Join(",", error_code_names) + "These PIDs are added to blacklist.");
                             Array.ForEach(pids, pid => this.ELM327PIDFilter.addToBlackList(pid));
-                            break;
+                            return;
                         case ActionOnNODATAReceived.ThrowException:
                             throw new FormatException("ELM327 returns NO DATA.");
                         case ActionOnNODATAReceived.Ignore:
-                            break;
+                            return;
                     }
                 }
                 var parseResult = elm327MsgParser.parse(inMsg);
