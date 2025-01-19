@@ -292,7 +292,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             {
                 logger.LogWarning("Multple reply is detected on 0100 PID query. Multiple ECU node may be connected. Return Msg:");
                 logger.LogWarning(string.Join(Environment.NewLine, return_0100_PIDs));
-                logger.LogWarning("\"elm327QueryOnlyAvilablePID\" featrure may cause errors.");
+                logger.LogWarning("\"elm327QueryOnlyAvilablePID\" feature may cause errors.");
                 logger.LogWarning("Consider to limit the communicating ECU node by \" elm327HeaderBytes\" or \" elm327ReceiveAddress\" setting.");
             }
                 
