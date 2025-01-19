@@ -162,6 +162,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     // Setup ELM327 header setting
                     ELM327SetHeader();
 
+                    // Check multiple ECU connection
+                    ELM327MultipleECUNodeCheck();
+
                     initializeFinished = true;
                 }
                 catch (TimeoutException ex)
@@ -202,16 +205,18 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
         private void ELM327TestCommunicationToSearchProtocol() 
         {
-            // Enable header ouut
+            // Enable header out
             Write("ATH1\r");
             logger.LogDebug("Call ATH1 to enable header out.");
             logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
 
+            // Test communication by 0100 (Query available PID)
             Write("0100\r");
             logger.LogDebug("Call 0100 to test communication.");
-            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
-
-            // Disable header ouut
+            var return_0100 = ReadTo(">").Split(new String[] {"\r\n", "\r", "\n"}, StringSplitOptions.None).Where(s => !string.IsNullOrWhiteSpace(s));
+            logger.LogDebug("Return Msg:" + Environment.NewLine + string.Join(Environment.NewLine, return_0100));
+                
+            // Disable header out
             Write("ATH0\r");
             logger.LogDebug("Call ATH0 to disable header out.");
             logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
@@ -267,6 +272,35 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
             }
         }
+
+        private void ELM327MultipleECUNodeCheck() 
+        {
+            // Enable header out
+            Write("ATH1\r");
+            logger.LogDebug("Call ATH1 to enable header out.");
+            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
+
+            // Test communication by 0100 (Query available PID)
+            Write("0100\r");
+            logger.LogDebug("Call 0100 to search ECUs.");
+            var return_0100 = ReadTo(">").Split(new String[] {"\r\n", "\r", "\n"}, StringSplitOptions.None).Where(s => !string.IsNullOrWhiteSpace(s));
+            logger.LogDebug("Return Msg:" + Environment.NewLine + string.Join(Environment.NewLine, return_0100));
+
+            // Check reply from mulple ECU
+            var return_0100_PIDs = return_0100.Where(s => !Regex.IsMatch(s, "[^0-9A-F ]+")); // Exclude the line of ELM327 interative message ("SEARCHING...")
+            if(return_0100_PIDs.Count() > 1)
+            {
+                logger.LogWarning("Multple reply is detected on 0100 PID query. Multiple ECU node may be connected. Return Msg:");
+                logger.LogWarning(string.Join(Environment.NewLine, return_0100_PIDs));
+                logger.LogWarning("\"elm327QueryOnlyAvilablePID\" featrure may cause errors.");
+                logger.LogWarning("Consider to limit the communicating ECU node by \" elm327HeaderBytes\" or \" elm327ReceiveAddress\" setting.");
+            }
+                
+            // Disable header out
+            Write("ATH0\r");
+            logger.LogDebug("Call ATH0 to disable header out.");
+            logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
+        } 
 
         protected override void communicate_main(bool slow_read_flag)
         {
