@@ -29,6 +29,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private const int INITIALIZE_FAILED_MAX = 30;
         private const int PID_COMMUNICATE_RETRY_MAX = 5;
 
+        // --------------- Setting fields -------------------------
+        private readonly int Wait;
+
         private readonly string ELM327SetProtocolMode;
         private readonly int ELM327AdaptiveTimingMode;
         private readonly int ELM327Timeout;
@@ -48,7 +51,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private ELM327PIDFilter ELM327PIDFilter = null; // Assigned when connected
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger, string comPortName, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes, string elm327ReceiveAddress, int elm327BatchQueryCount, bool separateBatchQueryToAvoidMultiFrameResponse, bool queryOnlyAvilablePID, ActionOnNODATAReceived actionOnNODATAReceived) : base(comPortName, Parity.None, logger)
+        public ELM327COM(ILoggerFactory logger, string comPortName, int waitmsec, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes, string elm327ReceiveAddress, int elm327BatchQueryCount, bool separateBatchQueryToAvoidMultiFrameResponse, bool queryOnlyAvilablePID, ActionOnNODATAReceived actionOnNODATAReceived) : base(comPortName, Parity.None, logger)
         {
             this.logger = logger.CreateLogger<ELM327COM>();
             this.content_table = new OBDIIContentTable();
@@ -58,7 +61,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
             ResetBaudRate = 4800;
             ReadTimeout = 10000;
-
+            
+            Wait = waitmsec;
             ELM327SetProtocolMode = elm327ProtocolStr;
             ELM327AdaptiveTimingMode = elm327AdaptiveTimingMode;
             ELM327Timeout = elm327Timeout;
@@ -73,7 +77,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             this.elm327MsgParser = new ELM327OutMessageParser(this.content_table);
         }
 
-        public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, String.Empty, 1, 32, "", "", 1, true, true, ActionOnNODATAReceived.Ignore)
+        public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, 0, String.Empty, 1, 32, "", "", 1, true, true, ActionOnNODATAReceived.Ignore)
         {
         }
 
@@ -346,6 +350,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 elm327_received_eventargs.Slow_read_flag = slow_read_flag;
                 elm327_received_eventargs.Received_Parameter_Code = new List<OBDIIParameterCode>(query_OBDII_code_list);
                 ELM327DataReceived(this, elm327_received_eventargs);
+
+                // Wait before issue next query
+                if(this.Wait > 0)
+                    Thread.Sleep(Wait);
             }
             catch (TimeoutException ex)
             {

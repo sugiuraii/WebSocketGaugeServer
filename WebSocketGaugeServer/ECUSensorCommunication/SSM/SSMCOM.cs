@@ -14,7 +14,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 
         //SSMCOM data received event
         public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
-        public SSMCOM(ILoggerFactory logger, string comPortName) : base(comPortName, Parity.None, logger)
+
+        // --------------- Setting fields -------------------------
+        private readonly int Wait;
+
+        public SSMCOM(ILoggerFactory logger, string comPortName, int waitmsec) : base(comPortName, Parity.None, logger)
         {
             this.logger = logger.CreateLogger<SSMCOM>();
             this.content_table = new SSMContentTable();
@@ -22,6 +26,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
             DefaultBaudRate = 4800;
             ResetBaudRate = 4800;
             ReadTimeout = 500;
+            Wait = waitmsec;
         }
 
         protected override void communicate_main(bool slow_read)
@@ -73,6 +78,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
                 ssm_received_eventargs.Slow_read_flag = slow_read;
                 ssm_received_eventargs.Received_Parameter_Code = new List<SSMParameterCode>(query_SSM_code_list);
                 SSMDataReceived(this, ssm_received_eventargs);
+
+                // Wait before issue next query
+                if(this.Wait > 0)
+                    Thread.Sleep(Wait);
             }
             catch (TimeoutException ex)
             {
