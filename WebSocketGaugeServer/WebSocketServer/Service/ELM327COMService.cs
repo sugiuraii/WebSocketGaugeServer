@@ -82,6 +82,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 logger.LogInformation("ELM327COM is started with physical mode.");
                 var comportName = serviceSetting["comport"];
                 var baudRate = Int32.Parse(serviceSetting["baudrate"]);
+                var waitmsec = Int32.Parse(serviceSetting["waitmsec"]);
                 var elm327ProtocolMode = serviceSetting["elm327ProtocolMode"];
                 var elm327AdaptiveTimingMode = serviceSetting["elm327AdaptiveTimingControl"];
                 var elm327Timeout = serviceSetting["elm327Timeout"];
@@ -92,12 +93,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 var queryOnlyAvilablePID = bool.Parse(serviceSetting["elm327QueryOnlyAvilablePID"]);
                 var actionOnNODATAReceived = (ActionOnNODATAReceived)Enum.Parse(typeof(ActionOnNODATAReceived), serviceSetting["elm327ActionOnNODATAReceived"], true);
                 logger.LogInformation("ELM327COM COMPort is set to: " + comportName);
+                logger.LogInformation("Wait time is set to " + waitmsec.ToString() + "msec");
 
                 ELM327COM elm327COM;
                 if (elm327ProtocolMode == null || elm327AdaptiveTimingMode == null || elm327Timeout == null)
                     elm327COM = new ELM327COM(loggerFactory, comportName);
                 else
-                    elm327COM = new ELM327COM(loggerFactory, comportName, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327ReceiveAddress, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse, queryOnlyAvilablePID, actionOnNODATAReceived);
+                    elm327COM = new ELM327COM(loggerFactory, comportName, waitmsec, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327ReceiveAddress, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse, queryOnlyAvilablePID, actionOnNODATAReceived);
 
                 elm327COM.overrideDefaultBaudRate(baudRate);
 

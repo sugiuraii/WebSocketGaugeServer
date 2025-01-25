@@ -64,8 +64,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("SSM");
 
             this.logger = logger;
+            var waitmsec = Int32.Parse(serviceSetting["waitmsec"]);
             var virtualECUSetting = serviceSetting.GetSection("virtualecu");
             var useVirtual = Boolean.Parse(virtualECUSetting["enabled"]);
+
             logger.LogInformation("SSMCOM service is started.");
             if (useVirtual)
             {
@@ -81,7 +83,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 logger.LogInformation("SSMCOM is started with physical mode.");
                 var comportName = serviceSetting["comport"];
                 logger.LogInformation("SSMCOM COMPort is set to: " + comportName);
-                this.ssmCOM = new SSMCOM(loggerFactory, comportName);
+                logger.LogInformation("Wait time is set to " + waitmsec.ToString() + "msec");
+                this.ssmCOM = new SSMCOM(loggerFactory, comportName, waitmsec);
                 this.virtualSSMCOM = null;
             }
 
