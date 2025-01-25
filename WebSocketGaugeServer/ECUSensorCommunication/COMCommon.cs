@@ -16,10 +16,10 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
         private int slowReadInterval;
         private Task communicateRealtimeTask;
         private CancellationTokenSource ctokenSource = new CancellationTokenSource();
-        protected bool communicateRealtimeIsError; // エラー発生時にtrue trueになったらcommunicate_reset()を呼び出して初期化を試みる。
+        protected bool communicateRealtimeIsError; // True on error. (Try communicate_reset() to re-initialize)
 
-        private int communicateResetCount; //何回communicate_reset()が連続でコールされたか？ (COMMUNICATE_RESET_MAXを超えたらプログラムを落とす)
-        private const int COMMUNICATE_RESET_MAX = 20; //communicate_reset()コールを連続で許可する回数。
+        private int communicateResetCount; //Count of communicate_reset() call (Exit program on exceeding COMMUNICATE_RESET_MAX)
+        private const int COMMUNICATE_RESET_MAX = 20;
 
         private readonly ILogger logger;
 
@@ -49,21 +49,21 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
         public void BackgroundCommunicateStop()
         {
-            //通信スレッドを終了させる(フラグをfalseに)
+            // Ends communication thread(By set the flag false)
             ctokenSource.Cancel();
             communicateRealtimeTask.Wait();
-            //通信スレッド終了まで待つ
+            // Wait until the communication thread ends.
             logger.LogInformation("Communication Stopped.");
         }
 
-        //読み込みスレッド実装（communicate_realtime_start()からスレッドを作って呼び出すこと）
+        // Thrad of reading（Call this by creating the thread on communicate_realtime_start()）
         private void communicate_realtime(CancellationToken ct)
         {
             while(!ct.IsCancellationRequested)
             {
                 try
                 {
-                    //ポートオープン
+                    // Port open
                     logger.LogInformation("COMport open.");
                     logger.LogInformation("Call initialization routine");
                     serialPort.Open();
@@ -74,8 +74,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                     {
                         if (i > SlowReadInterval)
                         {
-                            //slowread_intervalごとにSlowreadモードで通信。
-                            //slowreadモードを実装しないケースもあり(引数によらず同じ処理をする実装もあり)
+                            //Communicatie by Slow read mode, by the interval of slowread_interval
 
                             communicate_main(true);
                             i = 0;
@@ -86,7 +85,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                             i++;
                         }
 
-                        if (communicateRealtimeIsError) // シリアルポートエラー（タイムアウト、パリティ、フレーミング)を受信したら、初期化を試みる。
+                        if (communicateRealtimeIsError) // Try communication reset  on error(Timeout, parity, framing)
                         {
                             communticate_reset();
                             communicateResetCount++;
@@ -100,7 +99,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                         }
                         else
                         {
-                            //communicate_mainでエラーなければエラーカウンタリセット。
+                            //Reset counter when the error is not detected.
                             communicateResetCount = 0;
                         }
                     }
@@ -124,7 +123,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
                 }
                 finally
                 {
-                    //ポートクローズ
+                    // Close port
                     if (serialPort.IsOpen)
                     {
                         serialPort.Close();
@@ -139,30 +138,28 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             }
         }
 
-        //  通信フレーム当たりの処理
-        //　継承先のクラスにて実装すること
+        //  Process per communication frame (need to be implemented by sub classes)
         protected abstract void communicate_main(bool slowread_flag);
 
-        //　通信初期の初期化処理
-        //　初期化処理がある場合は継承先のクラスにてoverrideすること
+        //　Initialization (need to be implemented by sub classes)
         protected virtual void communicate_initialize(){}
 
-        //　通信リセット
+        //　Reset
         private void communticate_reset()
         {
             logger.LogInformation("COM communication reset.");
             serialPort.Close();
-
-            //フレームをずらすために、一旦別ボーレートで通信させる
+            // Workaround to refresh communication
+            // Try dummy communication with changing baudrate (from default), to re-aligh frame
             SetBaduRateToResetBaudRate();
 
-            //1000ms ダミー通信させた後、バッファ破棄
+            // Dummy communication 1000ms -> Discard buffer
             serialPort.Open();
             Thread.Sleep(1000);
             serialPort.DiscardInBuffer();
             serialPort.Close();
 
-            //ボーレート戻し、ポート復帰させる
+            // Revert port (by chainging baudrate to default.)
             SetBaudRateToDefaultBaudRate();
             logger.LogInformation("COMport open.");
             serialPort.Open();
