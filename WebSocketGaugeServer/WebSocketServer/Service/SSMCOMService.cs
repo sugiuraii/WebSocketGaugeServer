@@ -64,7 +64,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("SSM");
 
             this.logger = logger;
-            var waitmsec = Int32.Parse(serviceSetting["waitmsec"]);
+            var waitmsec = Int32.Parse(serviceSetting["waitmsec"] ?? "0");
             var virtualECUSetting = serviceSetting.GetSection("virtualecu");
             var useVirtual = Boolean.Parse(virtualECUSetting["enabled"]);
 
