@@ -77,10 +77,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             this.elm327MsgParser = new ELM327OutMessageParser(this.content_table);
         }
 
+/*
         public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, 0, String.Empty, 1, 32, "", "", 1, true, true, ActionOnNODATAReceived.Ignore)
         {
         }
-
+*/
         //Changing DefaultBaudRate is allowed in ELM327COM
         public void overrideDefaultBaudRate(int baudRate)
         {
