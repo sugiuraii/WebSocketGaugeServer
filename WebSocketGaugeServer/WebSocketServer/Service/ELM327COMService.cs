@@ -72,7 +72,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             {
                 logger.LogInformation("ELM327COM is started with virtual mode.");
                 int comWait = int.Parse(virtualECUSetting["waitmsec"]);
-                logger.LogInformation("VirtualELM327COM wait time is set to " + comWait.ToString() + " ms.");
+                logger.LogInformation("VirtualELM327COM wait time is set to {comwait} ms.", comWait);
                 var virtualCOM = new VirtualELM327COM(loggerFactory, comWait);
                 this.elm327COM = virtualCOM;
                 this.virtualElm327COM = virtualCOM;
@@ -92,8 +92,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 var elm327PIDBatchQueryAvoidMultiFrameResponse = bool.Parse(serviceSetting["elm327PIDBatchQueryAvoidMultiFrameResponse"] ?? "false");
                 var queryOnlyAvilablePID = bool.Parse(serviceSetting["elm327QueryOnlyAvilablePID"]);
                 var actionOnNODATAReceived = (ActionOnNODATAReceived)Enum.Parse(typeof(ActionOnNODATAReceived), serviceSetting["elm327ActionOnNODATAReceived"], true);
-                logger.LogInformation("ELM327COM COMPort is set to: " + comportName);
-                logger.LogInformation("Wait time is set to " + waitmsec.ToString() + "msec");
+                logger.LogInformation("ELM327COM COMPort is set to: {portname}", comportName);
+                logger.LogInformation("Wait time is set to {waitmsec} msec", waitmsec);
 
                 ELM327COM elm327COM;
                 var elm327COMOption = new ELM327COMOption(comportName, waitmsec, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327ReceiveAddress, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse, queryOnlyAvilablePID);
