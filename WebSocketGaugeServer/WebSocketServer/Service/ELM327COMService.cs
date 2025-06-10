@@ -96,7 +96,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 logger.LogInformation("Wait time is set to " + waitmsec.ToString() + "msec");
 
                 ELM327COM elm327COM;
-                elm327COM = new ELM327COM(loggerFactory, comportName, waitmsec, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327ReceiveAddress, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse, queryOnlyAvilablePID, actionOnNODATAReceived);
+                var elm327COMOption = new ELM327COMOption(comportName, waitmsec, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327ReceiveAddress, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse, queryOnlyAvilablePID);
+                elm327COM = new ELM327COM(elm327COMOption, loggerFactory, actionOnNODATAReceived);
                 elm327COM.overrideDefaultBaudRate(baudRate);
 
                 this.elm327COM = elm327COM;
