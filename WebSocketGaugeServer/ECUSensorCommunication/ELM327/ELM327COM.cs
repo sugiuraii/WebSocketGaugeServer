@@ -136,7 +136,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
 
                     // Set protocol
-                    ELM327SetProtocol();
+                    ELM327SetProtocol(this.Option.ELM327ProtocolStr);
                     // Test communication
                     ELM327TestCommunicationToSearchProtocol();
 
@@ -145,9 +145,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     logger.LogDebug("Call ATS0 to disable space.");
                     logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
                     // Setup ELM327 timing and timeout
-                    ELM327TimingControlSet();
+                    ELM327TimingControlSet(this.Option.ELM327AdaptiveTimingMode, this.Option.ELM327TimeOut);
                     // Setup ELM327 header setting
-                    ELM327SetHeader();
+                    ELM327SetHeader(this.Option.ELM327ReceiveAddress, this.Option.ELM327HeaderBytes);
 
                     // Check multiple ECU connection
                     ELM327MultipleECUNodeCheck();
@@ -172,19 +172,19 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             } while (!initializeFinished);
         }
 
-        private void ELM327SetProtocol()
+        private void ELM327SetProtocol(string protocolStr)
         {
-            if (string.IsNullOrEmpty(this.Option.ELM327ProtocolStr))
+            if (string.IsNullOrEmpty(protocolStr))
             {
                 logger.LogDebug("ELM327SetProtocolMode string is blank. ELM327 protocol set (AT SP) will be skipped.");
                 return;
             }
-            if (this.Option.ELM327ProtocolStr.Length != 1)
+            if (protocolStr.Length != 1)
                 logger.LogWarning("ELM327SetProtocolMode is not a signle character. AT SP command may fail.");
-            if (!Regex.IsMatch(this.Option.ELM327ProtocolStr, "[0-9]|[A-C]"))
+            if (!Regex.IsMatch(protocolStr, "[0-9]|[A-C]"))
                 logger.LogWarning("ELM327SetProtocolMode is not 0-9 or A-C. AT SP command may fail.");
 
-            string setprotocolStr = "AT SP " + this.Option.ELM327ProtocolStr;
+            string setprotocolStr = "AT SP " + protocolStr;
             Write(setprotocolStr + "\r");
             logger.LogDebug("Call " + setprotocolStr + " to set ELM327 protocol.");
             logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
@@ -209,18 +209,18 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
         } 
 
-        private void ELM327TimingControlSet()
+        private void ELM327TimingControlSet(int adaptiveTimingModeSetting, int timeout)
         {
             // Adaptive timing control set
-            if (this.Option.ELM327AdaptiveTimingMode < 0 || this.Option.ELM327AdaptiveTimingMode > 2)
+            if (adaptiveTimingModeSetting < 0 || adaptiveTimingModeSetting > 2)
                 logger.LogWarning("ELM327 Adaptive timing mode is not 0-2. AT AT command may fail.");
 
-            Write("ATAT" + this.Option.ELM327AdaptiveTimingMode.ToString() + "\r");
-            logger.LogDebug("Call AT AT" + this.Option.ELM327AdaptiveTimingMode.ToString() + " to set adaptive timing control mode.");
+            Write("ATAT" + adaptiveTimingModeSetting.ToString() + "\r");
+            logger.LogDebug("Call AT AT" + adaptiveTimingModeSetting.ToString() + " to set adaptive timing control mode.");
             logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
 
             // Timeout set
-            int timeoutToSet = this.Option.ELM327TimeOut;
+            int timeoutToSet = timeout;
             if (timeoutToSet < 0)
             {
                 logger.LogWarning("ELM327 Timeout is not positive. Set 0 instead.");
@@ -237,25 +237,25 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
         }
 
-        private void ELM327SetHeader()
+        private void ELM327SetHeader(string receiveAddress, string headerBytes)
         {
             // Receive address set (ATCRA)
-            if( this.Option.ELM327ReceiveAddress.Length <=0 )
+            if( receiveAddress.Length <=0 )
                 logger.LogInformation("ELM327 receive address byte is not set (or blank). AT CRA command will be skipped.");
             else
             {
-                Write("ATCRA" + this.Option.ELM327ReceiveAddress + "\r");
-                logger.LogDebug("Call AT CRA" + this.Option.ELM327ReceiveAddress + " to set receive address.");
+                Write("ATCRA" + receiveAddress + "\r");
+                logger.LogDebug("Call AT CRA" + receiveAddress + " to set receive address.");
                 logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
             }
 
             // Header byte set.
-            if (this.Option.ELM327HeaderBytes.Length <= 0)
+            if (headerBytes.Length <= 0)
                 logger.LogInformation("ELM327 header byte is not set (or blank). AT SH command will be skipped.");
             else
             {
-                Write("ATSH" + this.Option.ELM327HeaderBytes + "\r");
-                logger.LogDebug("Call AT SH" + this.Option.ELM327HeaderBytes + " to set header ID.");
+                Write("ATSH" + headerBytes + "\r");
+                logger.LogDebug("Call AT SH" + headerBytes + " to set header ID.");
                 logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
             }
         }
