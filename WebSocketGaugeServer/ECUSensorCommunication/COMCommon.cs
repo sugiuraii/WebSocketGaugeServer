@@ -9,15 +9,7 @@ using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 {
-    public class COMCommonOption
-    {
-        public string PortName { get;}
-        public Parity Parity { get; }
-        public COMCommonOption(string PortName, Parity Parity) {
-            this.PortName = PortName;
-            this.Parity = Parity;
-        }
-    }
+    public record COMCommonOption(string PortName, Parity Parity);
 
     public abstract class COMCommon : IBackgroundCommunicate
     {
