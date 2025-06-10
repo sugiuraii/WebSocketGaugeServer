@@ -29,18 +29,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private const int INITIALIZE_FAILED_MAX = 30;
         private const int PID_COMMUNICATE_RETRY_MAX = 5;
 
-        // --------------- Setting fields -------------------------
-        private readonly int Wait;
-
-        private readonly string ELM327SetProtocolMode;
-        private readonly int ELM327AdaptiveTimingMode;
-        private readonly int ELM327Timeout;
-        private readonly string ELM327HeaderBytes;
-        private readonly string ELM327ReceiveAddress;
-
-        private readonly int ELM327BatchQueryCount;
-        private readonly bool SeparateBatchQueryToAvoidMultiFrameResponse;
-        private readonly bool QueryOnlyAvailablePID;
+        private readonly ELM327COMOption Option;
+        
         private readonly ActionOnNODATAReceived ActionOnNODATAReceived;
         private readonly OBDIIContentTable content_table;
 
@@ -51,10 +41,13 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private ELM327PIDFilter ELM327PIDFilter = null; // Assigned when connected
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger, string comPortName, int waitmsec, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes, string elm327ReceiveAddress, int elm327BatchQueryCount, bool separateBatchQueryToAvoidMultiFrameResponse, bool queryOnlyAvilablePID, ActionOnNODATAReceived actionOnNODATAReceived) : base(new COMCommonOption(comPortName, Parity.None), logger)
+        public ELM327COM(ELM327COMOption option, ILoggerFactory logger, ActionOnNODATAReceived actionOnNODATAReceived) : base(new COMCommonOption(option.COMPortName, Parity.None), logger)
         {
+            this.Option = option;
             this.logger = logger.CreateLogger<ELM327COM>();
             this.content_table = new OBDIIContentTable();
+            this.elm327MsgParser = new ELM327OutMessageParser(this.content_table);
+            this.ActionOnNODATAReceived = actionOnNODATAReceived;
 
             //Setup serial port
             DefaultBaudRate = 115200;
@@ -62,19 +55,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             ResetBaudRate = 4800;
             ReadTimeout = 10000;
             
-            Wait = waitmsec;
-            ELM327SetProtocolMode = elm327ProtocolStr;
-            ELM327AdaptiveTimingMode = elm327AdaptiveTimingMode;
-            ELM327Timeout = elm327Timeout;
-            ELM327HeaderBytes = elm327HeaderBytes;
-            ELM327ReceiveAddress = elm327ReceiveAddress;
-            QueryOnlyAvailablePID = queryOnlyAvilablePID;
-            ActionOnNODATAReceived = actionOnNODATAReceived;
-            if(elm327BatchQueryCount > 6 || elm327BatchQueryCount < 1)
+            if(option.ELM327BatchQueryCount > 6 || option.ELM327BatchQueryCount < 1)
                 throw new ArgumentException("ELM327 batch query count needs to be 1 to 6.");
-            this.ELM327BatchQueryCount = elm327BatchQueryCount;
-            this.SeparateBatchQueryToAvoidMultiFrameResponse = separateBatchQueryToAvoidMultiFrameResponse;
-            this.elm327MsgParser = new ELM327OutMessageParser(this.content_table);
         }
 
 /*
@@ -98,7 +80,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             logger.LogInformation("ELM327 initialization is finished.");
 
             // Get available PIDs
-            if(this.QueryOnlyAvailablePID)
+            if(this.Option.QueryOnlyAvailablePID)
             {
                 // Query available PID (PID:00, 20, 40, ...)
                 logger.LogInformation("Query available PIDs.");
@@ -192,17 +174,17 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
         private void ELM327SetProtocol()
         {
-            if (string.IsNullOrEmpty(ELM327SetProtocolMode))
+            if (string.IsNullOrEmpty(this.Option.ELM327ProtocolStr))
             {
                 logger.LogDebug("ELM327SetProtocolMode string is blank. ELM327 protocol set (AT SP) will be skipped.");
                 return;
             }
-            if (ELM327SetProtocolMode.Length != 1)
+            if (this.Option.ELM327ProtocolStr.Length != 1)
                 logger.LogWarning("ELM327SetProtocolMode is not a signle character. AT SP command may fail.");
-            if (!Regex.IsMatch(ELM327SetProtocolMode, "[0-9]|[A-C]"))
+            if (!Regex.IsMatch(this.Option.ELM327ProtocolStr, "[0-9]|[A-C]"))
                 logger.LogWarning("ELM327SetProtocolMode is not 0-9 or A-C. AT SP command may fail.");
 
-            string setprotocolStr = "AT SP " + ELM327SetProtocolMode;
+            string setprotocolStr = "AT SP " + this.Option.ELM327ProtocolStr;
             Write(setprotocolStr + "\r");
             logger.LogDebug("Call " + setprotocolStr + " to set ELM327 protocol.");
             logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
@@ -230,15 +212,15 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private void ELM327TimingControlSet()
         {
             // Adaptive timing control set
-            if (this.ELM327AdaptiveTimingMode < 0 || this.ELM327AdaptiveTimingMode > 2)
+            if (this.Option.ELM327AdaptiveTimingMode < 0 || this.Option.ELM327AdaptiveTimingMode > 2)
                 logger.LogWarning("ELM327 Adaptive timing mode is not 0-2. AT AT command may fail.");
 
-            Write("ATAT" + ELM327AdaptiveTimingMode.ToString() + "\r");
-            logger.LogDebug("Call AT AT" + ELM327AdaptiveTimingMode.ToString() + " to set adaptive timing control mode.");
+            Write("ATAT" + this.Option.ELM327AdaptiveTimingMode.ToString() + "\r");
+            logger.LogDebug("Call AT AT" + this.Option.ELM327AdaptiveTimingMode.ToString() + " to set adaptive timing control mode.");
             logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
 
             // Timeout set
-            int timeoutToSet = this.ELM327Timeout;
+            int timeoutToSet = this.Option.ELM327TimeOut;
             if (timeoutToSet < 0)
             {
                 logger.LogWarning("ELM327 Timeout is not positive. Set 0 instead.");
@@ -258,22 +240,22 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private void ELM327SetHeader()
         {
             // Receive address set (ATCRA)
-            if( this.ELM327ReceiveAddress.Length <=0 )
+            if( this.Option.ELM327ReceiveAddress.Length <=0 )
                 logger.LogInformation("ELM327 receive address byte is not set (or blank). AT CRA command will be skipped.");
             else
             {
-                Write("ATCRA" + this.ELM327ReceiveAddress + "\r");
-                logger.LogDebug("Call AT CRA" + this.ELM327ReceiveAddress + " to set receive address.");
+                Write("ATCRA" + this.Option.ELM327ReceiveAddress + "\r");
+                logger.LogDebug("Call AT CRA" + this.Option.ELM327ReceiveAddress + " to set receive address.");
                 logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
             }
 
             // Header byte set.
-            if (this.ELM327HeaderBytes.Length <= 0)
+            if (this.Option.ELM327HeaderBytes.Length <= 0)
                 logger.LogInformation("ELM327 header byte is not set (or blank). AT SH command will be skipped.");
             else
             {
-                Write("ATSH" + this.ELM327HeaderBytes + "\r");
-                logger.LogDebug("Call AT SH" + this.ELM327HeaderBytes + " to set header ID.");
+                Write("ATSH" + this.Option.ELM327HeaderBytes + "\r");
+                logger.LogDebug("Call AT SH" + this.Option.ELM327HeaderBytes + " to set header ID.");
                 logger.LogDebug("Return Msg is " + replaceCRLFWithSpace(ReadTo(">")));
             }
         }
@@ -343,7 +325,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     return;
                 }
 
-                var batchedQueryCodeList = groupBatchQueryCode(query_OBDII_code_list, this.ELM327BatchQueryCount, this.SeparateBatchQueryToAvoidMultiFrameResponse);
+                var batchedQueryCodeList = groupBatchQueryCode(query_OBDII_code_list, this.Option.ELM327BatchQueryCount, this.Option.SeparateBatchQueryToAvoidMultiFrameResponse);
                 batchedQueryCodeList.ForEach(mcode => communicateMultiPID(mcode, 0));
 
                 //Invoke SSMDatareceived event
@@ -353,8 +335,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 ELM327DataReceived(this, elm327_received_eventargs);
 
                 // Wait before issue next query
-                if(this.Wait > 0)
-                    Thread.Sleep(Wait);
+                if(this.Option.Waitmsec > 0)
+                    Thread.Sleep(this.Option.Waitmsec);
             }
             catch (TimeoutException ex)
             {
