@@ -18,7 +18,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
         // --------------- Setting fields -------------------------
         private readonly int Wait;
 
-        public SSMCOM(ILoggerFactory logger, string comPortName, int waitmsec) : base(comPortName, Parity.None, logger)
+        public SSMCOM(ILoggerFactory logger, string comPortName, int waitmsec) : base(new COMCommonOption(comPortName, Parity.None), logger)
         {
             this.logger = logger.CreateLogger<SSMCOM>();
             this.content_table = new SSMContentTable();

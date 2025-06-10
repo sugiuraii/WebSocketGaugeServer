@@ -51,7 +51,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private ELM327PIDFilter ELM327PIDFilter = null; // Assigned when connected
 
         //Constructor
-        public ELM327COM(ILoggerFactory logger, string comPortName, int waitmsec, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes, string elm327ReceiveAddress, int elm327BatchQueryCount, bool separateBatchQueryToAvoidMultiFrameResponse, bool queryOnlyAvilablePID, ActionOnNODATAReceived actionOnNODATAReceived) : base(comPortName, Parity.None, logger)
+        public ELM327COM(ILoggerFactory logger, string comPortName, int waitmsec, string elm327ProtocolStr, int elm327AdaptiveTimingMode, int elm327Timeout, string elm327HeaderBytes, string elm327ReceiveAddress, int elm327BatchQueryCount, bool separateBatchQueryToAvoidMultiFrameResponse, bool queryOnlyAvilablePID, ActionOnNODATAReceived actionOnNODATAReceived) : base(new COMCommonOption(comPortName, Parity.None), logger)
         {
             this.logger = logger.CreateLogger<ELM327COM>();
             this.content_table = new OBDIIContentTable();
