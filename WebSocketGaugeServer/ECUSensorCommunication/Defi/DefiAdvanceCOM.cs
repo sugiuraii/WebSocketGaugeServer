@@ -1,4 +1,6 @@
-﻿using System;
+﻿// This code is experimental, should not work well
+
+using System;
 using System.Linq;
 using System.IO.Ports;
 using Microsoft.Extensions.Logging;
