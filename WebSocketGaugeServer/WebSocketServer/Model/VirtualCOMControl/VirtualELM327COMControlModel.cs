@@ -29,10 +29,10 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl
             this.SetValue.Subscribe(v => vElm327COM.SetRawValue(ParameterCodeToSet.Value, v));
 
             this.MaxValue= ParameterCodeToSet.Select(code => getMaxUint(vElm327COM.get_Value_ByteLength(code)*8)).ToReadOnlyReactivePropertySlim();
-            this.PhysicalUnit = ParameterCodeToSet.Select(code => vElm327COM.get_unit(code)).ToReadOnlyReactivePropertySlim();
+            this.PhysicalUnit = ParameterCodeToSet.Select(code => vElm327COM.GetUnit(code)).ToReadOnlyReactivePropertySlim();
             
-            this.ParameterCodeToSet.Subscribe(cd => SetValue.Value = vElm327COM.get_raw_value(cd));
-            this.PhysicalValue = SetValue.Select(_ => vElm327COM.get_value(ParameterCodeToSet.Value)).ToReadOnlyReactivePropertySlim();   
+            this.ParameterCodeToSet.Subscribe(cd => SetValue.Value = vElm327COM.GetRawValue(cd));
+            this.PhysicalValue = SetValue.Select(_ => vElm327COM.GetValue(ParameterCodeToSet.Value)).ToReadOnlyReactivePropertySlim();   
         }
 
         private uint getMaxUint(int bit)
