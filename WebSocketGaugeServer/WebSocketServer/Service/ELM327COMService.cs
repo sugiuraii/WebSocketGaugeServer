@@ -98,7 +98,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 ELM327COM elm327COM;
                 var elm327COMOption = new ELM327COMOption(comportName, waitmsec, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327ReceiveAddress, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse, queryOnlyAvilablePID);
                 elm327COM = new ELM327COM(elm327COMOption, loggerFactory, actionOnNODATAReceived);
-                elm327COM.overrideDefaultBaudRate(baudRate);
+                elm327COM.OverrideDefaultBaudRate(baudRate);
 
                 this.elm327COM = elm327COM;
                 this.virtualElm327COM = null;
