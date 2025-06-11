@@ -30,7 +30,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private const int PID_COMMUNICATE_RETRY_MAX = 5;
 
         private readonly ELM327COMOption Option;
-        
+
         private readonly ActionOnNODATAReceived ActionOnNODATAReceived;
         private readonly OBDIIContentTable content_table;
 
@@ -54,16 +54,16 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
             ResetBaudRate = 4800;
             ReadTimeout = 10000;
-            
-            if(option.ELM327BatchQueryCount > 6 || option.ELM327BatchQueryCount < 1)
+
+            if (option.ELM327BatchQueryCount > 6 || option.ELM327BatchQueryCount < 1)
                 throw new ArgumentException("ELM327 batch query count needs to be 1 to 6.");
         }
 
-/*
-        public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, 0, String.Empty, 1, 32, "", "", 1, true, true, ActionOnNODATAReceived.Ignore)
-        {
-        }
-*/
+        /*
+                public ELM327COM(ILoggerFactory logger, string comPortName) : this(logger, comPortName, 0, String.Empty, 1, 32, "", "", 1, true, true, ActionOnNODATAReceived.Ignore)
+                {
+                }
+        */
         //Changing DefaultBaudRate is allowed in ELM327COM
         public void overrideDefaultBaudRate(int baudRate)
         {
@@ -80,7 +80,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             logger.LogInformation("ELM327 initialization is finished.");
 
             // Get available PIDs
-            if(this.Option.QueryOnlyAvailablePID)
+            if (this.Option.QueryOnlyAvailablePID)
             {
                 // Query available PID (PID:00, 20, 40, ...)
                 logger.LogInformation("Query available PIDs.");
@@ -187,27 +187,27 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             string setprotocolStr = "AT SP " + protocolStr;
             Write(setprotocolStr + "\r");
             logger.LogDebug("Call " + setprotocolStr + " to set ELM327 protocol.");
-            logger.LogDebug("Return Msg is {msg}",  replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Return Msg is {msg}", replaceCRLFWithSpace(ReadTo(">")));
         }
 
-        private void ELM327TestCommunicationToSearchProtocol() 
+        private void ELM327TestCommunicationToSearchProtocol()
         {
             // Enable header out
             Write("ATH1\r");
             logger.LogDebug("Call ATH1 to enable header out.");
-            logger.LogDebug("Return Msg is {msg}",  replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Return Msg is {msg}", replaceCRLFWithSpace(ReadTo(">")));
 
             // Test communication by 0100 (Query available PID)
             Write("0100\r");
             logger.LogDebug("Call 0100 to test communication.");
-            var return_0100 = ReadTo(">").Split(new String[] {"\r\n", "\r", "\n"}, StringSplitOptions.None).Where(s => !string.IsNullOrWhiteSpace(s));
+            var return_0100 = ReadTo(">").Split(new String[] { "\r\n", "\r", "\n" }, StringSplitOptions.None).Where(s => !string.IsNullOrWhiteSpace(s));
             logger.LogDebug("Return Msg: {msg}", Environment.NewLine + string.Join(Environment.NewLine, return_0100));
-                
+
             // Disable header out
             Write("ATH0\r");
             logger.LogDebug("Call ATH0 to disable header out.");
-            logger.LogDebug("Return Msg is {msg}",  replaceCRLFWithSpace(ReadTo(">")));
-        } 
+            logger.LogDebug("Return Msg is {msg}", replaceCRLFWithSpace(ReadTo(">")));
+        }
 
         private void ELM327TimingControlSet(int adaptiveTimingModeSetting, int timeout)
         {
@@ -217,7 +217,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
             Write("ATAT" + adaptiveTimingModeSetting.ToString() + "\r");
             logger.LogDebug("Call AT AT" + adaptiveTimingModeSetting.ToString() + " to set adaptive timing control mode.");
-            logger.LogDebug("Return Msg is {msg}",  replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Return Msg is {msg}", replaceCRLFWithSpace(ReadTo(">")));
 
             // Timeout set
             int timeoutToSet = timeout;
@@ -234,19 +234,19 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
             Write("ATST" + timeoutToSet.ToString("X2") + "\r");
             logger.LogDebug("Call AT ST {time} to set timeout.", timeoutToSet.ToString("X2"));
-            logger.LogDebug("Return Msg is {msg}",  replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Return Msg is {msg}", replaceCRLFWithSpace(ReadTo(">")));
         }
 
         private void ELM327SetHeader(string receiveAddress, string headerBytes)
         {
             // Receive address set (ATCRA)
-            if( receiveAddress.Length <=0 )
+            if (receiveAddress.Length <= 0)
                 logger.LogInformation("ELM327 receive address byte is not set (or blank). AT CRA command will be skipped.");
             else
             {
                 Write("ATCRA" + receiveAddress + "\r");
                 logger.LogDebug("Call AT CRA {addr} to set receive address.", receiveAddress);
-                logger.LogDebug("Return Msg is {msg}",  replaceCRLFWithSpace(ReadTo(">")));
+                logger.LogDebug("Return Msg is {msg}", replaceCRLFWithSpace(ReadTo(">")));
             }
 
             // Header byte set.
@@ -256,38 +256,38 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             {
                 Write("ATSH" + headerBytes + "\r");
                 logger.LogDebug("Call AT SH {header} to set header ID.", headerBytes);
-                logger.LogDebug("Return Msg is {msg}",  replaceCRLFWithSpace(ReadTo(">")));
+                logger.LogDebug("Return Msg is {msg}", replaceCRLFWithSpace(ReadTo(">")));
             }
         }
 
-        private void ELM327MultipleECUNodeCheck() 
+        private void ELM327MultipleECUNodeCheck()
         {
             // Enable header out
             Write("ATH1\r");
             logger.LogDebug("Call ATH1 to enable header out.");
-            logger.LogDebug("Return Msg is {msg}",  replaceCRLFWithSpace(ReadTo(">")));
+            logger.LogDebug("Return Msg is {msg}", replaceCRLFWithSpace(ReadTo(">")));
 
             // Test communication by 0100 (Query available PID)
             Write("0100\r");
             logger.LogDebug("Call 0100 to search ECUs.");
-            var return_0100 = ReadTo(">").Split(new String[] {"\r\n", "\r", "\n"}, StringSplitOptions.None).Where(s => !string.IsNullOrWhiteSpace(s));
+            var return_0100 = ReadTo(">").Split(new String[] { "\r\n", "\r", "\n" }, StringSplitOptions.None).Where(s => !string.IsNullOrWhiteSpace(s));
             logger.LogDebug("Return Msg:{msg}", Environment.NewLine + string.Join(Environment.NewLine, return_0100));
 
             // Check reply from mulple ECU
             var return_0100_PIDs = return_0100.Where(s => !Regex.IsMatch(s, "[^0-9A-F ]+")); // Exclude the line of ELM327 interative message ("SEARCHING...")
-            if(return_0100_PIDs.Count() > 1)
+            if (return_0100_PIDs.Count() > 1)
             {
                 logger.LogWarning("Multple reply is detected on 0100 PID query. Multiple ECU node may be connected. Return Msg:");
                 logger.LogWarning("{msg}", string.Join(Environment.NewLine, return_0100_PIDs));
                 logger.LogWarning("\"elm327QueryOnlyAvilablePID\" feature may cause errors.");
                 logger.LogWarning("Consider to limit the communicating ECU node by \" elm327HeaderBytes\" or \" elm327ReceiveAddress\" setting.");
             }
-                
+
             // Disable header out
             Write("ATH0\r");
             logger.LogDebug("Call ATH0 to disable header out.");
-            logger.LogDebug("Return Msg is {msg}",  replaceCRLFWithSpace(ReadTo(">")));
-        } 
+            logger.LogDebug("Return Msg is {msg}", replaceCRLFWithSpace(ReadTo(">")));
+        }
 
         protected override void communicate_main(bool slow_read_flag)
         {
@@ -335,7 +335,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                 ELM327DataReceived(this, elm327_received_eventargs);
 
                 // Wait before issue next query
-                if(this.Option.Waitmsec > 0)
+                if (this.Option.Waitmsec > 0)
                     Thread.Sleep(this.Option.Waitmsec);
             }
             catch (TimeoutException ex)
@@ -351,15 +351,15 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             int codeCount = 0;
             const int responseContentByteSize = 6;
             int returnByteSum = 0;
-            for(int i = 0; i < queryCodeList.Count; i++)
+            for (int i = 0; i < queryCodeList.Count; i++)
             {
                 var code = queryCodeList[i];
                 var valueByteLength = content_table[code].ReturnByteLength;
-                if( i == 0 )
+                if (i == 0)
                     groupedCodeList.Add(new List<OBDIIParameterCode>());
-                
-                else if((codeCount + 1 > batchPIDCount) ||
-                    ( separateBatchQueryToAvoidMultiFrameResponse && (returnByteSum + valueByteLength + 1 >  responseContentByteSize )))
+
+                else if ((codeCount + 1 > batchPIDCount) ||
+                    (separateBatchQueryToAvoidMultiFrameResponse && (returnByteSum + valueByteLength + 1 > responseContentByteSize)))
                 {
                     groupedCodeList.Add(new List<OBDIIParameterCode>());
                     codeCount = 0;
@@ -391,14 +391,14 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             String outMsg = MODECODE.ToString("X2") + pids.Select(pid => pid.ToString("X2")).Aggregate((prev, next) => prev + next);
             // Calculate number of ISO-TP return frame 
             int returnMessageBlocks;
-            if(returnByteLength <= 7)
+            if (returnByteLength <= 7)
                 returnMessageBlocks = 1;
             else if (returnByteLength <= 13)
                 returnMessageBlocks = 2;
             else
-                returnMessageBlocks = 3 + (returnByteLength - 14)/7;
+                returnMessageBlocks = 3 + (returnByteLength - 14) / 7;
             // logger.LogDebug("Return message blocks: " + returnMessageBlocks.ToString());
-            
+
             // Append number of message frames at the end of query string.
             outMsg = outMsg + returnMessageBlocks.ToString();
             String inMsg = queryMsg(outMsg);
@@ -407,9 +407,9 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
         private void communicateMultiPID(List<OBDIIParameterCode> codes, int errorRetryCount)
         {
-            if(codes.Count > 6)
+            if (codes.Count > 6)
                 throw new ArgumentException("Code list size of multiple PID communication must be less than or equal 6.");
-            
+
             var pids = codes.Select(code => content_table[code].PID).ToArray();
             int returnByteLength = 1 + codes.Select(code => content_table[code].ReturnByteLength + 1).Sum(); // Return byte lenght = 1(mode code) + sum (1(=PID byte) + Return byte length)
             String inMsg = queryPIDs(pids, returnByteLength);
@@ -421,11 +421,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     throw new FormatException("Return message at communicateOnePID() is empty.");
                 else if (inMsg.Contains("NO DATA"))
                 {
-                    switch(ActionOnNODATAReceived)
+                    switch (ActionOnNODATAReceived)
                     {
                         case ActionOnNODATAReceived.AddPIDToBlackList:
                             var error_code_names = codes.Select(code => code.ToString());
-                            logger.LogWarning("ELM327 returns NO DATA on communicating PID of " + BitConverter.ToString(pids) + ". Corresponding code names are " +  String.Join(",", error_code_names) + "These PIDs are added to blacklist.");
+                            logger.LogWarning("ELM327 returns NO DATA on communicating PID of " + BitConverter.ToString(pids) + ". Corresponding code names are " + String.Join(",", error_code_names) + "These PIDs are added to blacklist.");
                             Array.ForEach(pids, pid => this.ELM327PIDFilter.addToBlackList(pid));
                             return;
                         case ActionOnNODATAReceived.ThrowException:
@@ -447,7 +447,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             catch (Exception ex) when (ex is FormatException || ex is ArgumentOutOfRangeException || ex is KeyNotFoundException | ex is ArgumentException)
             {
                 logger.LogWarning(ex.GetType().ToString() + " " + ex.Message + " Received string is : " + inMsg);
-                logger.LogWarning("Requested PID is :"+ BitConverter.ToString(pids));
+                logger.LogWarning("Requested PID is :" + BitConverter.ToString(pids));
                 logger.LogWarning(ex.StackTrace);
                 if (errorRetryCount < PID_COMMUNICATE_RETRY_MAX)
                 {
@@ -465,7 +465,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         //Communication on 1PID
         private void communicateOnePID(OBDIIParameterCode code, int errorRetryCount)
         {
-            communicateMultiPID(new List<OBDIIParameterCode>{code}, errorRetryCount);
+            communicateMultiPID(new List<OBDIIParameterCode> { code }, errorRetryCount);
         }
 
         private string replaceCRLFWithSpace(string instr)
@@ -497,14 +497,14 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             var byteParser = new ELM327OutMessageByteParser();
             var availablePIDDecoder = new AvailablePIDMessageDecoder();
             var avaiablePIDList = new List<byte>();
-            for(uint pidOffset = 0x00; pidOffset  <= 0xFF; pidOffset+=0x20)
+            for (uint pidOffset = 0x00; pidOffset <= 0xFF; pidOffset += 0x20)
             {
                 int returnByteLength = 6; // Modecode 1byte + pid 1byte + data 4bytes
-                var inMsg = queryPIDs(new byte[] {(byte)pidOffset}, returnByteLength);
+                var inMsg = queryPIDs(new byte[] { (byte)pidOffset }, returnByteLength);
                 var inBytes = byteParser.parse(inMsg).Skip(2).ToArray();
                 var availablePIDs_temp = availablePIDDecoder.parse((byte)pidOffset, inBytes);
                 avaiablePIDList.AddRange(availablePIDs_temp);
-                if(!avaiablePIDList.Contains((byte)(pidOffset + 0x20)))
+                if (!avaiablePIDList.Contains((byte)(pidOffset + 0x20)))
                     break;
             }
 
