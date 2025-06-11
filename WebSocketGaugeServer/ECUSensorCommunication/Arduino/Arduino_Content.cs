@@ -79,7 +79,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
 
     public class ArduinoNumericContent : NumericContent
     {
-        private char _header_char;
+        private readonly char _header_char;
 
         public ArduinoNumericContent(char header_char, Func <UInt32, double> conversion_function, String unit)
         {
