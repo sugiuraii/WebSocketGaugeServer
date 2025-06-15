@@ -12,8 +12,8 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
         private readonly ILogger logger;
         private readonly DefiContentTable content_table;
 
-		// Defilink received Event
-		public event EventHandler DefiPacketReceived;
+        // Defilink received Event
+        public event EventHandler DefiPacketReceived;
         public DefiCOM(ILoggerFactory logger, string comPortName) : base(new COMCommonOption(comPortName, Parity.Even), logger)
         {
             this.logger = logger.CreateLogger<DefiCOM>();
@@ -59,7 +59,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
             catch (TimeoutException ex)
             {
                 //読み出しタイムアウト時はエラーフラグを立て、次のサイクルでリセット処理を入れる
-                logger.LogWarning("Defi packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                logger.LogWarning("Defi packet timeout. Exception: {ExceptionType}, Message: {Message}", ex.GetType().ToString(), ex.Message);
                 communicateRealtimeIsError = true;
                 return;
             }
@@ -114,7 +114,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
                 catch (FormatException ex)
                 {
                     //DefiPacketが崩れていた場合エラーフラグを立て、次のサイクルでリセット処理を入れる。
-                    logger.LogWarning("Invalid Defi packet. " + ex.GetType().ToString() + " " + ex.Message);
+                    logger.LogWarning(ex, "Invalid Defi packet.");
                     communicateRealtimeIsError = true;
                     return;
                 }
