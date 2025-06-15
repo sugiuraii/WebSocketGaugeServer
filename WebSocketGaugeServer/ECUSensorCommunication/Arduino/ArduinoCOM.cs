@@ -40,7 +40,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
             int i;
             string readbuf;
             char headerCode;
-            
+
             //Read
             for (i = 0; i < NUM_ROWS_PER_CYCLE; i++)
             {
@@ -59,7 +59,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
                 catch (TimeoutException ex)
                 {
                     //On timeout, set communicateRealtimeIsError = true to try reset on next cycle.
-                    logger.LogWarning("Arduino packet timeout. " + ex.GetType().ToString() + " " + ex.Message);
+                    logger.LogWarning("Arduino packet timeout. Exception: {ExceptionType}, Message: {Message}", ex.GetType().ToString(), ex.Message);
                     communicateRealtimeIsError = true;
                     return;
                 }
@@ -79,13 +79,13 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
                     }
 
                     //Invoke warning if unknown header code is received
-                    if(!paramCodeHit)
-                        logger.LogWarning("Header code matching is failed. Header code is : " + headerCode);
+                    if (!paramCodeHit)
+                        logger.LogWarning("Header code matching failed. Header code: {HeaderCode}", headerCode);
                 }
                 catch (FormatException ex)
                 {
                     // If the message from arduino is corrupt, set communicatRealtime error flag to try reset on next cycle.
-                    logger.LogWarning("Invalid Arduino packet format. " + ex.GetType().ToString() + " " + ex.Message);
+                    logger.LogWarning("Invalid Arduino packet format. Exception: {ExceptionType}, Message: {Message}", ex.GetType().ToString(), ex.Message);
                     communicateRealtimeIsError = true;
                     return;
                 }
