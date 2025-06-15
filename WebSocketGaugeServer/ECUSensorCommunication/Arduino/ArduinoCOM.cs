@@ -29,7 +29,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
         }
 
         //Override ArudinoCOM DefaultBaudRate
-        public void overrideDefaultBaudRate(int baudRate)
+        public void OverrideDefaultBaudRate(int baudRate)
         {
             DefaultBaudRate = baudRate;
         }
@@ -94,17 +94,17 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
             ArduinoPacketReceived(this, EventArgs.Empty);
         }
 
-        public double get_value(ArduinoParameterCode code)
+        public double GetValue(ArduinoParameterCode code)
         {
             return content_table[code].Value;
         }
 
-        public UInt32 get_raw_value(ArduinoParameterCode code)
+        public UInt32 GetRawValue(ArduinoParameterCode code)
         {
             return content_table[code].RawValue;
         }
 
-        public string get_unit(ArduinoParameterCode code)
+        public string GetUnit(ArduinoParameterCode code)
         {
             return content_table[code].Unit;
         }

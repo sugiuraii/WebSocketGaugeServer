@@ -108,7 +108,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                                 foreach (ArduinoParameterCode code in Enum.GetValues(typeof(ArduinoParameterCode)))
                                 {
                                     if (sessionparam.Sendlist[code])
-                                        msg_data.val.Add(code.ToString(), arduinoCOM.get_value(code).ToString());
+                                        msg_data.val.Add(code.ToString(), arduinoCOM.GetValue(code).ToString());
                                 }
 
                                 if (msg_data.val.Count > 0)
