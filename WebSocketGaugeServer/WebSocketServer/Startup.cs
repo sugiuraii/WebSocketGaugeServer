@@ -37,25 +37,25 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
             if (bool.Parse(ServiceConfiguration.GetSection("ELM327")["enabled"]))
             {
                 services.AddSingleton<ELM327COMService>();
-                if(bool.Parse(ServiceConfiguration.GetSection("ELM327")["usevirtual"]))
+                if(bool.Parse(ServiceConfiguration.GetSection("ELM327").GetSection("virtualecu")["enabled"]))
                     services.AddTransient<VirtualELM327COMControlModel>();
             }
             if (bool.Parse(ServiceConfiguration.GetSection("Defi")["enabled"]))
             {
                 services.AddSingleton<DefiCOMService>();
-                if(bool.Parse(ServiceConfiguration.GetSection("Defi")["usevirtual"]))
+                if(bool.Parse(ServiceConfiguration.GetSection("Defi").GetSection("virtualecu")["enabled"]))
                     services.AddTransient<VirtualDefiCOMControlModel>();
             }
             if (bool.Parse(ServiceConfiguration.GetSection("Arduino")["enabled"]))
             {
                 services.AddSingleton<ArduinoCOMService>();
-                if(bool.Parse(ServiceConfiguration.GetSection("Arduino")["usevirtual"]))
+                if(bool.Parse(ServiceConfiguration.GetSection("Arduino").GetSection("virtualecu")["enabled"]))
                     services.AddTransient<VirtualArduinoCOMControlModel>();    
             }
             if (bool.Parse(ServiceConfiguration.GetSection("SSM")["enabled"]))
             {
                 services.AddSingleton<SSMCOMService>();
-                if(bool.Parse(ServiceConfiguration.GetSection("SSM")["usevirtual"]))
+                if(bool.Parse(ServiceConfiguration.GetSection("SSM").GetSection("virtualecu")["enabled"]))
                     services.AddTransient<VirtualSSMCOMControlModel>();
             }
 

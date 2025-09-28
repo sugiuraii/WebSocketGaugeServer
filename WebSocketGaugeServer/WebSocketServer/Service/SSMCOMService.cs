@@ -64,13 +64,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
             var serviceSetting = configuration.GetSection("ServiceConfig").GetSection("SSM");
 
             this.logger = logger;
-
-            var useVirtual = Boolean.Parse(serviceSetting["usevirtual"]);
+            var virtualECUSetting = serviceSetting.GetSection("virtualecu");
+            var useVirtual = Boolean.Parse(virtualECUSetting["enabled"]);
             logger.LogInformation("SSMCOM service is started.");
             if (useVirtual)
             {
                 logger.LogInformation("SSMCOM is started with virtual mode.");
-                int comWait = 15;
+                int comWait = int.Parse(virtualECUSetting["waitmsec"]);
                 logger.LogInformation("VirtualSSMCOM wait time is set to " + comWait.ToString() + " ms.");
                 var virtualCOM = new VirtualSSMCOM(loggerFactory, comWait);
                 this.ssmCOM = virtualCOM;

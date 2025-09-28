@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO.Ports;
 using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Logging;
@@ -13,12 +14,11 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.SSM
 
         //SSMCOM data received event
         public event EventHandler<SSMCOMDataReceivedEventArgs> SSMDataReceived;
-        public SSMCOM(ILoggerFactory logger, string comPortName) : base(logger)
+        public SSMCOM(ILoggerFactory logger, string comPortName) : base(comPortName, Parity.None, logger)
         {
             this.logger = logger.CreateLogger<SSMCOM>();
             this.content_table = new SSMContentTable();
 
-            PortName = comPortName;
             DefaultBaudRate = 4800;
             ResetBaudRate = 4800;
             ReadTimeout = 500;
