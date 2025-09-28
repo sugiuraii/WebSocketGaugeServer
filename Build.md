@@ -19,9 +19,10 @@ dotnet run
 ```
 
 # Build with bundling runtime
+Replace `win-x64` with target os platform (`linux-x64`, `linux-arm`, `linux-arm64`)
 ```
-cd WebSocketGaugeServer/WebSocketServer
-dotnet publish
+cd WebSocketGaugeServer/WebSocketServers
+dotnet publish -r win-x64 --self-contained
 ```
 You can find compiled binary and runtimes on `WebSocketGaugeServer/WebSocketServer/bin/Release/net8.0/publish`.
 
