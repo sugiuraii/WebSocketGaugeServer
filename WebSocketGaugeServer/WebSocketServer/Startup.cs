@@ -79,6 +79,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
             string arduinourlpath = GetArduinoURLPath(logger);
             string defiurlpath = GetDefiURLPath(logger);
             string ssmurlpath = GetSSMURLPath(logger);
+            int keepAliveDummyMessageInterval = this.GetKeepAliveDummyMessageInterval(logger);
             // Handle WebSokect connection
             app.UseWebSockets(webSocketOptions);
             app.UseRouting();
@@ -95,7 +96,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                         {
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                            var middleware = new ELM327WebSocketMiddleware(loggerFactory);
+                            var middleware = new ELM327WebSocketMiddleware(loggerFactory, keepAliveDummyMessageInterval);
                             await middleware.HandleHttpConnectionAsync(context, webSocket, cancellationToken);
                         }
                         else
@@ -107,7 +108,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                         {
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                            var middleware = new DefiWebSocketMiddleware(loggerFactory);
+                            var middleware = new DefiWebSocketMiddleware(loggerFactory, keepAliveDummyMessageInterval);
                             await middleware.HandleHttpConnectionAsync(context, webSocket, cancellationToken);
                         }
                         else
@@ -119,7 +120,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                         {
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                            var middleware = new SSMWebSocketMiddleware(loggerFactory);
+                            var middleware = new SSMWebSocketMiddleware(loggerFactory, keepAliveDummyMessageInterval);
                             await middleware.HandleHttpConnectionAsync(context, webSocket, cancellationToken);
                         }
                         else
@@ -131,7 +132,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                         {
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                            var middleware = new ArduinoWebSocketMiddleware(loggerFactory);
+                            var middleware = new ArduinoWebSocketMiddleware(loggerFactory, keepAliveDummyMessageInterval);
                             await middleware.HandleHttpConnectionAsync(context, webSocket, cancellationToken);
                         }
                         else
@@ -215,6 +216,16 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                 path = "/ssm";
             }
             return path;
+        }
+        private int GetKeepAliveDummyMessageInterval(ILogger logger) 
+        {
+            var interval = ServiceConfiguration["KeepAliveDummyMessageInterval"];
+            if (interval == null)
+            {
+                logger.LogWarning("KeepAliveDummyMessageInterval setting is not found in appsettings json file. use 0 to disable this feature. instead.");
+                interval = "0";
+            }
+            return int.Parse(interval);
         }
     }
 }
