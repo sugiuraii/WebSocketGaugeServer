@@ -1,3 +1,5 @@
+#nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
@@ -42,12 +44,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
             logger.LogInformation("Session is connected from : " + destAddress.ToString());
             
             var keepWakeDmyMsgTimer = this.keepWakeMsgInterval > 0 ? new KeepAliveDMYMsgTimer(webSocket, 60) : null;
-            keepWakeDmyMsgTimer.Start();
+            keepWakeDmyMsgTimer?.Start();
             while (webSocket.State == WebSocketState.Open)
             {
                 await processReceivedMessage(webSocket, sessionParam, destAddress, ct);
             }
-            keepWakeDmyMsgTimer.Stop();
+            keepWakeDmyMsgTimer?.Stop();
 
             await service.RemoveWebSocketAsync(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
