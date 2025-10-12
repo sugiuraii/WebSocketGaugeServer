@@ -1,4 +1,6 @@
-﻿using System;
+﻿// This code is experimental, should not work well
+
+using System;
 using System.Linq;
 using System.IO.Ports;
 using Microsoft.Extensions.Logging;
@@ -14,7 +16,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Defi
 
 		// Defilink received Event
 		public event EventHandler DefiPacketReceived;
-        public DefiAdvanceCOM(ILoggerFactory logger, string comPortName) : base(comPortName, Parity.None, logger)
+        public DefiAdvanceCOM(ILoggerFactory logger, string comPortName) : base(new COMCommonOption(comPortName, Parity.None), logger)
         {
             this.logger = logger.CreateLogger<DefiAdvanceCOM>();
             this.content_table = new DefiAdvanceContentTable();

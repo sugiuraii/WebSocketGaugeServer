@@ -17,9 +17,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Settings
         public string ssmserver_url;
         public string arduinoserver_url;
         public string elm327server_url;
-        public calculation Calculation;
+        public CalculationConfig Calculation;
 
-        public class calculation
+        public class CalculationConfig
         {
             public FuelCalculationMethod FuelCalculationMethod;
             public DataSource DataSource;
