@@ -35,10 +35,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
                 app.UseDeveloperExceptionPage();
             }
 
-            var webSocketOptions = new WebSocketOptions()
-            {
-                KeepAliveInterval = TimeSpan.FromSeconds(120)
-            };
+            var webSocketOptions = new WebSocketOptions();
+
             app.UseWebSockets(webSocketOptions);
 
             app.UseRouting();
