@@ -22,10 +22,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware
     public class FUELTRIPLoggerWebSocketMiddleware : IWebSocketHandleMiddleware
     {
         private readonly ILogger logger;
+        private readonly int keepWakeMsgInterval;
 
-        public FUELTRIPLoggerWebSocketMiddleware(ILoggerFactory loggerFactory)
+        public FUELTRIPLoggerWebSocketMiddleware(ILoggerFactory loggerFactory, int keepWakeMsgInterval)
         {
             this.logger = loggerFactory.CreateLogger<FUELTRIPLoggerWebSocketMiddleware>();
+            this.keepWakeMsgInterval = keepWakeMsgInterval;
         }
         public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {

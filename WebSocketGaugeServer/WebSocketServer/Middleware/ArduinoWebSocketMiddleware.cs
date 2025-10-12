@@ -23,10 +23,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
     public class ArduinoWebSocketMiddleware : IWebSocketHandleMiddleware
     {
         private readonly ILogger logger;
+        private readonly int keepWakeMsgInterval;
 
-        public ArduinoWebSocketMiddleware(ILoggerFactory loggerFactory)
+        public ArduinoWebSocketMiddleware(ILoggerFactory loggerFactory, int keepWakeMsgInterval)
         {
             this.logger = loggerFactory.CreateLogger<ArduinoWebSocketMiddleware>();
+            this.keepWakeMsgInterval = keepWakeMsgInterval;
         }
 
         public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)
@@ -39,13 +41,14 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
             var sessionParam = await service.GetSessionParamAsync(connectionID);
             logger.LogInformation("Session is connected from : " + destAddress.ToString());
             
-            var keepWakeDmyMsgTimer = new KeepAliveDMYMsgTimer(webSocket, 60);
+            var keepWakeDmyMsgTimer = this.keepWakeMsgInterval > 0 ? new KeepAliveDMYMsgTimer(webSocket, 60) : null;
             keepWakeDmyMsgTimer.Start();
             while (webSocket.State == WebSocketState.Open)
             {
                 await processReceivedMessage(webSocket, sessionParam, destAddress, ct);
             }
             keepWakeDmyMsgTimer.Stop();
+
             await service.RemoveWebSocketAsync(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
             {

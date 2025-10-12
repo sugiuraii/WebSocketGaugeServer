@@ -23,10 +23,12 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
     public class AssettoCorsaSHMWebSocketMiddleware : IWebSocketHandleMiddleware
     {
         private readonly ILogger logger;
+        private readonly int keepWakeMsgInterval;
 
-        public AssettoCorsaSHMWebSocketMiddleware(ILoggerFactory loggerFactory)
+        public AssettoCorsaSHMWebSocketMiddleware(ILoggerFactory loggerFactory, int keepWakeMsgInterval)
         {
             this.logger = loggerFactory.CreateLogger<AssettoCorsaSHMWebSocketMiddleware>();
+            this.keepWakeMsgInterval = keepWakeMsgInterval;
         }
         public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {

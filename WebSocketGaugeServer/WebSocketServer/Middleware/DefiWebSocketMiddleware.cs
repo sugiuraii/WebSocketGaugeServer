@@ -23,10 +23,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
     public class DefiWebSocketMiddleware : IWebSocketHandleMiddleware
     {
         private readonly ILogger logger;
+        private readonly int keepWakeMsgInterval;
 
-        public DefiWebSocketMiddleware(ILoggerFactory loggerFactory)
+        public DefiWebSocketMiddleware(ILoggerFactory loggerFactory, int keepWakeMsgInterval)
         {
             this.logger = loggerFactory.CreateLogger<DefiWebSocketMiddleware>();
+            this.keepWakeMsgInterval = keepWakeMsgInterval;            
         }
 
         public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)

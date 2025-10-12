@@ -23,10 +23,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Middleware
     public class ELM327WebSocketMiddleware : IWebSocketHandleMiddleware
     {
         private readonly ILogger logger;
+        private readonly int keepWakeMsgInterval;
 
-        public ELM327WebSocketMiddleware(ILoggerFactory loggerFactory)
+        public ELM327WebSocketMiddleware(ILoggerFactory loggerFactory, int keepWakeMsgInterval)
         {
             this.logger = loggerFactory.CreateLogger<ELM327WebSocketMiddleware>();
+            this.keepWakeMsgInterval = keepWakeMsgInterval;
         }
 
         public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)
