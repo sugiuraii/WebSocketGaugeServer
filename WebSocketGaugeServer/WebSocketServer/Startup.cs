@@ -70,10 +70,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer
                 app.UseDeveloperExceptionPage();
             }
 
-            var webSocketOptions = new WebSocketOptions()
-            {
-                KeepAliveInterval = TimeSpan.FromSeconds(120)
-            };
+            var webSocketOptions = new WebSocketOptions();
 
             loggerFactory.AddMemory(LogLevel.Debug);
 
