@@ -48,7 +48,7 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
                 await processReceivedMessage(webSocket, sessionParam, destAddress, ct);
             }
             keepWakeDmyMsgTimer?.Stop();
-            
+#nullable restore
             await service.RemoveWebSocketAsync(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
             {

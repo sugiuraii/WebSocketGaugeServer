@@ -47,7 +47,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware
                 await processReceivedMessage(webSocket, service, sessionParam, destAddress, ct);
             }
             keepWakeDmyMsgTimer?.Stop();
-            
+#nullable restore
             await service.RemoveWebSocketAsync(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
             {
