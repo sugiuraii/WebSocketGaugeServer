@@ -9,6 +9,8 @@ using SZ2.WebSocketGaugeServer.ECUSensorCommunication.SerialPortWrapper;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 {
+    public record COMCommonOption(string PortName, Parity Parity);
+
     public abstract class COMCommon : IBackgroundCommunicate
     {
         private ISerialPortWrapper serialPort;
@@ -23,7 +25,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
 
         private readonly ILogger logger;
 
-        public COMCommon(string portname, Parity parity, ILoggerFactory logger)
+        public COMCommon(COMCommonOption option, ILoggerFactory logger)
         {
             this.logger = logger.CreateLogger<COMCommon>();
             DefaultBaudRate = 19200;
@@ -31,7 +33,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication
             SlowReadInterval = 10;
 
             var serialWrapperFactory = new SerialPortWrapperFactory(logger);
-            this.serialPort = serialWrapperFactory.Create(portname, DefaultBaudRate, parity);
+            this.serialPort = serialWrapperFactory.Create(option.PortName, DefaultBaudRate, option.Parity);
 
             communicateRealtimeIsError = false;
             communicateResetCount = 0;

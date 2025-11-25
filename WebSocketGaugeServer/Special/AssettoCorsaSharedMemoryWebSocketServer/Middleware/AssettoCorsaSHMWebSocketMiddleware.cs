@@ -23,10 +23,12 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
     public class AssettoCorsaSHMWebSocketMiddleware : IWebSocketHandleMiddleware
     {
         private readonly ILogger logger;
+        private readonly int keepWakeMsgInterval;
 
-        public AssettoCorsaSHMWebSocketMiddleware(ILoggerFactory loggerFactory)
+        public AssettoCorsaSHMWebSocketMiddleware(ILoggerFactory loggerFactory, int keepWakeMsgInterval)
         {
             this.logger = loggerFactory.CreateLogger<AssettoCorsaSHMWebSocketMiddleware>();
+            this.keepWakeMsgInterval = keepWakeMsgInterval;
         }
         public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {
@@ -38,10 +40,15 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
             var sessionParam = await service.GetSessionParamAsync(connectionID);
             logger.LogInformation("Session is connected from : " + destAddress.ToString());
 
+#nullable enable
+            var keepWakeDmyMsgTimer = this.keepWakeMsgInterval > 0?new KeepAliveDMYMsgTimer(webSocket, this.keepWakeMsgInterval): null;
+            keepWakeDmyMsgTimer?.Start();
             while (webSocket.State == WebSocketState.Open)
             {
                 await processReceivedMessage(webSocket, sessionParam, destAddress, ct);
             }
+            keepWakeDmyMsgTimer?.Stop();
+#nullable restore
             await service.RemoveWebSocketAsync(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
             {

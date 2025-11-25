@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Configuration;
 using Microsoft.AspNetCore.StaticFiles;
 using Microsoft.Extensions.Logging;
 using SSZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServer.Service;
@@ -15,7 +16,14 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
 {
     public class Startup
     {
-        // This method gets called by the runtime. Use this method to add services to the container.
+        private readonly IConfiguration Configuration;
+        private readonly IConfiguration ServiceConfiguration;
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+            ServiceConfiguration = Configuration.GetSection("ServiceConfig");
+        }
+       // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
@@ -41,6 +49,7 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
             // Handle WebSokect connection 
             app.UseWebSockets(webSocketOptions);
             app.UseRouting();
+            int keepAliveDummyMessageInterval = this.GetKeepAliveDummyMessageInterval(logger);
 
             app.Use(async (context, next) =>
             {
@@ -55,7 +64,7 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
                         case ("/assettocorsa_ws"):
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                            var middleware = new AssettoCorsaSHMWebSocketMiddleware(loggerFactory);
+                            var middleware = new AssettoCorsaSHMWebSocketMiddleware(loggerFactory, keepAliveDummyMessageInterval);
                             await middleware.HandleHttpConnectionAsync(context, webSocket, cancellationToken);
                             break;
                         default:
@@ -87,6 +96,16 @@ namespace SZ2.WebSocketGaugeServer.Special.AssettoCorsaSharedMemoryWebSocketServ
                 endpoints.MapBlazorHub();
                 endpoints.MapFallbackToPage("/_Host");
             });
+        }
+        private int GetKeepAliveDummyMessageInterval(ILogger logger) 
+        {
+            var interval = ServiceConfiguration["KeepAliveDummyMessageInterval"];
+            if (interval == null)
+            {
+                logger.LogWarning("KeepAliveDummyMessageInterval setting is not found in appsettings json file. use 0 to disable this feature. instead.");
+                interval = "0";
+            }
+            return int.Parse(interval);
         }
     }
 }

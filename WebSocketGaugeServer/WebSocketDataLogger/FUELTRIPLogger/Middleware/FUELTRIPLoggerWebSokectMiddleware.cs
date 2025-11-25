@@ -22,10 +22,12 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware
     public class FUELTRIPLoggerWebSocketMiddleware : IWebSocketHandleMiddleware
     {
         private readonly ILogger logger;
+        private readonly int keepWakeMsgInterval;
 
-        public FUELTRIPLoggerWebSocketMiddleware(ILoggerFactory loggerFactory)
+        public FUELTRIPLoggerWebSocketMiddleware(ILoggerFactory loggerFactory, int keepWakeMsgInterval)
         {
             this.logger = loggerFactory.CreateLogger<FUELTRIPLoggerWebSocketMiddleware>();
+            this.keepWakeMsgInterval = keepWakeMsgInterval;
         }
         public async Task HandleHttpConnectionAsync(HttpContext context, WebSocket webSocket, CancellationToken ct)
         {
@@ -37,10 +39,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware
             var sessionParam = await service.GetSessionParamAsync(connectionID);
             logger.LogInformation("Session is connected from : " + destAddress.ToString());
 
+#nullable enable
+            var keepWakeDmyMsgTimer = this.keepWakeMsgInterval > 0?new KeepAliveDMYMsgTimer(webSocket, this.keepWakeMsgInterval): null;
+            keepWakeDmyMsgTimer?.Start();
             while (webSocket.State == WebSocketState.Open)
             {
                 await processReceivedMessage(webSocket, service, sessionParam, destAddress, ct);
             }
+            keepWakeDmyMsgTimer?.Stop();
+#nullable restore
             await service.RemoveWebSocketAsync(connectionID);
             if (webSocket.State == WebSocketState.CloseReceived || webSocket.State == WebSocketState.CloseSent)
             {

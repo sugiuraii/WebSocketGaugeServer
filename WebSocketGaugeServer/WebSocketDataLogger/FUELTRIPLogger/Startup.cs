@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Configuration;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Service;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Middleware;
 using SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger.Model;
@@ -12,6 +13,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
 {
     public class Startup
     {
+        private readonly IConfiguration Configuration;
+        private readonly IConfiguration ServiceConfiguration;
+
+        public Startup(IConfiguration configuration)
+        {
+            Configuration = configuration;
+            ServiceConfiguration = Configuration.GetSection("ServiceConfig");
+        }
+        
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
@@ -41,6 +51,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
 
             app.UseRouting();
             app.UseStaticFiles();
+            int keepAliveDummyMessageInterval = this.GetKeepAliveDummyMessageInterval(logger);
 
             app.Use(async (context, next) =>
             {
@@ -55,7 +66,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
                         case ("/fueltrip"):
                             var cancellationToken = lifetime.ApplicationStopping;
                             var webSocket = await context.WebSockets.AcceptWebSocketAsync();
-                            var middleware = new FUELTRIPLoggerWebSocketMiddleware(loggerFactory);
+                            var middleware = new FUELTRIPLoggerWebSocketMiddleware(loggerFactory, keepAliveDummyMessageInterval);
                             await middleware.HandleHttpConnectionAsync(context, webSocket, cancellationToken);
                             break;
                         default:
@@ -75,5 +86,15 @@ namespace SZ2.WebSocketGaugeServer.WebSocketDataLogger.FUELTRIPLogger
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
+        private int GetKeepAliveDummyMessageInterval(ILogger logger) 
+        {
+            var interval = ServiceConfiguration["KeepAliveDummyMessageInterval"];
+            if (interval == null)
+            {
+                logger.LogWarning("KeepAliveDummyMessageInterval setting is not found in appsettings json file. use 0 to disable this feature. instead.");
+                interval = "0";
+            }
+            return int.Parse(interval);
+        }   
     }
 }
