@@ -12,6 +12,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.Utils;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Config;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
@@ -91,7 +92,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 var elm327PIDBatchQueryCount = int.Parse(serviceSetting["elm327BatchPIDQueryCount"] ?? "1");
                 var elm327PIDBatchQueryAvoidMultiFrameResponse = bool.Parse(serviceSetting["elm327PIDBatchQueryAvoidMultiFrameResponse"] ?? "false");
                 var queryOnlyAvilablePID = bool.Parse(serviceSetting["elm327QueryOnlyAvilablePID"]);
-                var actionOnNODATAReceived = (ActionOnNODATAReceived)Enum.Parse(typeof(ActionOnNODATAReceived), serviceSetting["elm327ActionOnNODATAReceived"], true);
+                var actionOnNODATAReceived = Enum.Parse<ELM327ActionOnNODATAReceived>(serviceSetting["elm327ActionOnNODATAReceived"], true);
                 logger.LogInformation("ELM327COM COMPort is set to: {portname}", comportName);
                 logger.LogInformation("Wait time is set to {waitmsec} msec", waitmsec);
 
