@@ -8,24 +8,29 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Utils
     {
         public byte[] parse(string elm327outStr)
         {
-            string filteredElm327outStr = elm327outStr.Replace("\n", "").Replace(" ", "");
-            if (filteredElm327outStr.Contains(":")) // Multi frame message
+            try
             {
-                string convertedMultilineStr = convertMultiLineMessage(filteredElm327outStr);
-                return parseSingleLineToBytes(convertedMultilineStr);
+                string filteredElm327outStr = elm327outStr.Replace("\n", "").Replace(" ", "");
+                if (filteredElm327outStr.Contains(':')) // Multi frame message
+                {
+                    string convertedMultilineStr = convertMultiLineMessage(filteredElm327outStr);
+                    return parseSingleLineToBytes(convertedMultilineStr);
+                }
+                else // Single frame message
+                    return parseSingleLineToBytes(filteredElm327outStr);
+            } 
+            catch (Exception ex) when (ex is ArgumentException || ex is FormatException || ex is OverflowException)
+            {
+                throw new ArgumentException("ELM327Outmesssage is failed to be pared to bytes. Message is: " + elm327outStr, ex);
             }
-            else // Single frame message
-                return parseSingleLineToBytes(filteredElm327outStr);
         }
         private byte[] parseSingleLineToBytes(string lineStr)
         {
             string lineStrFiltered = lineStr.Replace("\r", "");
             var readBytes = new List<byte>();
-            for (int ofst = 0; ofst < lineStrFiltered.Length; ofst += 2)
-            {
-                readBytes.Add(Convert.ToByte(lineStrFiltered.Substring(ofst, 2), 16));
-            }
-            return readBytes.ToArray();
+                for (int ofst = 0; ofst < lineStrFiltered.Length; ofst += 2)
+                    readBytes.Add(Convert.ToByte(lineStrFiltered.Substring(ofst, 2), 16));
+                return readBytes.ToArray();
         }
 
         private string convertMultiLineMessage(string multiLineMsg)
