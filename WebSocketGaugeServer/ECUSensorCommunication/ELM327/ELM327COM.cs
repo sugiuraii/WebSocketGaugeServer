@@ -77,30 +77,49 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             logger.LogInformation("ELM327 initialization is finished.");
 
             // Get available PIDs
-            if (this.Option.QueryOnlyAvailablePID)
-            {
-                // Query available PID (PID:00, 20, 40, ...)
-                logger.LogInformation("Query available PIDs.");
-                var availablePIDs = GetAvailablePIDs();
-                logger.LogInformation("Available PID count: {Count}", availablePIDs.Count);
-                logger.LogInformation("Available PID List: {PidList}", BitConverter.ToString([.. availablePIDs]));
+            switch(this.Option.PIDWhiteListConfig.Mode) {
+                case ELM327PIDWhiteListMode.Query:
+                    {
+                        // Query available PID (PID:00, 20, 40, ...)
+                        logger.LogInformation("Query available PIDs, to make PID whitelist.");
+                        var availablePIDs = GetAvailablePIDs();
+                        logger.LogInformation("Available PID count: {Count}", availablePIDs.Count);
+                        logger.LogInformation("Available PID List: {PidList}", BitConverter.ToString([.. availablePIDs]));
 
-                // Show available code name from available PID list
-                var pidToParameterCodeReverseMap = new PIDToOBDIIParameterCodeReverseMapBuilder().create();
-                var availableParameterCodes = availablePIDs
-                    .Where(cd => pidToParameterCodeReverseMap.ContainsKey(cd))
-                    .Select(cd => pidToParameterCodeReverseMap[cd].ToString());
+                        // Show available code name from available PID list
+                        var pidToParameterCodeReverseMap = new PIDToOBDIIParameterCodeReverseMapBuilder().create();
+                        var availableParameterCodes = availablePIDs
+                            .Select(cd => pidToParameterCodeReverseMap.TryGetValue(cd, out OBDIIParameterCode value)?value.ToString():"Undefined");
+                        logger.LogInformation("Available code: {Codes}", String.Join(",\n", availableParameterCodes));
 
-                logger.LogInformation("Available code: {Codes}", String.Join(",\n", availableParameterCodes));
+                        // Activate ELM327PIDFilter
+                        this.ELM327PIDFilter = new ELM327PIDFilter(availablePIDs, true, []);
+                        break;
+                    }
+                case ELM327PIDWhiteListMode.Custom:
+                    {
+                        var customPIDs = new List<byte>(this.Option.PIDWhiteListConfig.CustomList);
+                        logger.LogInformation("Custom PIDs for white list: {PidList}", BitConverter.ToString([.. customPIDs]));
+                        // Show available code name from custom PID list
+                        var pidToParameterCodeReverseMap = new PIDToOBDIIParameterCodeReverseMapBuilder().create();
+                        var customParameterCodes = customPIDs
+                            .Select(cd => pidToParameterCodeReverseMap.TryGetValue(cd, out OBDIIParameterCode value)?value.ToString():"Undefined");
 
-                // Activate ELM327PIDFilter
-                this.ELM327PIDFilter = new ELM327PIDFilter(availablePIDs, true, []);
-            }
-            else
-            {
-                // Fill all PID available
-                var allAvailablePID = Enumerable.Range(0, 0x100).Select(x => (byte)x).ToList();
-                this.ELM327PIDFilter = new ELM327PIDFilter(allAvailablePID, false, []);
+                        logger.LogInformation("Code names for custom white list : {Codes}", String.Join(",\n", customParameterCodes));
+                        // Activate ELM327PIDFilter
+                        this.ELM327PIDFilter = new ELM327PIDFilter(customPIDs, true, []);
+                        break;
+                    }
+                case ELM327PIDWhiteListMode.AllPass:
+                    {
+                        // Fill all PID available
+                        logger.LogInformation("PID white list is set to All-Pass mode.");
+                        var allAvailablePID = Enumerable.Range(0, 0x100).Select(x => (byte)x).ToList();
+                        this.ELM327PIDFilter = new ELM327PIDFilter(allAvailablePID, false, []);
+                        break;
+                    }
+                default:
+                    throw new InvalidProgramException("ELM327PIDWhiteListMode is set to undefined value.");
             }
         }
 
