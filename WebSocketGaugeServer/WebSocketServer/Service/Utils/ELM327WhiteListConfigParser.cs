@@ -7,6 +7,9 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service.Utils
 {
     public class ELM327PIDWhiteListConfigParser {
         public static ELM327PIDWhiteListConfig parse(IConfigurationSection configSection) {
+            if(configSection == null)
+                throw new ArgumentNullException("Config setion of ELM327PIDWhiteListConfig is null.");
+
             var mode = Enum.Parse<ELM327PIDWhiteListMode>(configSection["mode"] ?? throw new ArgumentNullException("ELM327WhiteListConfig mode is null. Maybe not defined."), true);
             switch(mode) {
                 case ELM327PIDWhiteListMode.Query:

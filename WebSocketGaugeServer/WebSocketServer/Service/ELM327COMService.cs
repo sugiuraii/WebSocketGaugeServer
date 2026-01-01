@@ -13,6 +13,7 @@ using Microsoft.Extensions.Logging;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.Utils;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Config;
+using SZ2.WebSocketGaugeServer.WebSocketServer.Service.Utils;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
@@ -91,13 +92,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 var elm327ReceiveAddress = serviceSetting["elm327ReceiveAddress"] ?? "";
                 var elm327PIDBatchQueryCount = int.Parse(serviceSetting["elm327BatchPIDQueryCount"] ?? "1");
                 var elm327PIDBatchQueryAvoidMultiFrameResponse = bool.Parse(serviceSetting["elm327PIDBatchQueryAvoidMultiFrameResponse"] ?? "false");
-                var queryOnlyAvilablePID = bool.Parse(serviceSetting["elm327QueryOnlyAvilablePID"]);
+                var elm327PIDWhiteListConfig = ELM327PIDWhiteListConfigParser.parse(serviceSetting.GetSection("elm327PIDWhiteListConfig"));
                 var actionOnNODATAReceived = Enum.Parse<ELM327ActionOnNODATAReceived>(serviceSetting["elm327ActionOnNODATAReceived"], true);
                 logger.LogInformation("ELM327COM COMPort is set to: {portname}", comportName);
                 logger.LogInformation("Wait time is set to {waitmsec} msec", waitmsec);
 
                 ELM327COM elm327COM;
-                var elm327COMOption = new ELM327COMOption(comportName, waitmsec, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327ReceiveAddress, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse, queryOnlyAvilablePID);
+                var elm327COMOption = new ELM327COMOption(comportName, waitmsec, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327ReceiveAddress, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse, elm327PIDWhiteListConfig);
                 elm327COM = new ELM327COM(elm327COMOption, loggerFactory, actionOnNODATAReceived);
                 elm327COM.OverrideDefaultBaudRate(baudRate);
 

@@ -10,6 +10,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Config
         string ELM327ReceiveAddress,
         int ELM327BatchQueryCount,
         bool SeparateBatchQueryToAvoidMultiFrameResponse,
-        bool QueryOnlyAvailablePID
+        ELM327PIDWhiteListConfig PIDWhiteListConfig
     );
 }
