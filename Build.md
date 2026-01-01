@@ -7,7 +7,7 @@
 ## SDK
 * To build, please install dotnet sdk and nodejs
     * [dotnet sdk (10.0)](https://dotnet.microsoft.com/)
-    * [nodejs (22)](https://nodejs.org/)
+    * [nodejs (24)](https://nodejs.org/)
         * nodejs is required to compile javascript (used for web UI)
 
 # Run from source
