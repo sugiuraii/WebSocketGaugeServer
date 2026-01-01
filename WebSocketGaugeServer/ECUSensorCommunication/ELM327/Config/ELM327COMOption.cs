@@ -1,4 +1,4 @@
-namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Config
 {
     public record ELM327COMOption(
         string COMPortName,

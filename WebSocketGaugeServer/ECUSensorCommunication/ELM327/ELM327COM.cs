@@ -7,15 +7,10 @@ using System.Text.RegularExpressions;
 using System.IO.Ports;
 
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Utils;
+using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Config;
 
 namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 {
-    public enum ActionOnNODATAReceived
-    {
-        Ignore,
-        AddPIDToBlackList,
-        ThrowException
-    }
 
     public class ELM327COM : COMCommon, IELM327COM
     {
@@ -31,7 +26,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
 
         private readonly ELM327COMOption Option;
 
-        private readonly ActionOnNODATAReceived ActionOnNODATAReceived;
+        private readonly ELM327ActionOnNODATAReceived ActionOnNODATAReceived;
         private readonly OBDIIContentTable content_table;
 
         private readonly ELM327OutMessageParser elm327MsgParser;
@@ -42,7 +37,7 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         private static readonly string[] NewLineSeparators = ["\r\n", "\r", "\n"];
 
         //Constructor
-        public ELM327COM(ELM327COMOption option, ILoggerFactory logger, ActionOnNODATAReceived actionOnNODATAReceived) : base(new COMCommonOption(option.COMPortName, Parity.None), logger)
+        public ELM327COM(ELM327COMOption option, ILoggerFactory logger, ELM327ActionOnNODATAReceived actionOnNODATAReceived) : base(new COMCommonOption(option.COMPortName, Parity.None), logger)
         {
             this.Option = option;
             this.logger = logger.CreateLogger<ELM327COM>();
@@ -440,16 +435,18 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     var error_code_names = codes.Select(code => code.ToString());
                     switch(ActionOnNODATAReceived)
                     {
-                        case ActionOnNODATAReceived.AddPIDToBlackList:
+                        case ELM327ActionOnNODATAReceived.AddPIDToBlackList:
                             logger.LogWarning("ELM327 returns NO DATA on communicating PID of {PIDbytes}. Corresponding code names are {ErrorPIDNames}. These PIDs are added to blacklist.",
                                                 BitConverter.ToString(pids), string.Join(",", error_code_names));
                             Array.ForEach(pids, pid => this.ELM327PIDFilter.addToBlackList(pid));
                             return;
-                        case ActionOnNODATAReceived.ThrowException:
+                        case ELM327ActionOnNODATAReceived.ThrowException:
                             throw new FormatException("ELM327 returns NO DATA.");
-                        case ActionOnNODATAReceived.Ignore:
-                            logger.LogDebug("ELM327 returns NO DATA on communicating PID of {PIDbytes}. Corresponding code names are {ErrorPIDNames}. These PIDs will be ignored.",
+                        case ELM327ActionOnNODATAReceived.Log:
+                            logger.LogWarning("ELM327 returns NO DATA on communicating PID of {PIDbytes}. Corresponding code names are {ErrorPIDNames}. These PIDs will be ignored.",
                                                 BitConverter.ToString(pids), string.Join(",", error_code_names));
+                            return;
+                        case ELM327ActionOnNODATAReceived.Ignore:
                             return;
                     }
                 }
