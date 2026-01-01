@@ -51,12 +51,12 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.Arduino
             IsCommunitateThreadAlive = false;
         }
 
-        public double get_value(ArduinoParameterCode code)
+        public double GetValue(ArduinoParameterCode code)
         {
             return content_table[code].Value;
         }
 
-        public string get_unit(ArduinoParameterCode code)
+        public string GetUnit(ArduinoParameterCode code)
         {
             return content_table[code].Unit;
         }

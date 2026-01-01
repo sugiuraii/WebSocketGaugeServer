@@ -98,7 +98,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 ELM327COM elm327COM;
                 var elm327COMOption = new ELM327COMOption(comportName, waitmsec, elm327ProtocolMode, Int32.Parse(elm327AdaptiveTimingMode), Int32.Parse(elm327Timeout), elm327Header, elm327ReceiveAddress, elm327PIDBatchQueryCount, elm327PIDBatchQueryAvoidMultiFrameResponse, queryOnlyAvilablePID);
                 elm327COM = new ELM327COM(elm327COMOption, loggerFactory, actionOnNODATAReceived);
-                elm327COM.overrideDefaultBaudRate(baudRate);
+                elm327COM.OverrideDefaultBaudRate(baudRate);
 
                 this.elm327COM = elm327COM;
                 this.virtualElm327COM = null;
@@ -124,7 +124,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                             {
                                 if (sessionparam.FastSendlist[code] || sessionparam.SlowSendlist[code])
                                 {
-                                    msg_data.val.Add(code.ToString(), elm327COM.get_value(code).ToString());
+                                    msg_data.val.Add(code.ToString(), elm327COM.GetValue(code).ToString());
                                     msg_data.Validate();
                                 }
                             }
@@ -163,7 +163,7 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                 return;
 
             //reset all ssmcom flag
-            this.ELM327COM.set_all_disable(true);
+            this.ELM327COM.SetAllDisable(true);
 
             using (await WebSocketDictionaryLock.LockAsync())
             {
@@ -182,13 +182,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                     {
                         if (sessionparam.FastSendlist[code])
                         {
-                            if (!ELM327COM.get_fastread_flag(code))
-                                ELM327COM.set_fastread_flag(code, true, true);
+                            if (!ELM327COM.GetFastreadFlag(code))
+                                ELM327COM.SetFastreadFlag(code, true, true);
                         }
                         if (sessionparam.SlowSendlist[code])
                         {
-                            if (!ELM327COM.get_slowread_flag(code))
-                                ELM327COM.set_slowread_flag(code, true, true);
+                            if (!ELM327COM.GetSlowreadFlag(code))
+                                ELM327COM.SetSlowreadFlag(code, true, true);
                         }
                     }
                 }

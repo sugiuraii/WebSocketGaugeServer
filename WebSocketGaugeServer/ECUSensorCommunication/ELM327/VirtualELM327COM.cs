@@ -110,59 +110,59 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
             return content_table[code].ReturnByteLength;
         }
 
-        public double get_value(OBDIIParameterCode code)
+        public double GetValue(OBDIIParameterCode code)
         {
             return content_table[code].Value;
         }
 
-        public UInt32 get_raw_value(OBDIIParameterCode code)
+        public UInt32 GetRawValue(OBDIIParameterCode code)
         {
             return content_table[code].RawValue;
         }
 
-        public string get_unit(OBDIIParameterCode code)
+        public string GetUnit(OBDIIParameterCode code)
         {
             return content_table[code].Unit;
         }
 
-        public bool get_slowread_flag(OBDIIParameterCode code)
+        public bool GetSlowreadFlag(OBDIIParameterCode code)
         {
             return content_table[code].SlowReadEnable;
         }
 
-        public bool get_fastread_flag(OBDIIParameterCode code)
+        public bool GetFastreadFlag(OBDIIParameterCode code)
         {
             return content_table[code].FastReadEnable;
         }
 
-        public void set_slowread_flag(OBDIIParameterCode code, bool flag)
+        public void SetSlowreadFlag(OBDIIParameterCode code, bool flag)
         {
-            set_slowread_flag(code, flag, false);
+            SetSlowreadFlag(code, flag, false);
         }
-        public void set_slowread_flag(OBDIIParameterCode code, bool flag, bool quiet)
+        public void SetSlowreadFlag(OBDIIParameterCode code, bool flag, bool quiet)
         {
             if (!quiet)
                 logger.LogDebug("Slowread flag of " + code.ToString() + "is enabled.");
             content_table[code].SlowReadEnable = flag;
         }
 
-        public void set_fastread_flag(OBDIIParameterCode code, bool flag)
+        public void SetFastreadFlag(OBDIIParameterCode code, bool flag)
         {
-            set_fastread_flag(code, flag, false);
+            SetFastreadFlag(code, flag, false);
         }
-        public void set_fastread_flag(OBDIIParameterCode code, bool flag, bool quiet)
+        public void SetFastreadFlag(OBDIIParameterCode code, bool flag, bool quiet)
         {
             if (!quiet)
                 logger.LogDebug("Fastread flag of " + code.ToString() + "is enabled.");
             content_table[code].FastReadEnable = flag;
         }
 
-        public void set_all_disable()
+        public void SetAllDisable()
         {
-            set_all_disable(false);
+            SetAllDisable(false);
         }
 
-        public void set_all_disable(bool quiet)
+        public void SetAllDisable(bool quiet)
         {
             if (!quiet)
                 logger.LogDebug("All flag reset.");

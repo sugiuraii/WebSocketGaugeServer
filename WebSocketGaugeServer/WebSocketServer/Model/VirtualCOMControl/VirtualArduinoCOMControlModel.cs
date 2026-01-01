@@ -45,35 +45,35 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Model.VirtualCOMControl
             
             this.EngineSpeed = GetDefaultReactivePropertySlim<double>(0, "EngineSpeed");
             this.EngineSpeed.Subscribe(v => virtualArduinoCOM.SetValue(ArduinoParameterCode.Engine_Speed, v));
-            this.EngineSpeedUnit = virtualArduinoCOM.get_unit(ArduinoParameterCode.Engine_Speed);
+            this.EngineSpeedUnit = virtualArduinoCOM.GetUnit(ArduinoParameterCode.Engine_Speed);
 
             this.VehicleSpeed = GetDefaultReactivePropertySlim<double>(0, "VehicleSpeed");
             this.VehicleSpeed.Subscribe(v => virtualArduinoCOM.SetValue(ArduinoParameterCode.Vehicle_Speed, v));
-            this.VehicleSpeedUnit = virtualArduinoCOM.get_unit(ArduinoParameterCode.Vehicle_Speed);
+            this.VehicleSpeedUnit = virtualArduinoCOM.GetUnit(ArduinoParameterCode.Vehicle_Speed);
             
             this.ManifoldAbsolutePressure = GetDefaultReactivePropertySlim<double>(0, "ManifoldAbsolutePressure");
             this.ManifoldAbsolutePressure.Subscribe(v => virtualArduinoCOM.SetValue(ArduinoParameterCode.Manifold_Absolute_Pressure, v));
-            this.ManifoldAbsolutePressureUnit = virtualArduinoCOM.get_unit(ArduinoParameterCode.Manifold_Absolute_Pressure);
+            this.ManifoldAbsolutePressureUnit = virtualArduinoCOM.GetUnit(ArduinoParameterCode.Manifold_Absolute_Pressure);
 
             this.CoolantTemperature = GetDefaultReactivePropertySlim<double>(0, "CoolantTemperature");
             this.CoolantTemperature.Subscribe(v => virtualArduinoCOM.SetValue(ArduinoParameterCode.Coolant_Temperature, v));
-            this.CoolantTemperatureUnit = virtualArduinoCOM.get_unit(ArduinoParameterCode.Coolant_Temperature);
+            this.CoolantTemperatureUnit = virtualArduinoCOM.GetUnit(ArduinoParameterCode.Coolant_Temperature);
 
             this.OilTemperature = GetDefaultReactivePropertySlim<double>(0, "OilTemperature");
             this.OilTemperature.Subscribe(v => virtualArduinoCOM.SetValue(ArduinoParameterCode.Oil_Temperature, v));
-            this.OilTemperatureUnit = virtualArduinoCOM.get_unit(ArduinoParameterCode.Oil_Temperature);
+            this.OilTemperatureUnit = virtualArduinoCOM.GetUnit(ArduinoParameterCode.Oil_Temperature);
 
             this.OilTemperature2 = GetDefaultReactivePropertySlim<double>(0, "OilTemperature2");
             this.OilTemperature2.Subscribe(v => virtualArduinoCOM.SetValue(ArduinoParameterCode.Oil_Temperature2, v));
-            this.OilTemperatureUnit2 = virtualArduinoCOM.get_unit(ArduinoParameterCode.Oil_Temperature2);
+            this.OilTemperatureUnit2 = virtualArduinoCOM.GetUnit(ArduinoParameterCode.Oil_Temperature2);
 
             this.OilPressure = GetDefaultReactivePropertySlim<double>(0, "OilPressure");
             this.OilPressure.Subscribe(v => virtualArduinoCOM.SetValue(ArduinoParameterCode.Oil_Pressure, v));
-            this.OilPressureUnit = virtualArduinoCOM.get_unit(ArduinoParameterCode.Oil_Pressure);
+            this.OilPressureUnit = virtualArduinoCOM.GetUnit(ArduinoParameterCode.Oil_Pressure);
 
             this.FuelRailPressure = GetDefaultReactivePropertySlim<double>(0, "FuelRailPressure");
             this.FuelRailPressure.Subscribe(v => virtualArduinoCOM.SetValue(ArduinoParameterCode.Fuel_Rail_Pressure, v));
-            this.FuelRailPressureUnit = virtualArduinoCOM.get_unit(ArduinoParameterCode.Fuel_Rail_Pressure);            
+            this.FuelRailPressureUnit = virtualArduinoCOM.GetUnit(ArduinoParameterCode.Fuel_Rail_Pressure);            
         }
 
         public void Dispose()
