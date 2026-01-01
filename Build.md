@@ -6,7 +6,7 @@
 
 ## SDK
 * To build, please install dotnet sdk and nodejs
-    * [dotnet sdk (8.0)](https://dotnet.microsoft.com/)
+    * [dotnet sdk (10.0)](https://dotnet.microsoft.com/)
     * [nodejs (22)](https://nodejs.org/)
         * nodejs is required to compile javascript (used for web UI)
 
@@ -24,7 +24,7 @@ Replace `win-x64` with target os platform (`linux-x64`, `linux-arm`, `linux-arm6
 cd WebSocketGaugeServer/WebSocketServers
 dotnet publish -r win-x64 --self-contained
 ```
-You can find compiled binary and runtimes on `WebSocketGaugeServer/WebSocketServer/bin/Release/net8.0/publish`.
+You can find compiled binary and runtimes on `WebSocketGaugeServer/WebSocketServer/bin/Release/net10.0/publish`.
 
 See [https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish](https://docs.microsoft.com/en-us/dotnet/core/tools/dotnet-publish)
 
