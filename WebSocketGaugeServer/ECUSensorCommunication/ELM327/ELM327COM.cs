@@ -437,17 +437,19 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
                     throw new FormatException("Return message at communicateOnePID() is empty.");
                 else if (inMsg.Contains("NO DATA"))
                 {
-                    switch (ActionOnNODATAReceived)
+                    var error_code_names = codes.Select(code => code.ToString());
+                    switch(ActionOnNODATAReceived)
                     {
                         case ActionOnNODATAReceived.AddPIDToBlackList:
-                            var error_code_names = codes.Select(code => code.ToString());
-                            logger.LogWarning("ELM327 returns NO DATA on communicating PID {PIDs}. Corresponding code names are {CodeNames}. These PIDs are added to blacklist.",
-                                BitConverter.ToString(pids), string.Join(",", error_code_names));
+                            logger.LogWarning("ELM327 returns NO DATA on communicating PID of {PIDbytes}. Corresponding code names are {ErrorPIDNames}. These PIDs are added to blacklist.",
+                                                BitConverter.ToString(pids), string.Join(",", error_code_names));
                             Array.ForEach(pids, pid => this.ELM327PIDFilter.addToBlackList(pid));
                             return;
                         case ActionOnNODATAReceived.ThrowException:
                             throw new FormatException("ELM327 returns NO DATA.");
                         case ActionOnNODATAReceived.Ignore:
+                            logger.LogDebug("ELM327 returns NO DATA on communicating PID of {PIDbytes}. Corresponding code names are {ErrorPIDNames}. These PIDs will be ignored.",
+                                                BitConverter.ToString(pids), string.Join(",", error_code_names));
                             return;
                     }
                 }
