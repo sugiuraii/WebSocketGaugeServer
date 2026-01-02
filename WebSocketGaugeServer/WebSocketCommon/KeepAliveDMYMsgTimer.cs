@@ -32,8 +32,8 @@ namespace SZ2.WebSocketGaugeServer.WebSocketCommon
             {
                 KeepAliveDMYMsgTimer timerObj = (KeepAliveDMYMsgTimer)obj;
                 var ws = timerObj.ws;
-                
-                await WebsocketSendText(ws, DUMMY_MESSAGE);
+                if(ws.State == WebSocketState.Connecting) // Send dummy message only on Open State
+                    await WebsocketSendText(ws, DUMMY_MESSAGE);
 
             },this,Timeout.Infinite, KeepAliveInterval);
         }
