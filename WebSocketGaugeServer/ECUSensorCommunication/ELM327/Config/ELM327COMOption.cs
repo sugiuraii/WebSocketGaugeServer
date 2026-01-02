@@ -1,4 +1,4 @@
-namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
+namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Config
 {
     public record ELM327COMOption(
         string COMPortName,
@@ -10,6 +10,6 @@ namespace SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327
         string ELM327ReceiveAddress,
         int ELM327BatchQueryCount,
         bool SeparateBatchQueryToAvoidMultiFrameResponse,
-        bool QueryOnlyAvailablePID
+        ELM327PIDWhiteListConfig PIDWhiteListConfig
     );
 }
