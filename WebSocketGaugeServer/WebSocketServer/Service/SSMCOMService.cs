@@ -1,5 +1,6 @@
 using System;
 using System.Text;
+using System.Linq;
 using System.Collections.Generic;
 using System.Net.WebSockets;
 using System.Threading.Tasks;
@@ -102,29 +103,21 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                             var guid = session.Key;
                             var websocket = session.Value.WebSocket;
                             var sessionparam = session.Value.SessionParam;
-
+                            var slowFlag = args.Slow_read_flag;
                             var msg_data = new ValueJSONFormat();
-                            foreach (SSMParameterCode ssmcode in args.Received_Parameter_Code)
+
+                            args.Received_Parameter_Code.Where(code => slowFlag ? sessionparam.SlowSendlist[code] : sessionparam.FastSendlist[code])
+                            .ToList().ForEach(ssmcode =>
                             {
-                                if (sessionparam.FastSendlist[ssmcode] || sessionparam.SlowSendlist[ssmcode])
-                                {
-                                    // Return Switch content
-                                    if (ssmcode >= SSMParameterCode.Switch_P0x061 && ssmcode <= SSMParameterCode.Switch_P0x121)
-                                    {
-                                        List<SSMSwitchCode> switch_code_list = SSMContentTable.getSwitchcodesFromParametercode(ssmcode);
-                                        foreach (SSMSwitchCode switch_code in switch_code_list)
-                                        {
-                                            msg_data.val.Add(switch_code.ToString(), ssmCOM.get_switch(switch_code).ToString());
-                                        }
-                                    }
-                                    // Return Numeric content
-                                    else
-                                    {
-                                        msg_data.val.Add(ssmcode.ToString(), ssmCOM.get_value(ssmcode).ToString());
-                                    }
-                                    msg_data.Validate();
-                                }
-                            }
+                                // Return Switch content
+                                if (ssmcode >= SSMParameterCode.Switch_P0x061 && ssmcode <= SSMParameterCode.Switch_P0x121)
+                                    SSMContentTable.getSwitchcodesFromParametercode(ssmcode).ForEach(switch_code => msg_data.val.Add(switch_code.ToString(), ssmCOM.get_switch(switch_code).ToString()));
+                                // Return Numeric content
+                                else
+                                    msg_data.val.Add(ssmcode.ToString(), ssmCOM.get_value(ssmcode).ToString());
+                            });
+                            msg_data.Validate();
+
                             if (msg_data.val.Count > 0)
                             {
                                 string msg = JsonConvert.SerializeObject(msg_data);
