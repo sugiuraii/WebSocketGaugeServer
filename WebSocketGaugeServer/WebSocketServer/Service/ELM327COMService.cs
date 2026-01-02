@@ -14,6 +14,8 @@ using SZ2.WebSocketGaugeServer.WebSocketCommon.JSONFormat;
 using SZ2.WebSocketGaugeServer.WebSocketCommon.Utils;
 using SZ2.WebSocketGaugeServer.ECUSensorCommunication.ELM327.Config;
 using SZ2.WebSocketGaugeServer.WebSocketServer.Service.Utils;
+using System.Reflection.Metadata;
+using System.Linq;
 
 namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
 {
@@ -120,17 +122,13 @@ namespace SZ2.WebSocketGaugeServer.WebSocketServer.Service
                             var guid = session.Key;
                             var websocket = session.Value.WebSocket;
                             var sessionparam = session.Value.SessionParam;
-
+                            var slowFlag = args.Slow_read_flag;
                             var msg_data = new ValueJSONFormat();
-                            foreach (var code in args.Received_Parameter_Code)
-                            {
-                                if (sessionparam.FastSendlist[code] || sessionparam.SlowSendlist[code])
-                                {
-                                    msg_data.val.Add(code.ToString(), elm327COM.GetValue(code).ToString());
-                                    msg_data.Validate();
-                                }
-                            }
 
+                            args.Received_Parameter_Code.Where(code => slowFlag?sessionparam.SlowSendlist[code]:sessionparam.FastSendlist[code])
+                            .ToList().ForEach(code => msg_data.val.Add(code.ToString(), elm327COM.GetValue(code).ToString()));
+                            msg_data.Validate();
+                            
                             if (msg_data.val.Count > 0)
                             {
                                 string msg = JsonConvert.SerializeObject(msg_data);
